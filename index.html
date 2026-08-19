@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PHI Pocket Log - Health 253</title>
+<script>
+  tailwind = {
+    config: {
+      darkMode: 'class'
+    }
+  };
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
@@ -17,11 +24,13 @@ import {
   where,
   orderBy,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  deleteDoc,
+  updateDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ================= FIREBASE CONFIG =================
-// These values come from your original HTML.
 const firebaseConfig = {
   apiKey: "AIzaSyDwTY7RAoU2upO97fx2wI_4Et-Rttsl5U8",
   authDomain: "phi-pnb.firebaseapp.com",
@@ -33,28 +42,41 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-// ================= GEMINI =================
-// Do NOT put your Gemini key in the HTML.
-// Enter it in the UI. It is kept only in sessionStorage for this browser tab.
 const GEMINI_MODEL = "gemini-3.5-flash";
 let geminiApiKey = sessionStorage.getItem("phi_gemini_api_key") || "";
-
 let selectedSession = "FN";
 let unsubscribeSnapshot = null;
+let editingLogId = null;
 
 const $ = id => document.getElementById(id);
 const getTodayISO = () => new Date().toISOString().slice(0, 10);
+
+// ================= THEME =================
+function applyTheme(theme) {
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  localStorage.setItem("phi_theme", theme);
+  const icon = $("themeIcon");
+  const label = $("themeLabel");
+  if (icon) icon.className = theme === "dark" ? "ph ph-sun" : "ph ph-moon";
+  if (label) label.textContent = theme === "dark" ? "Light" : "Dark";
+}
+
+window.toggleTheme = function () {
+  applyTheme(document.documentElement.classList.contains("dark") ? "light" : "dark");
+};
+
+applyTheme(localStorage.getItem("phi_theme") || "light");
 
 function setStatus(message, type = "normal") {
   const el = $("status");
   el.textContent = message || "";
   el.className = "text-xs font-medium " +
-    (type === "error" ? "text-red-600" :
-     type === "success" ? "text-emerald-600" : "text-slate-500");
+    (type === "error" ? "text-red-600 dark:text-red-400" :
+     type === "success" ? "text-emerald-600 dark:text-emerald-400" :
+     "text-slate-500 dark:text-slate-400");
 }
 
-// ================= API KEY UI =================
+// ================= API KEY =================
 function updateKeyStatus() {
   $("keyStatus").textContent = geminiApiKey
     ? "Gemini key loaded for this tab"
@@ -90,39 +112,34 @@ window.setSession = function (session) {
     el.className = "flex-1 py-2 text-xs font-semibold rounded-lg border transition " +
       (active
         ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
-        : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100");
+        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700");
   });
 };
+
+function setEditSession(session) {
+  $("editSession").value = session;
+}
 
 // ================= VOICE =================
 let recognition = null;
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
 if (SpeechRecognition) {
   recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = "si-LK";
-
   recognition.onstart = () => {
     $("micBtn").classList.add("bg-red-500", "text-white", "animate-pulse");
     setStatus("Listening in Sinhala...");
   };
-
   recognition.onresult = event => {
     const transcript = event.results[0][0].transcript;
     const note = $("rawNote");
     note.value = note.value ? note.value + " " + transcript : transcript;
     setStatus("Voice captured!", "success");
   };
-
-  recognition.onerror = event => {
-    setStatus("Mic error: " + event.error, "error");
-  };
-
-  recognition.onend = () => {
-    $("micBtn").classList.remove("bg-red-500", "text-white", "animate-pulse");
-  };
+  recognition.onerror = event => setStatus("Mic error: " + event.error, "error");
+  recognition.onend = () => $("micBtn").classList.remove("bg-red-500", "text-white", "animate-pulse");
 }
 
 window.toggleMic = function () {
@@ -130,10 +147,8 @@ window.toggleMic = function () {
     alert("Speech Recognition is not supported in this browser. Use Chrome or Edge.");
     return;
   }
-  try {
-    recognition.start();
-  } catch (err) {
-    // Ignore the harmless 'already started' case.
+  try { recognition.start(); }
+  catch (err) {
     if (!String(err.message || err).toLowerCase().includes("started")) {
       setStatus("Microphone error: " + err.message, "error");
     }
@@ -142,14 +157,9 @@ window.toggleMic = function () {
 
 // ================= GEMINI =================
 async function formatWithGemini(rawText, sessionType) {
-  if (!geminiApiKey) {
-    throw new Error("Gemini API key is not set. Open API Key, paste your new key and save it.");
-  }
+  if (!geminiApiKey) throw new Error("Gemini API key is not set. Open API Key, paste your key and save it.");
 
-  const sessionLabel =
-    sessionType === "FN" ? "Forenoon (Morning)" :
-    sessionType === "AN" ? "Afternoon" : "Full Day Duty";
-
+  const sessionLabel = sessionType === "FN" ? "Forenoon (Morning)" : sessionType === "AN" ? "Afternoon" : "Full Day Duty";
   const prompt = `You are an expert assistant for a Sri Lankan Public Health Inspector (PHI) maintaining the official Health 253 Pocket Notebook.
 
 Convert the raw field note below into concise, professional, point-by-point English field log entries.
@@ -167,54 +177,33 @@ Raw Field Note:
 ${rawText}`;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
-
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": geminiApiKey
-    },
-    body: JSON.stringify({
-      contents: [{
-        role: "user",
-        parts: [{ text: prompt }]
-      }]
-    })
+    headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
+    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
   });
 
-  let data = null;
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error("Gemini returned an invalid response.");
-  }
+  let data;
+  try { data = await response.json(); }
+  catch { throw new Error("Gemini returned an invalid response."); }
+  if (!response.ok) throw new Error("Gemini API: " + (data?.error?.message || `HTTP ${response.status}`));
 
-  if (!response.ok) {
-    const apiMessage = data?.error?.message || `HTTP ${response.status}`;
-    throw new Error("Gemini API: " + apiMessage);
-  }
-
-  const text = data?.candidates?.[0]?.content?.parts?.
-    map(part => part.text || "").join("").trim();
-
-  if (!text) {
-    const reason = data?.promptFeedback?.blockReason || "empty response";
-    throw new Error("Gemini returned no text (" + reason + ").");
-  }
-
+  const text = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
+  if (!text) throw new Error("Gemini returned no text.");
   return text;
 }
 
-// ================= SAVE LOG =================
+// ================= SAVE NEW LOG =================
 window.saveLog = async function () {
+  if (editingLogId) {
+    await updateExistingLog();
+    return;
+  }
+
   const input = $("rawNote");
   const rawText = input.value.trim();
   const dutyDate = $("entryDate").value || getTodayISO();
-
-  if (!rawText) {
-    setStatus("Type or record a note first.", "error");
-    return;
-  }
+  if (!rawText) return setStatus("Type or record a note first.", "error");
 
   const saveBtn = $("saveBtn");
   saveBtn.disabled = true;
@@ -223,19 +212,14 @@ window.saveLog = async function () {
 
   try {
     const formattedLog = await formatWithGemini(rawText, selectedSession);
-
     await addDoc(collection(db, "phi_pocket_logs"), {
       raw: rawText,
       formatted: formattedLog,
       session: selectedSession,
       dutyDate,
       timestamp: serverTimestamp(),
-      timeStr: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-      })
+      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     });
-
     input.value = "";
     $("filterDate").value = dutyDate;
     setStatus("Saved successfully!", "success");
@@ -261,53 +245,136 @@ window.copyText = async function (text, button) {
   }
 };
 
+// ================= DELETE =================
+window.deleteLog = async function (id) {
+  if (!id) return;
+  const ok = confirm("Delete this Pocket Note permanently?\n\nThis cannot be undone.");
+  if (!ok) return;
+
+  try {
+    await deleteDoc(doc(db, "phi_pocket_logs", id));
+    setStatus("Log deleted successfully.", "success");
+  } catch (error) {
+    console.error(error);
+    setStatus("Delete failed: " + (error.message || error), "error");
+  }
+};
+
+// ================= EDIT =================
+window.editLog = function (item) {
+  editingLogId = item.id;
+  $("editRaw").value = item.raw || "";
+  $("editFormatted").value = item.formatted || "";
+  $("editDate").value = item.dutyDate || getTodayISO();
+  $("editSession").value = item.session || "FN";
+  $("editModal").classList.remove("hidden");
+  document.body.classList.add("overflow-hidden");
+};
+
+window.closeEditModal = function () {
+  editingLogId = null;
+  $("editModal").classList.add("hidden");
+  document.body.classList.remove("overflow-hidden");
+};
+
+window.updateExistingLog = async function () {
+  if (!editingLogId) return;
+
+  const raw = $("editRaw").value.trim();
+  const formatted = $("editFormatted").value.trim();
+  const dutyDate = $("editDate").value || getTodayISO();
+  const session = $("editSession").value;
+
+  if (!raw) return setEditStatus("Raw note cannot be empty.", true);
+  if (!formatted) return setEditStatus("Formatted note cannot be empty.", true);
+
+  const btn = $("updateEditBtn");
+  btn.disabled = true;
+  btn.classList.add("opacity-60", "cursor-not-allowed");
+
+  try {
+    await updateDoc(doc(db, "phi_pocket_logs", editingLogId), {
+      raw,
+      formatted,
+      dutyDate,
+      session,
+      editedAt: serverTimestamp()
+    });
+
+    closeEditModal();
+    $("filterDate").value = dutyDate;
+    loadLogsForDate(dutyDate);
+    setStatus("Log updated successfully.", "success");
+  } catch (error) {
+    console.error(error);
+    setEditStatus("Update failed: " + (error.message || error), true);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("opacity-60", "cursor-not-allowed");
+  }
+};
+
+function setEditStatus(message, error = false) {
+  $("editStatus").textContent = message || "";
+  $("editStatus").className = "text-xs " + (error ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400");
+}
+
 // ================= LOG RENDERING =================
 function getSessionInfo(session) {
-  if (session === "AN") {
-    return { name: "Afternoon (AN)", cls: "bg-amber-100 text-amber-800 border-amber-200" };
-  }
-  if (session === "FULL") {
-    return { name: "Full Day", cls: "bg-purple-100 text-purple-800 border-purple-200" };
-  }
-  return { name: "Morning (FN)", cls: "bg-blue-100 text-blue-800 border-blue-200" };
+  if (session === "AN") return { name: "Afternoon (AN)", cls: "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800" };
+  if (session === "FULL") return { name: "Full Day", cls: "bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800" };
+  return { name: "Morning (FN)", cls: "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800" };
 }
 
 function createLogCard(item) {
   const card = document.createElement("div");
-  card.className = "bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm transition hover:shadow";
+  card.className = "bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition hover:shadow-md";
 
   const header = document.createElement("div");
   header.className = "flex items-center justify-between mb-2 gap-2";
-
   const session = getSessionInfo(item.session);
+
   const badge = document.createElement("span");
   badge.className = "text-xs font-semibold px-2 py-0.5 rounded-full border " + session.cls;
   badge.textContent = session.name;
 
   const date = document.createElement("span");
-  date.className = "text-xs text-slate-400 font-medium text-right";
+  date.className = "text-xs text-slate-400 dark:text-slate-500 font-medium text-right";
   date.textContent = `${item.dutyDate || ""} • ${item.timeStr || ""}`;
-
   header.append(badge, date);
 
   const formatted = document.createElement("div");
-  formatted.className = "text-slate-800 text-sm whitespace-pre-wrap leading-relaxed font-medium bg-slate-50/80 p-3 rounded-lg border border-slate-100";
+  formatted.className = "text-slate-800 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed font-medium bg-slate-50 dark:bg-slate-800/70 p-3 rounded-lg border border-slate-100 dark:border-slate-700";
   formatted.textContent = item.formatted || "";
 
   const footer = document.createElement("div");
-  footer.className = "flex justify-between items-center mt-2.5 pt-2 border-t border-slate-100 gap-2";
+  footer.className = "flex flex-wrap justify-between items-center mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700 gap-2";
 
   const raw = document.createElement("span");
-  raw.className = "truncate text-xs text-slate-400 max-w-[180px]";
+  raw.className = "truncate text-xs text-slate-400 dark:text-slate-500 max-w-[160px]";
   raw.title = item.raw || "";
   raw.textContent = "Input: " + (item.raw || "");
 
+  const actions = document.createElement("div");
+  actions.className = "flex items-center gap-1.5 ml-auto";
+
   const copyBtn = document.createElement("button");
-  copyBtn.className = "text-emerald-600 font-semibold text-xs bg-emerald-50 px-2.5 py-1 rounded-md";
-  copyBtn.textContent = "Copy";
+  copyBtn.className = "text-emerald-700 dark:text-emerald-300 font-semibold text-xs bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1.5 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/50";
+  copyBtn.innerHTML = '<i class="ph ph-copy"></i> Copy';
   copyBtn.addEventListener("click", () => copyText(item.formatted || "", copyBtn));
 
-  footer.append(raw, copyBtn);
+  const editBtn = document.createElement("button");
+  editBtn.className = "text-blue-700 dark:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1.5 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50";
+  editBtn.innerHTML = '<i class="ph ph-pencil-simple"></i> Edit';
+  editBtn.addEventListener("click", () => editLog(item));
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "text-red-700 dark:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/30 px-2.5 py-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50";
+  deleteBtn.innerHTML = '<i class="ph ph-trash"></i> Delete';
+  deleteBtn.addEventListener("click", () => deleteLog(item.id));
+
+  actions.append(copyBtn, editBtn, deleteBtn);
+  footer.append(raw, actions);
   card.append(header, formatted, footer);
   return card;
 }
@@ -320,41 +387,24 @@ window.loadLogsForDate = function (dateFilter = null) {
   }
 
   let q;
-
-  // IMPORTANT: filtered query intentionally uses ONLY where().
-  // We sort the results in JavaScript so Firebase does not require a composite index.
   if (dateFilter && dateFilter !== "ALL") {
-    q = query(
-      collection(db, "phi_pocket_logs"),
-      where("dutyDate", "==", dateFilter)
-    );
+    q = query(collection(db, "phi_pocket_logs"), where("dutyDate", "==", dateFilter));
   } else {
-    q = query(
-      collection(db, "phi_pocket_logs"),
-      orderBy("timestamp", "desc")
-    );
+    q = query(collection(db, "phi_pocket_logs"), orderBy("timestamp", "desc"));
   }
 
   unsubscribeSnapshot = onSnapshot(q, snapshot => {
     const list = $("logsList");
     list.innerHTML = "";
 
-    const items = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
+    const items = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
     if (dateFilter && dateFilter !== "ALL") {
-      items.sort((a, b) => {
-        const aTime = a.timestamp?.toMillis?.() || 0;
-        const bTime = b.timestamp?.toMillis?.() || 0;
-        return aTime - bTime;
-      });
+      items.sort((a, b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0));
     }
 
     if (!items.length) {
       const empty = document.createElement("div");
-      empty.className = "text-center py-8 text-slate-400 bg-white rounded-xl border border-dashed border-slate-300";
+      empty.className = "text-center py-8 text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700";
       empty.textContent = "තෝරාගත් දිනය සඳහා සටහන් කිසිවක් නැත.";
       list.appendChild(empty);
       return;
@@ -365,12 +415,10 @@ window.loadLogsForDate = function (dateFilter = null) {
     console.error("Firestore error:", error);
     const list = $("logsList");
     list.innerHTML = "";
-
     const box = document.createElement("div");
-    box.className = "p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs";
+    box.className = "p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs";
     box.textContent = "Firestore error: " + (error.message || error.code);
     list.appendChild(box);
-
     setStatus("Firestore error: " + (error.message || error.code), "error");
   });
 };
@@ -379,74 +427,75 @@ window.onFilterChange = function () {
   const date = $("filterDate").value;
   loadLogsForDate(date || "ALL");
 };
-
 window.showAllLogs = function () {
   $("filterDate").value = "";
   loadLogsForDate("ALL");
 };
 
-// ================= START =================
 window.addEventListener("DOMContentLoaded", () => {
   const today = getTodayISO();
   $("entryDate").value = today;
   $("filterDate").value = today;
   updateKeyStatus();
+  setSession("FN");
   loadLogsForDate(today);
 });
 </script>
 </head>
 
-<body class="bg-slate-100 min-h-screen p-4 max-w-md mx-auto text-slate-800 font-sans pb-16">
+<body class="bg-slate-100 dark:bg-slate-950 min-h-screen p-4 max-w-md mx-auto text-slate-800 dark:text-slate-100 font-sans pb-16 transition-colors duration-200">
 
-<header class="mb-4 text-center">
-  <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold mb-1">
+<header class="mb-4 text-center relative">
+  <button onclick="toggleTheme()" title="Toggle dark mode" class="absolute right-0 top-0 w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-sm flex items-center justify-center hover:scale-105 transition">
+    <i id="themeIcon" class="ph ph-moon"></i>
+  </button>
+
+  <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded-full text-xs font-bold mb-1">
     <i class="ph ph-notebook"></i> Health 253 Assistant
   </div>
-  <h1 class="text-lg font-bold text-slate-900">PHI Pocket Log Portal</h1>
-  <p class="text-xs text-slate-500">Live Sinhala/Singlish to Official Sync</p>
+  <h1 class="text-lg font-bold text-slate-900 dark:text-white">PHI Pocket Log Portal</h1>
+  <p class="text-xs text-slate-500 dark:text-slate-400">Live Sinhala/Singlish to Official Sync</p>
 </header>
 
 <!-- API KEY -->
-<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-4">
+<div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-4">
   <div class="flex items-center justify-between mb-2">
-    <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Gemini API Key</label>
+    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Gemini API Key</label>
     <span id="keyStatus" class="text-[10px] text-slate-400"></span>
   </div>
-
   <div class="flex gap-2">
-    <input id="geminiKey" type="password" autocomplete="off" placeholder="Paste new Gemini API key" class="flex-1 min-w-0 text-xs border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500">
+    <input id="geminiKey" type="password" autocomplete="off" placeholder="Paste new Gemini API key" class="flex-1 min-w-0 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-emerald-500">
     <button onclick="saveApiKey()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg">Save</button>
-    <button onclick="clearApiKey()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold px-3 py-2 rounded-lg">Clear</button>
+    <button onclick="clearApiKey()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg">Clear</button>
   </div>
-
   <p class="text-[10px] text-slate-400 mt-2">For local/testing use. For a public website, move Gemini calls to a backend/Cloud Function.</p>
 </div>
 
 <!-- DUTY FORM -->
-<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-5">
+<div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-5">
   <div class="flex items-center justify-between mb-2">
-    <label class="text-xs font-bold text-slate-600 uppercase tracking-wider">Duty Details</label>
+    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Duty Details</label>
     <div class="flex items-center gap-1">
       <span class="text-xs text-slate-400">Date:</span>
-      <input type="date" id="entryDate" class="text-xs border rounded-lg px-2 py-1 bg-slate-50 text-slate-700 outline-none focus:ring-1 focus:ring-emerald-500">
+      <input type="date" id="entryDate" class="text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500">
     </div>
   </div>
 
   <div class="flex gap-2 mb-3">
-    <button type="button" id="btn-FN" onclick="setSession('FN')" class="flex-1 py-2 text-xs font-semibold rounded-lg border bg-emerald-600 text-white border-emerald-600 shadow-sm">🌅 Morning (FN)</button>
-    <button type="button" id="btn-AN" onclick="setSession('AN')" class="flex-1 py-2 text-xs font-semibold rounded-lg border bg-slate-50 text-slate-600 border-slate-200">🌇 Afternoon (AN)</button>
-    <button type="button" id="btn-FULL" onclick="setSession('FULL')" class="flex-1 py-2 text-xs font-semibold rounded-lg border bg-slate-50 text-slate-600 border-slate-200">📅 Full Day</button>
+    <button type="button" id="btn-FN" onclick="setSession('FN')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">🌅 Morning (FN)</button>
+    <button type="button" id="btn-AN" onclick="setSession('AN')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">🌇 Afternoon (AN)</button>
+    <button type="button" id="btn-FULL" onclick="setSession('FULL')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">📅 Full Day</button>
   </div>
 
   <div class="relative">
-    <textarea id="rawNote" rows="3" class="w-full p-3 pr-12 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
-    <button type="button" id="micBtn" onclick="toggleMic()" class="absolute right-2.5 bottom-3 p-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-full transition" title="Speak in Sinhala">
+    <textarea id="rawNote" rows="3" class="w-full p-3 pr-12 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
+    <button type="button" id="micBtn" onclick="toggleMic()" class="absolute right-2.5 bottom-3 p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 rounded-full transition" title="Speak in Sinhala">
       <i class="ph ph-microphone text-lg"></i>
     </button>
   </div>
 
   <div class="flex justify-between items-center mt-3 gap-2">
-    <span id="status" class="text-xs font-medium text-slate-500"></span>
+    <span id="status" class="text-xs font-medium text-slate-500 dark:text-slate-400"></span>
     <button id="saveBtn" onclick="saveLog()" class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-1.5">
       <i class="ph ph-paper-plane-right"></i> Format & Save
     </button>
@@ -454,24 +503,71 @@ window.addEventListener("DOMContentLoaded", () => {
 </div>
 
 <!-- FILTER -->
-<div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm mb-4">
+<div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-4">
   <div class="flex items-center justify-between gap-2">
     <div class="flex items-center gap-1.5 flex-1">
       <i class="ph ph-calendar text-emerald-600 text-base"></i>
-      <span class="text-xs font-bold text-slate-700">Filter Date:</span>
-      <input type="date" id="filterDate" onchange="onFilterChange()" class="text-xs border rounded-lg px-2 py-1 bg-slate-50 text-slate-700 outline-none focus:ring-1 focus:ring-emerald-500 flex-1">
+      <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Filter Date:</span>
+      <input type="date" id="filterDate" onchange="onFilterChange()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500 flex-1">
     </div>
-    <button onclick="showAllLogs()" class="text-xs font-semibold text-slate-500 hover:text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 transition">All Logs</button>
+    <button onclick="showAllLogs()" class="text-xs font-semibold text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-white bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 transition">All Logs</button>
   </div>
 </div>
 
 <!-- HISTORY -->
 <div>
   <div class="flex justify-between items-center mb-2 px-1 gap-2">
-    <h2 class="text-sm font-bold text-slate-700">Pocket Note History</h2>
-    <span class="text-xs text-slate-400 text-right">Ready to write in Health 253</span>
+    <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300">Pocket Note History</h2>
+    <span class="text-xs text-slate-400 dark:text-slate-500 text-right">Ready to write in Health 253</span>
   </div>
   <div id="logsList" class="space-y-3"></div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+  <div class="max-w-md mx-auto mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+      <div>
+        <h3 class="font-bold text-slate-900 dark:text-white">Edit Pocket Note</h3>
+        <p class="text-[11px] text-slate-400">Change the saved data and press Update.</p>
+      </div>
+      <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">✕</button>
+    </div>
+
+    <div class="p-4 space-y-3">
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Date</label>
+          <input id="editDate" type="date" class="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Session</label>
+          <select id="editSession" class="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+            <option value="FN">Morning (FN)</option>
+            <option value="AN">Afternoon (AN)</option>
+            <option value="FULL">Full Day</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Original / Raw Note</label>
+        <textarea id="editRaw" rows="4" class="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-xl p-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Official Formatted Note</label>
+        <textarea id="editFormatted" rows="7" class="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-xl p-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+      </div>
+
+      <div id="editStatus" class="text-xs"></div>
+
+      <div class="flex gap-2 pt-1">
+        <button onclick="closeEditModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-sm">Cancel</button>
+        <button id="updateEditBtn" onclick="updateExistingLog()" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm"><i class="ph ph-check"></i> Update</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 </body>
