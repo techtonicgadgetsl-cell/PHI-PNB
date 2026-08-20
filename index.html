@@ -42,7 +42,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const GEMINI_MODEL = "gemini-3.5-flash";
+const GEMINI_MODEL = "gemini-1.5-flash";
 let geminiApiKey = sessionStorage.getItem("phi_gemini_api_key") || "";
 let selectedSession = "FN";
 let unsubscribeSnapshot = null;
@@ -120,37 +120,84 @@ function setEditSession(session) {
   $("editSession").value = session;
 }
 
-// ================= VOICE =================
+// ================= ROBUST SPEECH-TO-TEXT =================
 let recognition = null;
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (SpeechRecognition) {
-  recognition = new SpeechRecognition();
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.lang = "si-LK";
-  recognition.onstart = () => {
-    $("micBtn").classList.add("bg-red-500", "text-white", "animate-pulse");
-    setStatus("Listening in Sinhala...");
+let isRecording = false;
+
+function initRecognition() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) return null;
+
+  const rec = new SpeechRec();
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.lang = "si-LK"; // Default Sinhala
+
+  rec.onstart = () => {
+    isRecording = true;
+    $("micBtn").classList.add("bg-red-500", "text-white", "animate-pulse", "ring-4", "ring-red-200");
+    setStatus("Listening... (කතා කරන්න)", "success");
   };
-  recognition.onresult = event => {
+
+  rec.onresult = event => {
     const transcript = event.results[0][0].transcript;
     const note = $("rawNote");
     note.value = note.value ? note.value + " " + transcript : transcript;
     setStatus("Voice captured!", "success");
   };
-  recognition.onerror = event => setStatus("Mic error: " + event.error, "error");
-  recognition.onend = () => $("micBtn").classList.remove("bg-red-500", "text-white", "animate-pulse");
+
+  rec.onerror = event => {
+    console.error("Speech Error:", event.error);
+    isRecording = false;
+    $("micBtn").classList.remove("bg-red-500", "text-white", "animate-pulse", "ring-4", "ring-red-200");
+    
+    if (event.error === 'not-allowed') {
+      setStatus("Microphone permission blocked. Please allow mic in browser settings.", "error");
+    } else if (event.error === 'no-speech') {
+      setStatus("No speech detected. Try again.", "error");
+    } else {
+      setStatus("Mic error: " + event.error, "error");
+    }
+  };
+
+  rec.onend = () => {
+    isRecording = false;
+    $("micBtn").classList.remove("bg-red-500", "text-white", "animate-pulse", "ring-4", "ring-red-200");
+  };
+
+  return rec;
 }
 
 window.toggleMic = function () {
-  if (!recognition) {
-    alert("Speech Recognition is not supported in this browser. Use Chrome or Edge.");
+  const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+  if (!isSecure) {
+    alert("Microphone requires HTTPS. Please open via GitHub Pages (https://) to use Speech-to-Text.");
     return;
   }
-  try { recognition.start(); }
-  catch (err) {
-    if (!String(err.message || err).toLowerCase().includes("started")) {
-      setStatus("Microphone error: " + err.message, "error");
+
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) {
+    alert("Speech Recognition is not supported on this browser. Please use Google Chrome or Edge.");
+    return;
+  }
+
+  try {
+    if (!recognition) {
+      recognition = initRecognition();
+    }
+
+    if (isRecording) {
+      recognition.stop();
+      isRecording = false;
+    } else {
+      recognition.start();
+    }
+  } catch (err) {
+    console.error(err);
+    // Auto-recreate instance on collision error
+    recognition = initRecognition();
+    try { recognition.start(); } catch (e) {
+      setStatus("Mic error: " + e.message, "error");
     }
   }
 };
@@ -159,28 +206,30 @@ window.toggleMic = function () {
 async function formatWithGemini(rawText, sessionType) {
   if (!geminiApiKey) throw new Error("Gemini API key is not set. Open API Key, paste your key and save it.");
 
-  const sessionLabel = sessionType === "FN" ? "Forenoon (Morning)" : sessionType === "AN" ? "Afternoon" : "Full Day Duty";
-  const prompt = `You are an expert assistant for a Sri Lankan Public Health Inspector (PHI) maintaining the official Health 253 Pocket Notebook.
+  const sessionLabel = sessionType === "FN" ? "Morning (FN)" : sessionType === "AN" ? "Afternoon (AN)" : "Full Day";
+  
+  const prompt = `You are a helpful assistant for a Public Health Inspector (PHI) in Sri Lanka writing daily notes in the small Pocket Notebook (Health 253).
 
-Convert the raw field note below into concise, professional, point-by-point English field log entries.
+Convert the raw field note (given in Sinhala, Singlish, or rough text) into simple, clear, natural, everyday English bullet points. 
+Avoid heavy legal jargon or overly complex bureaucratic words. Write like a normal person writing quick field notes.
 
-Duty Session: ${sessionLabel}
+Session: ${sessionLabel}
 
-Strict rules:
-1. Use professional PHI action phrasing, for example: "Conducts dengue breeding site survey at...".
-2. Use one bullet point per task and start each line with •.
-3. Preserve all names, locations, dates, counts and other specific facts from the raw note.
-4. Do not invent facts.
-5. Output ONLY the bullet points. No introduction, explanation or conclusion.
+Guidelines:
+1. Use simple, direct, present-tense phrasing (e.g., "Visits Kadawatha hotel and checks the kitchen.", "Finds dirty drain and gives a 7-day notice.", "Checks 5 houses for dengue larvae and finds none.", "Meets MOH for weekly update.").
+2. Keep sentences short, simple, and easy to read/write by hand.
+3. Make one clear bullet point per duty/action starting with •.
+4. Keep all specific names, places, counts, numbers, and times exactly as given.
+5. Output ONLY the plain bullet points. Do not include any greeting, intro, or explanation.
 
 Raw Field Note:
 ${rawText}`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
-    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
   });
 
   let data;
@@ -454,7 +503,7 @@ window.addEventListener("DOMContentLoaded", () => {
     <i class="ph ph-notebook"></i> Health 253 Assistant
   </div>
   <h1 class="text-lg font-bold text-slate-900 dark:text-white">PHI Pocket Log Portal</h1>
-  <p class="text-xs text-slate-500 dark:text-slate-400">Live Sinhala/Singlish to Official Sync</p>
+  <p class="text-xs text-slate-500 dark:text-slate-400">Live Sinhala/Singlish to Simple English Sync</p>
 </header>
 
 <!-- API KEY -->
@@ -489,7 +538,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   <div class="relative">
     <textarea id="rawNote" rows="3" class="w-full p-3 pr-12 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
-    <button type="button" id="micBtn" onclick="toggleMic()" class="absolute right-2.5 bottom-3 p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 rounded-full transition" title="Speak in Sinhala">
+    <button type="button" id="micBtn" onclick="toggleMic()" class="absolute right-2.5 bottom-3 p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 rounded-full transition cursor-pointer" title="Speak in Sinhala">
       <i class="ph ph-microphone text-lg"></i>
     </button>
   </div>
