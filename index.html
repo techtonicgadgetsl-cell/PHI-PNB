@@ -120,41 +120,43 @@ function setEditSession(session) {
   $("editSession").value = session;
 }
 
-// ================= ROBUST SPEECH-TO-TEXT =================
+// ================= REAL-TIME AUTO-TYPING SPEECH ENGINE =================
 let recognition = null;
 let isRecording = false;
+let finalTranscript = "";
 
-function initRecognition() {
+function setupSpeechEngine() {
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRec) return null;
 
   const rec = new SpeechRec();
-  rec.continuous = false;
-  rec.interimResults = false;
-  rec.lang = "si-LK"; // Default Sinhala
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.lang = $("micLang") ? $("micLang").value : "si-LK";
 
   rec.onstart = () => {
     isRecording = true;
     $("micBtn").classList.add("bg-red-500", "text-white", "animate-pulse", "ring-4", "ring-red-200");
-    setStatus("Listening... (කතා කරන්න)", "success");
+    setStatus("Listening Live... (කතා කරන්න)", "success");
   };
 
-  rec.onresult = event => {
-    const transcript = event.results[0][0].transcript;
-    const note = $("rawNote");
-    note.value = note.value ? note.value + " " + transcript : transcript;
-    setStatus("Voice captured!", "success");
+  rec.onresult = (event) => {
+    let interimTranscript = "";
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        finalTranscript += event.results[i][0].transcript + " ";
+      } else {
+        interimTranscript += event.results[i][0].transcript;
+      }
+    }
+    const noteArea = $("rawNote");
+    noteArea.value = (finalTranscript + interimTranscript).trim();
   };
 
-  rec.onerror = event => {
-    console.error("Speech Error:", event.error);
-    isRecording = false;
-    $("micBtn").classList.remove("bg-red-500", "text-white", "animate-pulse", "ring-4", "ring-red-200");
-    
-    if (event.error === 'not-allowed') {
-      setStatus("Microphone permission blocked. Please allow mic in browser settings.", "error");
-    } else if (event.error === 'no-speech') {
-      setStatus("No speech detected. Try again.", "error");
+  rec.onerror = (event) => {
+    console.warn("Speech Rec error:", event.error);
+    if (event.error === "language-not-supported" || event.error === "no-speech") {
+      setStatus("Sinhala not detected, trying English fallback...", "error");
     } else {
       setStatus("Mic error: " + event.error, "error");
     }
@@ -163,6 +165,9 @@ function initRecognition() {
   rec.onend = () => {
     isRecording = false;
     $("micBtn").classList.remove("bg-red-500", "text-white", "animate-pulse", "ring-4", "ring-red-200");
+    if ($("rawNote").value.trim()) {
+      setStatus("Voice captured successfully!", "success");
+    }
   };
 
   return rec;
@@ -171,34 +176,28 @@ function initRecognition() {
 window.toggleMic = function () {
   const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
   if (!isSecure) {
-    alert("Microphone requires HTTPS. Please open via GitHub Pages (https://) to use Speech-to-Text.");
+    alert("Microphone requires HTTPS. Please host on GitHub Pages (https://) to use Speech-to-Text.");
     return;
   }
 
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRec) {
-    alert("Speech Recognition is not supported on this browser. Please use Google Chrome or Edge.");
+    alert("Speech Recognition is not supported on this browser. Please use Chrome on Android or Desktop.");
     return;
   }
 
-  try {
-    if (!recognition) {
-      recognition = initRecognition();
-    }
+  if (isRecording) {
+    if (recognition) recognition.stop();
+    isRecording = false;
+    return;
+  }
 
-    if (isRecording) {
-      recognition.stop();
-      isRecording = false;
-    } else {
-      recognition.start();
-    }
+  finalTranscript = $("rawNote").value ? $("rawNote").value + " " : "";
+  recognition = setupSpeechEngine();
+  try {
+    recognition.start();
   } catch (err) {
-    console.error(err);
-    // Auto-recreate instance on collision error
-    recognition = initRecognition();
-    try { recognition.start(); } catch (e) {
-      setStatus("Mic error: " + e.message, "error");
-    }
+    console.error("Mic start err:", err);
   }
 };
 
@@ -270,6 +269,7 @@ window.saveLog = async function () {
       timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     });
     input.value = "";
+    finalTranscript = "";
     $("filterDate").value = dutyDate;
     setStatus("Saved successfully!", "success");
     loadLogsForDate(dutyDate);
@@ -503,7 +503,7 @@ window.addEventListener("DOMContentLoaded", () => {
     <i class="ph ph-notebook"></i> Health 253 Assistant
   </div>
   <h1 class="text-lg font-bold text-slate-900 dark:text-white">PHI Pocket Log Portal</h1>
-  <p class="text-xs text-slate-500 dark:text-slate-400">Live Sinhala/Singlish to Simple English Sync</p>
+  <p class="text-xs text-slate-500 dark:text-slate-400">Live Voice to Simple English Sync</p>
 </header>
 
 <!-- API KEY -->
@@ -536,11 +536,20 @@ window.addEventListener("DOMContentLoaded", () => {
     <button type="button" id="btn-FULL" onclick="setSession('FULL')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">📅 Full Day</button>
   </div>
 
+  <!-- Note Area & Controls -->
   <div class="relative">
-    <textarea id="rawNote" rows="3" class="w-full p-3 pr-12 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
-    <button type="button" id="micBtn" onclick="toggleMic()" class="absolute right-2.5 bottom-3 p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 rounded-full transition cursor-pointer" title="Speak in Sinhala">
-      <i class="ph ph-microphone text-lg"></i>
-    </button>
+    <textarea id="rawNote" rows="3" class="w-full p-3 pr-24 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
+    
+    <!-- Voice Controls -->
+    <div class="absolute right-2 bottom-2.5 flex items-center gap-1 bg-slate-50 dark:bg-slate-900/90 p-1 rounded-full border border-slate-200 dark:border-slate-700">
+      <select id="micLang" class="text-[10px] bg-transparent text-slate-600 dark:text-slate-300 outline-none px-1 cursor-pointer">
+        <option value="si-LK">සිංහල</option>
+        <option value="en-US">English</option>
+      </select>
+      <button type="button" id="micBtn" onclick="toggleMic()" class="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 rounded-full transition cursor-pointer" title="Speak to Live Type">
+        <i class="ph ph-microphone text-base"></i>
+      </button>
+    </div>
   </div>
 
   <div class="flex justify-between items-center mt-3 gap-2">
