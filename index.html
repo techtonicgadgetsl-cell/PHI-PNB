@@ -13,22 +13,22 @@
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
-<script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getFirestore,
   collection,
-  doc,
-  setDoc,
+  addDoc,
   query,
   where,
   orderBy,
   onSnapshot,
   serverTimestamp,
   deleteDoc,
-  updateDoc
+  updateDoc,
+  doc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
   getStorage,
@@ -51,14 +51,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
-// Free tier සඳහා වඩාත් සුදුසු model එක
-const GEMINI_MODEL = "gemini-1.5-flash";
-
+const GEMINI_MODEL = "gemini-3.7-flash";
 let geminiApiKey = sessionStorage.getItem("phi_gemini_api_key") || "";
 let selectedSession = "FN";
 let unsubscribeSnapshot = null;
 let editingLogId = null;
+
+// NEW: separate field-media attachments.
+// These do NOT change the existing Gemini voice-to-text or image-to-text tools.
 let pendingMediaAttachments = [];
 
 const $ = id => document.getElementById(id);
@@ -82,7 +82,6 @@ applyTheme(localStorage.getItem("phi_theme") || "light");
 
 function setStatus(message, type = "normal") {
   const el = $("status");
-  if (!el) return;
   el.textContent = message || "";
   el.className = "text-xs font-medium " +
     (type === "error" ? "text-red-600 dark:text-red-400" :
@@ -117,34 +116,17 @@ window.clearApiKey = function () {
   setStatus("Gemini API key cleared.");
 };
 
-// ================= FREE TIER SMART RETRY SYSTEM =================
-async function fetchGeminiWithRetry(url, options, maxAttempts = 5) {
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const response = await fetch(url, options);
-      if (response.ok) return response;
 
-      // Quota/Rate limit (429) හෝ Server busy (503) ආ විට
-      if (response.status === 429 || (response.status >= 500 && response.status < 600)) {
-        if (attempt === maxAttempts) return response;
+// ================= FIELD MEDIA ATTACHMENTS =================
+// Existing tools remain unchanged:
+// 🎙️ Existing Mic = record voice -> Gemini transcription -> text in note.
+// 📄 Existing Image/PDF/DOCX = extract text -> text in note.
+//
+// New separate tools:
+// 🎙️ Audio Attachment = record audio only and attach it.
+// 🎥 Video Attachment = record video + microphone and attach it.
+// 📷 Photo Attachment = take/select photo and attach it (NO OCR).
 
-        // Rate limit එක නිදහස් වන තෙක් තත්පර 3, 6, 12 ආදී ලෙස රැඳී සිට නැවත ට්‍රයි කරයි
-        const waitTime = (Math.pow(2, attempt) * 1500);
-        setStatus(`Free Quota limit: රැඳී සිටින්න (${Math.round(waitTime/1000)}s)...`, "normal");
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        continue;
-      }
-
-      return response;
-    } catch (error) {
-      if (attempt === maxAttempts) throw error;
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-  }
-  throw new Error("Gemini service is unavailable. Please try again in a minute.");
-}
-
-// ================= MEDIA ATTACHMENTS =================
 function formatMediaSize(bytes) {
   if (!bytes) return "0 B";
   const units = ["B", "KB", "MB", "GB"];
@@ -168,6 +150,7 @@ function setMediaStatus(message = "", type = "normal") {
 function renderPendingMediaAttachments() {
   const wrap = $("pendingMediaAttachments");
   if (!wrap) return;
+
   wrap.innerHTML = "";
 
   if (!pendingMediaAttachments.length) {
@@ -176,15 +159,21 @@ function renderPendingMediaAttachments() {
   }
 
   wrap.classList.remove("hidden");
+
   pendingMediaAttachments.forEach((item, index) => {
     const row = document.createElement("div");
     row.className =
-      "flex items-center gap-2 px-2.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs";
+      "flex items-center gap-2 px-2.5 py-2 rounded-lg " +
+      "bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs";
 
     const icon = document.createElement("i");
     icon.className =
       "ph " +
-      (item.type === "video" ? "ph-video-camera" : item.type === "audio" ? "ph-waveform" : "ph-camera") +
+      (item.type === "video"
+        ? "ph-video-camera"
+        : item.type === "audio"
+          ? "ph-waveform"
+          : "ph-camera") +
       " text-emerald-600 text-base shrink-0";
 
     const info = document.createElement("div");
@@ -202,7 +191,9 @@ function renderPendingMediaAttachments() {
 
     const remove = document.createElement("button");
     remove.type = "button";
-    remove.className = "p-1.5 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 shrink-0";
+    remove.className =
+      "p-1.5 rounded-full text-red-500 hover:bg-red-100 " +
+      "dark:hover:bg-red-900/30 shrink-0";
     remove.title = "Remove attachment";
     remove.innerHTML = '<i class="ph ph-x"></i>';
     remove.addEventListener("click", () => {
@@ -221,6 +212,7 @@ function addPendingMedia(blob, type, name) {
     setMediaStatus("No media was captured.", "error");
     return;
   }
+
   pendingMediaAttachments.push({
     type,
     name,
@@ -228,8 +220,14 @@ function addPendingMedia(blob, type, name) {
     size: blob.size,
     contentType: blob.type || "application/octet-stream"
   });
+
   renderPendingMediaAttachments();
-  const label = type === "video" ? "🎥 Video" : type === "audio" ? "🎙️ Audio" : "📷 Photo";
+
+  const label =
+    type === "video" ? "🎥 Video" :
+    type === "audio" ? "🎙️ Audio" :
+    "📷 Photo";
+
   setMediaStatus(`${label} attached to this daily note.`, "success");
 }
 
@@ -241,16 +239,25 @@ function clearPendingMediaAttachments() {
 
 async function uploadPendingMediaAttachments(logId) {
   if (!pendingMediaAttachments.length) return [];
+
   const uploaded = [];
+
   try {
     for (const item of pendingMediaAttachments) {
-      const safeName = String(item.name || `${item.type}.bin`).replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-100);
-      const storagePath = `phi_pocket_attachments/${logId}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safeName}`;
+      const safeName = String(item.name || `${item.type}.bin`)
+        .replace(/[^a-zA-Z0-9._-]+/g, "_")
+        .slice(-100);
+
+      const storagePath =
+        `phi_pocket_attachments/${logId}/` +
+        `${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safeName}`;
+
       const storageRef = ref(storage, storagePath);
 
       const snapshot = await uploadBytes(storageRef, item.blob, {
         contentType: item.contentType || item.blob.type || "application/octet-stream"
       });
+
       const url = await getDownloadURL(snapshot.ref);
 
       uploaded.push({
@@ -262,103 +269,792 @@ async function uploadPendingMediaAttachments(logId) {
         storagePath
       });
     }
+
     return uploaded;
   } catch (error) {
     for (const item of uploaded) {
-      try { await deleteObject(ref(storage, item.storagePath)); } catch {}
+      try {
+        await deleteObject(ref(storage, item.storagePath));
+      } catch {}
     }
-    throw new Error("Media upload failed: " + (error?.message || ""));
+
+    throw new Error(
+      "Media upload failed. Check Firebase Storage rules/permissions. " +
+      (error?.message || "")
+    );
   }
 }
 
 async function deleteStoredMediaAttachments(attachments = []) {
   for (const item of attachments || []) {
     if (!item?.storagePath) continue;
-    try { await deleteObject(ref(storage, item.storagePath)); } catch (error) {
+    try {
+      await deleteObject(ref(storage, item.storagePath));
+    } catch (error) {
       console.warn("Could not delete media attachment:", error);
     }
   }
 }
 
-// Media Audio/Video Recorders
-let attachmentAudioRecorder = null, attachmentAudioStream = null, attachmentAudioChunks = [];
-let attachmentVideoRecorder = null, attachmentVideoStream = null, attachmentVideoChunks = [];
+// ---------- Separate Audio Attachment Recorder ----------
+let attachmentAudioRecorder = null;
+let attachmentAudioStream = null;
+let attachmentAudioChunks = [];
+let attachmentAudioMimeType = "";
 
-function getSupportedMediaMimeType(kind = "audio") {
-  const audioTypes = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
-  const videoTypes = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
-  const list = kind === "audio" ? audioTypes : videoTypes;
-  for (const t of list) {
-    if (window.MediaRecorder && MediaRecorder.isTypeSupported?.(t)) return t;
+function getSupportedAttachmentAudioMimeType() {
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/ogg;codecs=opus"
+  ];
+
+  for (const type of types) {
+    if (
+      window.MediaRecorder &&
+      typeof MediaRecorder.isTypeSupported === "function" &&
+      MediaRecorder.isTypeSupported(type)
+    ) return type;
   }
+
   return "";
+}
+
+function setAttachmentAudioUI(recording) {
+  const btn = $("attachAudioBtn");
+  if (!btn) return;
+
+  if (recording) {
+    btn.classList.remove(
+      "bg-emerald-100", "dark:bg-emerald-900/50",
+      "text-emerald-700", "dark:text-emerald-300"
+    );
+    btn.classList.add("bg-red-500", "text-white", "animate-pulse");
+    btn.innerHTML = '<i class="ph ph-stop"></i>';
+    btn.title = "Stop audio attachment";
+  } else {
+    btn.classList.remove("bg-red-500", "text-white", "animate-pulse");
+    btn.classList.add(
+      "bg-emerald-100", "dark:bg-emerald-900/50",
+      "text-emerald-700", "dark:text-emerald-300"
+    );
+    btn.innerHTML = '<i class="ph ph-microphone"></i>';
+    btn.title = "Record audio attachment";
+  }
 }
 
 window.toggleAttachmentAudio = async function () {
   if (attachmentAudioRecorder && attachmentAudioRecorder.state !== "inactive") {
+    setMediaStatus("Stopping audio recording...");
     attachmentAudioRecorder.stop();
     return;
   }
+
+  const secure =
+    window.location.protocol === "https:" ||
+    window.location.hostname === "localhost";
+
+  if (!secure) {
+    setMediaStatus("Audio recording requires HTTPS.", "error");
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    setMediaStatus("This browser does not support audio recording.", "error");
+    return;
+  }
+
   try {
-    attachmentAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mime = getSupportedMediaMimeType("audio");
-    attachmentAudioRecorder = new MediaRecorder(attachmentAudioStream, mime ? { mimeType: mime } : {});
+    attachmentAudioStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
+
+    attachmentAudioMimeType = getSupportedAttachmentAudioMimeType();
+
+    attachmentAudioRecorder = new MediaRecorder(
+      attachmentAudioStream,
+      attachmentAudioMimeType ? { mimeType: attachmentAudioMimeType } : {}
+    );
+
     attachmentAudioChunks = [];
 
-    attachmentAudioRecorder.ondataavailable = e => { if (e.data?.size) attachmentAudioChunks.push(e.data); };
+    attachmentAudioRecorder.ondataavailable = event => {
+      if (event.data?.size) attachmentAudioChunks.push(event.data);
+    };
+
+    attachmentAudioRecorder.onerror = event => {
+      console.error("Separate audio recorder error:", event);
+      setMediaStatus("Audio recording failed. Try again.", "error");
+      if (attachmentAudioStream) {
+        attachmentAudioStream.getTracks().forEach(track => track.stop());
+        attachmentAudioStream = null;
+      }
+      attachmentAudioRecorder = null;
+      setAttachmentAudioUI(false);
+    };
+
     attachmentAudioRecorder.onstop = () => {
-      const blob = new Blob(attachmentAudioChunks, { type: mime || "audio/webm" });
-      if (attachmentAudioStream) attachmentAudioStream.getTracks().forEach(t => t.stop());
-      $("attachAudioBtn").classList.remove("bg-red-500", "text-white", "animate-pulse");
-      addPendingMedia(blob, "audio", `field-audio-${Date.now()}.webm`);
+      const mime =
+        attachmentAudioMimeType ||
+        attachmentAudioChunks[0]?.type ||
+        "audio/webm";
+
+      const blob = new Blob(attachmentAudioChunks, { type: mime });
+
+      if (attachmentAudioStream) {
+        attachmentAudioStream.getTracks().forEach(track => track.stop());
+        attachmentAudioStream = null;
+      }
+
+      attachmentAudioRecorder = null;
+      attachmentAudioChunks = [];
+      setAttachmentAudioUI(false);
+
+      const ext =
+        mime.includes("mp4") ? "mp4" :
+        mime.includes("ogg") ? "ogg" : "webm";
+
+      addPendingMedia(
+        blob,
+        "audio",
+        `field-audio-${new Date().toISOString().replace(/[:.]/g, "-")}.${ext}`
+      );
     };
 
     attachmentAudioRecorder.start(250);
-    $("attachAudioBtn").classList.add("bg-red-500", "text-white", "animate-pulse");
-    setMediaStatus("🎙️ Recording audio... click again to stop.");
-  } catch (err) {
-    setMediaStatus("Mic error: " + err.message, "error");
+    setAttachmentAudioUI(true);
+    setMediaStatus("🎙️ Recording field audio... press the same button to stop.");
+  } catch (error) {
+    console.error("Separate audio attachment error:", error);
+
+    if (attachmentAudioStream) {
+      attachmentAudioStream.getTracks().forEach(track => track.stop());
+      attachmentAudioStream = null;
+    }
+
+    attachmentAudioRecorder = null;
+    setAttachmentAudioUI(false);
+
+    setMediaStatus(
+      error?.name === "NotAllowedError"
+        ? "Microphone permission denied. Allow microphone access in Chrome."
+        : "Audio recording error: " + (error?.message || error),
+      "error"
+    );
   }
 };
+
+// ---------- Separate Video Attachment Recorder ----------
+let attachmentVideoRecorder = null;
+let attachmentVideoStream = null;
+let attachmentVideoChunks = [];
+let attachmentVideoMimeType = "";
+
+function getSupportedAttachmentVideoMimeType() {
+  const types = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm",
+    "video/mp4"
+  ];
+
+  for (const type of types) {
+    if (
+      window.MediaRecorder &&
+      typeof MediaRecorder.isTypeSupported === "function" &&
+      MediaRecorder.isTypeSupported(type)
+    ) return type;
+  }
+
+  return "";
+}
+
+function setAttachmentVideoUI(recording) {
+  const btn = $("attachVideoBtn");
+  if (!btn) return;
+
+  if (recording) {
+    btn.classList.remove(
+      "bg-purple-100", "dark:bg-purple-900/40",
+      "text-purple-700", "dark:text-purple-300"
+    );
+    btn.classList.add("bg-red-500", "text-white", "animate-pulse");
+    btn.innerHTML = '<i class="ph ph-stop"></i>';
+    btn.title = "Stop video attachment";
+  } else {
+    btn.classList.remove("bg-red-500", "text-white", "animate-pulse");
+    btn.classList.add(
+      "bg-purple-100", "dark:bg-purple-900/40",
+      "text-purple-700", "dark:text-purple-300"
+    );
+    btn.innerHTML = '<i class="ph ph-video-camera"></i>';
+    btn.title = "Record video attachment";
+  }
+}
 
 window.toggleAttachmentVideo = async function () {
   if (attachmentVideoRecorder && attachmentVideoRecorder.state !== "inactive") {
+    setMediaStatus("Stopping video recording...");
     attachmentVideoRecorder.stop();
     return;
   }
+
+  const secure =
+    window.location.protocol === "https:" ||
+    window.location.hostname === "localhost";
+
+  if (!secure) {
+    setMediaStatus("Video recording requires HTTPS.", "error");
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    setMediaStatus("This browser does not support video recording.", "error");
+    return;
+  }
+
   try {
     attachmentVideoStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } }, audio: true
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: true
     });
-    const mime = getSupportedMediaMimeType("video");
-    attachmentVideoRecorder = new MediaRecorder(attachmentVideoStream, mime ? { mimeType: mime } : {});
+
+    attachmentVideoMimeType = getSupportedAttachmentVideoMimeType();
+
+    attachmentVideoRecorder = new MediaRecorder(
+      attachmentVideoStream,
+      attachmentVideoMimeType ? { mimeType: attachmentVideoMimeType } : {}
+    );
+
     attachmentVideoChunks = [];
 
-    attachmentVideoRecorder.ondataavailable = e => { if (e.data?.size) attachmentVideoChunks.push(e.data); };
+    attachmentVideoRecorder.ondataavailable = event => {
+      if (event.data?.size) attachmentVideoChunks.push(event.data);
+    };
+
+    attachmentVideoRecorder.onerror = event => {
+      console.error("Separate video recorder error:", event);
+      setMediaStatus("Video recording failed. Try again.", "error");
+
+      if (attachmentVideoStream) {
+        attachmentVideoStream.getTracks().forEach(track => track.stop());
+        attachmentVideoStream = null;
+      }
+
+      attachmentVideoRecorder = null;
+      setAttachmentVideoUI(false);
+    };
+
     attachmentVideoRecorder.onstop = () => {
-      const blob = new Blob(attachmentVideoChunks, { type: mime || "video/webm" });
-      if (attachmentVideoStream) attachmentVideoStream.getTracks().forEach(t => t.stop());
-      $("attachVideoBtn").classList.remove("bg-red-500", "text-white", "animate-pulse");
-      addPendingMedia(blob, "video", `field-video-${Date.now()}.mp4`);
+      const mime =
+        attachmentVideoMimeType ||
+        attachmentVideoChunks[0]?.type ||
+        "video/webm";
+
+      const blob = new Blob(attachmentVideoChunks, { type: mime });
+
+      if (attachmentVideoStream) {
+        attachmentVideoStream.getTracks().forEach(track => track.stop());
+        attachmentVideoStream = null;
+      }
+
+      attachmentVideoRecorder = null;
+      attachmentVideoChunks = [];
+      setAttachmentVideoUI(false);
+
+      const ext = mime.includes("mp4") ? "mp4" : "webm";
+
+      addPendingMedia(
+        blob,
+        "video",
+        `field-video-${new Date().toISOString().replace(/[:.]/g, "-")}.${ext}`
+      );
     };
 
     attachmentVideoRecorder.start(250);
-    $("attachVideoBtn").classList.add("bg-red-500", "text-white", "animate-pulse");
-    setMediaStatus("🎥 Recording video... click again to stop.");
-  } catch (err) {
-    setMediaStatus("Camera error: " + err.message, "error");
+    setAttachmentVideoUI(true);
+    setMediaStatus("🎥 Recording field video... press the same button to stop.");
+  } catch (error) {
+    console.error("Separate video attachment error:", error);
+
+    if (attachmentVideoStream) {
+      attachmentVideoStream.getTracks().forEach(track => track.stop());
+      attachmentVideoStream = null;
+    }
+
+    attachmentVideoRecorder = null;
+    setAttachmentVideoUI(false);
+
+    setMediaStatus(
+      error?.name === "NotAllowedError"
+        ? "Camera/microphone permission denied. Allow access in Chrome."
+        : "Video recording error: " + (error?.message || error),
+      "error"
+    );
   }
 };
 
-window.openPhotoAttachmentPicker = () => $("photoAttachmentInput")?.click();
-window.handlePhotoAttachment = e => {
-  const file = e.target.files?.[0];
-  e.target.value = "";
-  if (file && file.type.startsWith("image/")) addPendingMedia(file, "image", file.name);
+// ---------- Separate Photo Attachment ----------
+window.openPhotoAttachmentPicker = function () {
+  const input = $("photoAttachmentInput");
+  if (input) input.click();
 };
 
-// ================= CURSOR TRACKING =================
-let savedCursorStart = 0, savedCursorEnd = 0;
+window.handlePhotoAttachment = function (event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    setMediaStatus("Please select an image.", "error");
+    return;
+  }
+
+  addPendingMedia(
+    file,
+    "image",
+    file.name || `field-photo-${Date.now()}.jpg`
+  );
+};
+
+// Stop NEW attachment recorders when page is hidden.
+window.addEventListener("pagehide", () => {
+  try {
+    if (attachmentAudioRecorder && attachmentAudioRecorder.state !== "inactive") {
+      attachmentAudioRecorder.stop();
+    }
+  } catch {}
+
+  try {
+    if (attachmentVideoRecorder && attachmentVideoRecorder.state !== "inactive") {
+      attachmentVideoRecorder.stop();
+    }
+  } catch {}
+
+  if (attachmentAudioStream) {
+    attachmentAudioStream.getTracks().forEach(track => track.stop());
+    attachmentAudioStream = null;
+  }
+
+  if (attachmentVideoStream) {
+    attachmentVideoStream.getTracks().forEach(track => track.stop());
+    attachmentVideoStream = null;
+  }
+});
+
+// ================= SESSION =================
+window.setSession = function (session) {
+  selectedSession = session;
+  ["FN", "AN", "FULL"].forEach(type => {
+    const el = $("btn-" + type);
+    const active = type === session;
+    el.className = "flex-1 py-2 text-xs font-semibold rounded-lg border transition " +
+      (active
+        ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700");
+  });
+};
+
+function setEditSession(session) {
+  $("editSession").value = session;
+}
+
+// Retry transient Gemini errors without changing the existing voice/image-to-text behavior.
+async function fetchGeminiWithRetry(url, options, maxAttempts = 3) {
+  const retryable = new Set([429, 500, 502, 503, 504]);
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok || !retryable.has(response.status) || attempt === maxAttempts) {
+        return response;
+      }
+
+      const delay = 1500 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 500);
+      setStatus(`Gemini is busy. Retrying automatically (${attempt}/${maxAttempts - 1})...`, "normal");
+      await new Promise(resolve => setTimeout(resolve, delay));
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts) throw error;
+      const delay = 1500 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 500);
+      setStatus(`Connection problem. Retrying automatically (${attempt}/${maxAttempts - 1})...`, "normal");
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  if (lastError) throw lastError;
+  throw new Error("Gemini request failed.");
+}
+
+// ================= REAL VOICE RECORDER + GEMINI TRANSCRIPTION =================
+// This uses the phone's real microphone through MediaRecorder.
+// After pressing Stop, the recorded audio is sent to Gemini and converted
+// to Sinhala/English text, then placed into the note box.
+
+let mediaRecorder = null;
+let recordingStream = null;
+let audioChunks = [];
+let isRecording = false;
+let recordingMimeType = "";
+
+function getSupportedAudioMimeType() {
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/ogg;codecs=opus"
+  ];
+
+  for (const type of types) {
+    if (window.MediaRecorder &&
+        typeof MediaRecorder.isTypeSupported === "function" &&
+        MediaRecorder.isTypeSupported(type)) {
+      return type;
+    }
+  }
+  return "";
+}
+
+function setMicUI(recording) {
+  const btn = $("micBtn");
+  if (!btn) return;
+
+  if (recording) {
+    btn.classList.remove(
+      "bg-emerald-100",
+      "dark:bg-emerald-900/50",
+      "text-emerald-700",
+      "dark:text-emerald-300"
+    );
+    btn.classList.add(
+      "bg-red-500",
+      "text-white",
+      "animate-pulse",
+      "ring-4",
+      "ring-red-200"
+    );
+    btn.innerHTML = '<i class="ph ph-stop text-base"></i>';
+    btn.title = "Stop recording";
+  } else {
+    btn.classList.remove(
+      "bg-red-500",
+      "text-white",
+      "animate-pulse",
+      "ring-4",
+      "ring-red-200"
+    );
+    btn.classList.add(
+      "bg-emerald-100",
+      "dark:bg-emerald-900/50",
+      "text-emerald-700",
+      "dark:text-emerald-300"
+    );
+    btn.innerHTML = '<i class="ph ph-microphone text-base"></i>';
+    btn.title = "Record voice";
+  }
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      try {
+        const result = String(reader.result || "");
+        const comma = result.indexOf(",");
+        resolve(comma >= 0 ? result.slice(comma + 1) : result);
+      } catch (e) {
+        reject(e);
+      }
+    };
+
+    reader.onerror = () => reject(reader.error || new Error("Could not read audio."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function transcribeRecordedAudio(blob) {
+  if (!geminiApiKey) {
+    throw new Error("Gemini API key is not set. Save your key first.");
+  }
+
+  const base64Audio = await blobToBase64(blob);
+  const mimeType = blob.type || recordingMimeType || "audio/webm";
+
+  const language =
+    $("micLang")?.value === "en-US"
+      ? "English"
+      : "Sinhala (සිංහල). If the speaker mixes Singlish and English, preserve the meaning naturally.";
+
+  const prompt = `Transcribe this recorded voice note for a Sri Lankan Public Health Inspector.
+
+Target language: ${language}
+
+Rules:
+1. Transcribe what the speaker actually says.
+2. Do not invent locations, names, numbers, or duties.
+3. Keep Sinhala words if they are spoken in Sinhala.
+4. If the speaker uses Singlish, convert it into readable English where appropriate.
+5. Do not add greetings, explanations, or commentary.
+6. Return ONLY the transcribed note text.`;
+
+  const response = await fetchGeminiWithRetry(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: base64Audio
+                }
+              }
+            ]
+          }
+        ]
+      })
+    }
+  );
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("Gemini returned an invalid response.");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      "Gemini audio transcription failed: " +
+      (data?.error?.message || `HTTP ${response.status}`)
+    );
+  }
+
+  const result = data?.candidates?.[0]?.content?.parts
+    ?.map(part => part.text || "")
+    .join("")
+    .trim();
+
+  if (!result) {
+    throw new Error("Gemini did not return a transcription.");
+  }
+
+  return result;
+}
+
+async function startVoiceRecording() {
+  const isSecure =
+    window.location.protocol === "https:" ||
+    window.location.hostname === "localhost";
+
+  if (!isSecure) {
+    alert(
+      "Microphone requires HTTPS. Open this website using its https:// GitHub Pages address."
+    );
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    alert(
+      "This browser does not support microphone recording. Please use the latest Chrome on Android."
+    );
+    return;
+  }
+
+  if (!window.MediaRecorder) {
+    alert(
+      "This browser does not support audio recording. Please update Chrome."
+    );
+    return;
+  }
+
+  try {
+    setStatus("Requesting microphone permission...", "normal");
+
+    recordingStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    });
+
+    recordingMimeType = getSupportedAudioMimeType();
+
+    const options = recordingMimeType
+      ? { mimeType: recordingMimeType }
+      : {};
+
+    mediaRecorder = new MediaRecorder(recordingStream, options);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = event => {
+      if (event.data && event.data.size > 0) {
+        audioChunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onerror = event => {
+      console.error("MediaRecorder error:", event);
+      setStatus("Recording error. Please try again.", "error");
+    };
+
+    mediaRecorder.onstop = async () => {
+      const blobType =
+        recordingMimeType ||
+        audioChunks[0]?.type ||
+        "audio/webm";
+
+      const audioBlob = new Blob(audioChunks, {
+        type: blobType
+      });
+
+      if (recordingStream) {
+        recordingStream.getTracks().forEach(track => track.stop());
+        recordingStream = null;
+      }
+
+      if (!audioBlob.size) {
+        setStatus("No voice was recorded. Try again.", "error");
+        return;
+      }
+
+      setStatus("Voice recorded. Converting to text...", "normal");
+
+      try {
+        const transcript =
+          await transcribeRecordedAudio(audioBlob);
+
+        const noteArea = $("rawNote");
+        const existing = noteArea.value.trim();
+
+        noteArea.value = existing
+          ? existing + " " + transcript
+          : transcript;
+
+        setStatus("Voice converted successfully!", "success");
+      } catch (error) {
+        console.error("Transcription error:", error);
+        setStatus(
+          error.message || "Voice transcription failed.",
+          "error"
+        );
+      }
+    };
+
+    mediaRecorder.start(250);
+    isRecording = true;
+    setMicUI(true);
+
+    setStatus(
+      $("micLang")?.value === "en-US"
+        ? "Recording English... කතා කරන්න. Stop කරන්න mic button එක ඔබන්න."
+        : "Recording Sinhala... කතා කරන්න. Stop කරන්න mic button එක ඔබන්න.",
+      "success"
+    );
+
+  } catch (error) {
+    console.error("Microphone permission/recording error:", error);
+
+    if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+      setStatus(
+        "Microphone permission denied. Chrome Site Settings → Microphone → Allow කරන්න.",
+        "error"
+      );
+    } else if (error.name === "NotFoundError") {
+      setStatus(
+        "No microphone found on this device.",
+        "error"
+      );
+    } else if (error.name === "NotReadableError") {
+      setStatus(
+        "Microphone is busy or blocked by another app. Close other voice/recorder apps and try again.",
+        "error"
+      );
+    } else {
+      setStatus(
+        "Microphone error: " + (error.message || error.name),
+        "error"
+      );
+    }
+
+    if (recordingStream) {
+      recordingStream.getTracks().forEach(track => track.stop());
+      recordingStream = null;
+    }
+
+    isRecording = false;
+    setMicUI(false);
+  }
+}
+
+function stopVoiceRecording() {
+  if (!mediaRecorder || mediaRecorder.state === "inactive") {
+    isRecording = false;
+    setMicUI(false);
+    return;
+  }
+
+  setStatus("Stopping recording...", "normal");
+  mediaRecorder.stop();
+  isRecording = false;
+  setMicUI(false);
+}
+
+window.toggleMic = function () {
+  if (isRecording) {
+    stopVoiceRecording();
+  } else {
+    startVoiceRecording();
+  }
+};
+
+// Stop the microphone if the page is closed or hidden.
+window.addEventListener("pagehide", () => {
+  try {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
+  } catch {}
+
+  if (recordingStream) {
+    recordingStream.getTracks().forEach(track => track.stop());
+  }
+});
+
+
+
+// ================= IMAGE / DOCUMENT TEXT IMPORT =================
+// Supports:
+// - Images: JPG, PNG, WEBP, GIF, etc. -> Gemini vision OCR
+// - PDF: Gemini document understanding
+// - DOCX: browser-side text extraction with Mammoth
+// - TXT / CSV: direct text import
+//
+// IMPORTANT: extracted text is inserted at the saved cursor/selection,
+// so existing text before and after the cursor is preserved.
+
+let savedCursorStart = 0;
+let savedCursorEnd = 0;
+
 function rememberNoteCursor() {
   const note = $("rawNote");
   if (!note) return;
@@ -366,222 +1062,474 @@ function rememberNoteCursor() {
   savedCursorEnd = note.selectionEnd ?? savedCursorStart;
 }
 
-function insertTextAtSavedCursor(text) {
+function insertTextAtSavedCursor(insertedText) {
   const note = $("rawNote");
   if (!note) return;
-  const val = note.value || "";
-  const start = Math.max(0, Math.min(savedCursorStart, val.length));
-  const end = Math.max(start, Math.min(savedCursorEnd, val.length));
-  const left = val.slice(0, start) + (val.slice(0, start) && !val.slice(0, start).endsWith("\n") ? "\n" : "");
-  const right = (val.slice(end) && !val.slice(end).startsWith("\n") ? "\n" : "") + val.slice(end);
 
-  note.value = left + text.trim() + right;
+  const value = note.value || "";
+  const start = Math.max(0, Math.min(savedCursorStart, value.length));
+  const end = Math.max(start, Math.min(savedCursorEnd, value.length));
+
+  const before = value.slice(0, start);
+  const after = value.slice(end);
+
+  // Keep imported/location content readable without destroying existing text.
+  const leftSpacer = before && !before.endsWith("\n") ? "\n" : "";
+  const rightSpacer = after && !after.startsWith("\n") ? "\n" : "";
+
+  const finalText =
+    before +
+    leftSpacer +
+    insertedText.trim() +
+    rightSpacer +
+    after;
+
+  note.value = finalText;
+
+  const newCursor =
+    (before + leftSpacer + insertedText.trim()).length;
+
   note.focus();
+  note.setSelectionRange(newCursor, newCursor);
+
+  savedCursorStart = newCursor;
+  savedCursorEnd = newCursor;
+
+  note.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-function blobToBase64(blob) {
+function bytesToSize(bytes) {
+  if (!bytes) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0)} ${units[i]}`;
+}
+
+function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const res = String(reader.result || "");
-      resolve(res.slice(res.indexOf(",") + 1));
+
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      const comma = result.indexOf(",");
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
     };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
+
+    reader.onerror = () =>
+      reject(reader.error || new Error("Could not read the file."));
+
+    reader.readAsDataURL(file);
   });
 }
 
-// ================= GEMINI CALLS =================
-async function transcribeRecordedAudio(blob) {
-  if (!geminiApiKey) throw new Error("Gemini API key is not set.");
-  const base64Audio = await blobToBase64(blob);
-  const language = $("micLang")?.value === "en-US" ? "English" : "Sinhala (සිංහල)";
+function extensionOf(filename) {
+  const dot = filename.lastIndexOf(".");
+  return dot >= 0 ? filename.slice(dot + 1).toLowerCase() : "";
+}
 
-  const prompt = `Transcribe this voice note for a Sri Lankan Public Health Inspector.
-Language: ${language}
-Rules:
-1. Exact words only.
-2. If Sinhala/Singlish, convert to simple readable English/Sinhala.
-3. Return ONLY transcription without introductions.`;
+async function extractDocxText(file) {
+  if (!window.mammoth) {
+    throw new Error("DOCX reader is not loaded. Refresh the page and try again.");
+  }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
-  const response = await fetchGeminiWithRetry(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{
-        parts: [
-          { text: prompt },
-          { inlineData: { mimeType: blob.type || "audio/webm", data: base64Audio } }
-        ]
-      }]
-    })
+  const arrayBuffer = await file.arrayBuffer();
+
+  const result = await window.mammoth.extractRawText({
+    arrayBuffer
   });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data?.error?.message || "Transcription failed.");
-  return data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("").trim();
+  const extracted = (result.value || "").trim();
+
+  if (!extracted) {
+    throw new Error("No readable text was found in the DOCX file.");
+  }
+
+  return extracted;
+}
+
+async function extractPlainText(file) {
+  const text = await file.text();
+
+  if (!text.trim()) {
+    throw new Error("The selected document is empty.");
+  }
+
+  return text.trim();
 }
 
 async function extractVisionText(file) {
-  if (!geminiApiKey) throw new Error("Gemini API key is not set.");
-  const base64 = await blobToBase64(file);
-  const prompt = "Extract all readable text from this document/image for PHI field notes. Return ONLY text.";
+  if (!geminiApiKey) {
+    throw new Error("Save your Gemini API key first.");
+  }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
-  const response = await fetchGeminiWithRetry(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{
-        parts: [
-          { text: prompt },
-          { inlineData: { mimeType: file.type || "application/octet-stream", data: base64 } }
+  const base64 = await fileToBase64(file);
+
+  const prompt = `Extract all useful readable text from this uploaded image/document for a Sri Lankan PHI field note.
+
+Rules:
+1. Read Sinhala, Singlish, and English where possible.
+2. Preserve names, places, dates, numbers, addresses, measurements, and bullet points.
+3. Do not invent missing text.
+4. Keep the original meaning.
+5. Return ONLY the extracted text.
+6. If the image contains a table or list, preserve its logical order as plain text.`;
+
+  const response = await fetchGeminiWithRetry(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: file.type || "application/octet-stream",
+                  data: base64
+                }
+              }
+            ]
+          }
         ]
-      }]
-    })
-  });
+      })
+    }
+  );
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data?.error?.message || "Extraction failed.");
-  return data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("").trim();
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("Gemini returned an invalid response.");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error?.message ||
+      `Document/image extraction failed (HTTP ${response.status}).`
+    );
+  }
+
+  const result = data?.candidates?.[0]?.content?.parts
+    ?.map(part => part.text || "")
+    .join("")
+    .trim();
+
+  if (!result) {
+    throw new Error("No readable text was found in the selected file.");
+  }
+
+  return result;
 }
 
-async function formatWithGemini(rawText, sessionType) {
-  if (!geminiApiKey) throw new Error("Gemini API key is not set.");
-  const sessionLabel = sessionType === "FN" ? "Morning (FN)" : sessionType === "AN" ? "Afternoon (AN)" : "Full Day";
+window.openImportPicker = function() {
+  rememberNoteCursor();
+  $("documentInput").click();
+};
 
-  const prompt = `You are a helpful assistant for a Public Health Inspector (PHI) in Sri Lanka writing daily notes in Health 253.
-Convert the raw note into simple everyday English bullet points starting with •.
+window.handleDocumentImport = async function(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+
+  if (!file) return;
+
+  rememberNoteCursor();
+
+  const ext = extensionOf(file.name);
+  const isImage = file.type.startsWith("image/");
+  const isPdf = file.type === "application/pdf" || ext === "pdf";
+  const isDocx =
+    file.type ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    ext === "docx";
+  const isText =
+    file.type.startsWith("text/") ||
+    ["txt", "csv", "json"].includes(ext);
+
+  try {
+    setStatus(
+      `Reading ${file.name} (${bytesToSize(file.size)})...`,
+      "normal"
+    );
+
+    let extracted = "";
+
+    if (isImage || isPdf) {
+      extracted = await extractVisionText(file);
+    } else if (isDocx) {
+      extracted = await extractDocxText(file);
+    } else if (isText) {
+      extracted = await extractPlainText(file);
+    } else {
+      throw new Error(
+        "Unsupported file. Use an image, PDF, DOCX, TXT, CSV, or JSON file."
+      );
+    }
+
+    insertTextAtSavedCursor(extracted);
+
+    setStatus(
+      `Text imported from ${file.name} and inserted at the cursor.`,
+      "success"
+    );
+  } catch (error) {
+    console.error("Document/image import error:", error);
+    setStatus(
+      error.message || "Could not extract text from the file.",
+      "error"
+    );
+  }
+};
+
+
+// ================= GPS LOCATION COLLECTOR =================
+// Uses the phone/browser GPS and inserts the coordinates exactly
+// at the saved cursor position. HTTPS is required on real phones.
+
+window.insertCurrentLocation = function() {
+  rememberNoteCursor();
+
+  if (!window.isSecureContext) {
+    setStatus(
+      "GPS requires HTTPS. Open the GitHub Pages https:// address.",
+      "error"
+    );
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    setStatus(
+      "This browser does not support GPS location.",
+      "error"
+    );
+    return;
+  }
+
+  // We collect multiple GPS fixes and keep the most accurate one.
+  // The browser cannot force the phone to reach 15 m accuracy;
+  // the actual accuracy depends on GPS signal, Wi-Fi/cell positioning,
+  // phone hardware, and whether the user is indoors.
+  setStatus(
+    "Searching for a high-accuracy GPS fix... Keep Location/GPS ON and stay near an open area.",
+    "normal"
+  );
+
+  let bestPosition = null;
+  let watchId = null;
+  let finished = false;
+
+  const startedAt = Date.now();
+  const MAX_WAIT_MS = 90000;
+  const TARGET_ACCURACY_M = 15;
+  let readingCount = 0;
+
+  const finish = (position, forcedFallback = false) => {
+    if (finished) return;
+    finished = true;
+
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+
+    if (!position) {
+      setStatus(
+        "Could not get a GPS fix. Turn on Location/GPS and try again outdoors.",
+        "error"
+      );
+      return;
+    }
+
+    const lat = position.coords.latitude.toFixed(6);
+    const lon = position.coords.longitude.toFixed(6);
+    const accuracy = Math.round(position.coords.accuracy);
+
+    const locationText =
+      `📍 Location: ${lat}, ${lon} (±${accuracy} m)`;
+
+    insertTextAtSavedCursor(locationText);
+
+    if (forcedFallback && accuracy > TARGET_ACCURACY_M) {
+      const hint = accuracy > 100
+        ? " This looks like network/Wi-Fi based location, not a real GPS fix. On your phone, set Location mode to 'High accuracy' (uses GPS satellites), go outdoors with open sky, and try again."
+        : " Try outdoors for better accuracy.";
+      setStatus(
+        `Best GPS fix added: ±${accuracy} m. 15 m was not reached in 90 seconds.${hint}`,
+        "normal"
+      );
+    } else {
+      setStatus(
+        `High-accuracy GPS added: ${lat}, ${lon} (±${accuracy} m)`,
+        "success"
+      );
+    }
+  };
+
+  const handlePosition = position => {
+    if (finished) return;
+
+    const accuracy = Number(position.coords.accuracy);
+
+    if (!Number.isFinite(accuracy)) return;
+
+    readingCount++;
+
+    // Keep the best reading received so far.
+    if (
+      !bestPosition ||
+      accuracy < Number(bestPosition.coords.accuracy)
+    ) {
+      bestPosition = position;
+
+      setStatus(
+        `GPS improving... current accuracy ±${Math.round(accuracy)} m (reading ${readingCount})`,
+        "normal"
+      );
+    }
+
+    // Stop early when the phone reaches the requested accuracy.
+    if (accuracy <= TARGET_ACCURACY_M) {
+      finish(position, false);
+      return;
+    }
+
+    // Do not wait forever.
+    if (Date.now() - startedAt >= MAX_WAIT_MS) {
+      finish(bestPosition, true);
+    }
+  };
+
+  const handleError = error => {
+    if (finished) return;
+
+    // A temporary error can still be followed by a better reading.
+    if (Date.now() - startedAt < MAX_WAIT_MS) {
+      if (error.code === error.PERMISSION_DENIED) {
+        finish(null);
+      }
+      return;
+    }
+
+    finish(bestPosition, true);
+  };
+
+  try {
+    watchId = navigator.geolocation.watchPosition(
+      handlePosition,
+      handleError,
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      }
+    );
+
+    // Safety timeout (slightly after MAX_WAIT_MS so the in-loop check fires first).
+    setTimeout(() => {
+      if (!finished) {
+        finish(bestPosition, true);
+      }
+    }, MAX_WAIT_MS + 2000);
+
+  } catch (error) {
+    console.error("High accuracy GPS error:", error);
+
+    setStatus(
+      "GPS error: " + (error.message || error.name),
+      "error"
+    );
+  }
+};
+
+// Keep the cursor position updated while the user types/clicks.
+document.addEventListener("DOMContentLoaded", () => {
+  const note = $("rawNote");
+  if (!note) return;
+
+  ["keyup", "click", "focus", "select", "input"].forEach(eventName => {
+    note.addEventListener(eventName, rememberNoteCursor);
+  });
+});
+
+// ================= GEMINI =================
+async function formatWithGemini(rawText, sessionType) {
+  if (!geminiApiKey) throw new Error("Gemini API key is not set. Open API Key, paste your key and save it.");
+
+  const sessionLabel = sessionType === "FN" ? "Morning (FN)" : sessionType === "AN" ? "Afternoon (AN)" : "Full Day";
+  
+  const prompt = `You are a helpful assistant for a Public Health Inspector (PHI) in Sri Lanka writing daily notes in the small Pocket Notebook (Health 253).
+
+Convert the raw field note (given in Sinhala, Singlish, or rough text) into simple, clear, natural, everyday English bullet points. 
+Avoid heavy legal jargon or overly complex bureaucratic words. Write like a normal person writing quick field notes.
+
 Session: ${sessionLabel}
+
+Guidelines:
+1. Use simple, direct, present-tense phrasing (e.g., "Visits Kadawatha hotel and checks the kitchen.", "Finds dirty drain and gives a 7-day notice.", "Checks 5 houses for dengue larvae and finds none.", "Meets MOH for weekly update.").
+2. Keep sentences short, simple, and easy to read/write by hand.
+3. Make one clear bullet point per duty/action starting with •.
+4. Keep all specific names, places, counts, numbers, and times exactly as given.
+5. Output ONLY the plain bullet points. Do not include any greeting, intro, or explanation.
 
 Raw Field Note:
 ${rawText}`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
   const response = await fetchGeminiWithRetry(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
   });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data?.error?.message || "Formatting failed.");
-  return data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("").trim();
+  let data;
+  try { data = await response.json(); }
+  catch { throw new Error("Gemini returned an invalid response."); }
+  if (!response.ok) throw new Error("Gemini API: " + (data?.error?.message || `HTTP ${response.status}`));
+
+  const text = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
+  if (!text) throw new Error("Gemini returned no text.");
+  return text;
 }
 
-// Voice recording
-let voiceRecorder = null, voiceStream = null, voiceChunks = [];
-window.toggleMic = async function () {
-  if (voiceRecorder && voiceRecorder.state !== "inactive") {
-    voiceRecorder.stop();
+// ================= SAVE NEW LOG =================
+window.saveLog = async function () {
+  if (editingLogId) {
+    await updateExistingLog();
     return;
   }
-  try {
-    voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mime = getSupportedMediaMimeType("audio");
-    voiceRecorder = new MediaRecorder(voiceStream, mime ? { mimeType: mime } : {});
-    voiceChunks = [];
 
-    voiceRecorder.ondataavailable = e => { if (e.data?.size) voiceChunks.push(e.data); };
-    voiceRecorder.onstop = async () => {
-      const blob = new Blob(voiceChunks, { type: mime || "audio/webm" });
-      if (voiceStream) voiceStream.getTracks().forEach(t => t.stop());
-      $("micBtn").classList.remove("bg-red-500", "text-white", "animate-pulse");
-      setStatus("Converting voice with Gemini...", "normal");
-
-      try {
-        const text = await transcribeRecordedAudio(blob);
-        const note = $("rawNote");
-        note.value = note.value ? note.value + " " + text : text;
-        setStatus("Voice converted successfully!", "success");
-      } catch (err) {
-        setStatus(err.message, "error");
-      }
-    };
-
-    voiceRecorder.start(250);
-    $("micBtn").classList.add("bg-red-500", "text-white", "animate-pulse");
-    setStatus("Recording voice... speak now.", "success");
-  } catch (err) {
-    setStatus("Microphone permission error: " + err.message, "error");
-  }
-};
-
-// Document & GPS Handlers
-window.openImportPicker = () => { rememberNoteCursor(); $("documentInput").click(); };
-window.handleDocumentImport = async function (e) {
-  const file = e.target.files?.[0];
-  e.target.value = "";
-  if (!file) return;
-
-  rememberNoteCursor();
-  try {
-    setStatus("Reading file...", "normal");
-    let text = "";
-    if (file.type.startsWith("image/") || file.type === "application/pdf") {
-      text = await extractVisionText(file);
-    } else if (file.name.endsWith(".docx") && window.mammoth) {
-      const res = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
-      text = res.value;
-    } else {
-      text = await file.text();
-    }
-    insertTextAtSavedCursor(text);
-    setStatus("Text imported successfully!", "success");
-  } catch (err) {
-    setStatus(err.message, "error");
-  }
-};
-
-window.insertCurrentLocation = function () {
-  rememberNoteCursor();
-  if (!navigator.geolocation) return setStatus("GPS not supported.", "error");
-  setStatus("Getting GPS fix...", "normal");
-
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const txt = `📍 Location: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)} (±${Math.round(pos.coords.accuracy)} m)`;
-      insertTextAtSavedCursor(txt);
-      setStatus("GPS added!", "success");
-    },
-    err => setStatus("GPS error: " + err.message, "error"),
-    { enableHighAccuracy: true, timeout: 15000 }
-  );
-};
-
-// ================= SAVE & FIRESTORE =================
-window.setSession = function (session) {
-  selectedSession = session;
-  ["FN", "AN", "FULL"].forEach(type => {
-    $("btn-" + type).className = "flex-1 py-2 text-xs font-semibold rounded-lg border transition " +
-      (type === session
-        ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
-        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700");
-  });
-};
-
-window.saveLog = async function () {
   const input = $("rawNote");
   const rawText = input.value.trim();
   const dutyDate = $("entryDate").value || getTodayISO();
 
   if (!rawText && !pendingMediaAttachments.length) {
-    return setStatus("Please add notes or media attachments first.", "error");
+    return setStatus(
+      "Type or record a note, or add a separate audio/video/photo attachment first.",
+      "error"
+    );
   }
 
   const saveBtn = $("saveBtn");
   saveBtn.disabled = true;
-  setStatus("Formatting and saving note...", "normal");
+  saveBtn.classList.add("opacity-60", "cursor-not-allowed");
+  setStatus(rawText ? "Processing with Gemini AI..." : "Saving field media...");
 
   let uploadedAttachments = [];
+
   try {
+    // Existing text formatting stays exactly as before when there is text.
     const formattedLog = rawText
       ? await formatWithGemini(rawText, selectedSession)
       : "• Field media attached to this daily note.";
 
+    // Create the Firestore id first so Storage files have a stable folder.
     const logRef = doc(collection(db, "phi_pocket_logs"));
-    uploadedAttachments = await uploadPendingMediaAttachments(logRef.id);
+
+    uploadedAttachments =
+      await uploadPendingMediaAttachments(logRef.id);
 
     await setDoc(logRef, {
       raw: rawText,
@@ -589,77 +1537,291 @@ window.saveLog = async function () {
       session: selectedSession,
       dutyDate,
       timestamp: serverTimestamp(),
-      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timeStr: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      }),
       attachments: uploadedAttachments
     });
 
     input.value = "";
     clearPendingMediaAttachments();
+
+    $("filterDate").value = dutyDate;
     setStatus("Saved successfully!", "success");
     loadLogsForDate(dutyDate);
   } catch (error) {
     await deleteStoredMediaAttachments(uploadedAttachments);
-    setStatus(error.message, "error");
+    console.error(error);
+    setStatus(error.message || "Save failed.", "error");
   } finally {
     saveBtn.disabled = false;
+    saveBtn.classList.remove("opacity-60", "cursor-not-allowed");
   }
 };
 
-window.copyText = async (txt, btn) => {
-  await navigator.clipboard.writeText(txt);
-  btn.textContent = "Copied";
-  setTimeout(() => btn.textContent = "Copy", 1200);
+// ================= COPY =================
+window.copyText = async function (text, button) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const old = button.textContent;
+    button.textContent = "Copied";
+    setTimeout(() => button.textContent = old, 1200);
+  } catch {
+    setStatus("Copy failed. Browser permission may be blocking clipboard access.", "error");
+  }
 };
 
-window.deleteLog = async (id, atts) => {
-  if (confirm("Delete this log?")) {
+// ================= DELETE =================
+window.deleteLog = async function (id, attachments = []) {
+  if (!id) return;
+  const ok = confirm("Delete this Pocket Note permanently?\n\nThis cannot be undone.");
+  if (!ok) return;
+
+  try {
     await deleteDoc(doc(db, "phi_pocket_logs", id));
-    await deleteStoredMediaAttachments(atts);
-    loadLogsForDate($("filterDate").value || getTodayISO());
+    await deleteStoredMediaAttachments(attachments);
+    setStatus("Log deleted successfully.", "success");
+  } catch (error) {
+    console.error(error);
+    setStatus("Delete failed: " + (error.message || error), "error");
   }
 };
+
+// ================= EDIT =================
+window.editLog = function (item) {
+  editingLogId = item.id;
+  $("editRaw").value = item.raw || "";
+  $("editFormatted").value = item.formatted || "";
+  $("editDate").value = item.dutyDate || getTodayISO();
+  $("editSession").value = item.session || "FN";
+  $("editModal").classList.remove("hidden");
+  document.body.classList.add("overflow-hidden");
+};
+
+window.closeEditModal = function () {
+  editingLogId = null;
+  $("editModal").classList.add("hidden");
+  document.body.classList.remove("overflow-hidden");
+};
+
+window.updateExistingLog = async function () {
+  if (!editingLogId) return;
+
+  const raw = $("editRaw").value.trim();
+  const formatted = $("editFormatted").value.trim();
+  const dutyDate = $("editDate").value || getTodayISO();
+  const session = $("editSession").value;
+
+  if (!raw) return setEditStatus("Raw note cannot be empty.", true);
+  if (!formatted) return setEditStatus("Formatted note cannot be empty.", true);
+
+  const btn = $("updateEditBtn");
+  btn.disabled = true;
+  btn.classList.add("opacity-60", "cursor-not-allowed");
+
+  try {
+    await updateDoc(doc(db, "phi_pocket_logs", editingLogId), {
+      raw,
+      formatted,
+      dutyDate,
+      session,
+      editedAt: serverTimestamp()
+    });
+
+    closeEditModal();
+    $("filterDate").value = dutyDate;
+    loadLogsForDate(dutyDate);
+    setStatus("Log updated successfully.", "success");
+  } catch (error) {
+    console.error(error);
+    setEditStatus("Update failed: " + (error.message || error), true);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("opacity-60", "cursor-not-allowed");
+  }
+};
+
+function setEditStatus(message, error = false) {
+  $("editStatus").textContent = message || "";
+  $("editStatus").className = "text-xs " + (error ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400");
+}
+
+// ================= LOG RENDERING =================
+function getSessionInfo(session) {
+  if (session === "AN") return { name: "Afternoon (AN)", cls: "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800" };
+  if (session === "FULL") return { name: "Full Day", cls: "bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800" };
+  return { name: "Morning (FN)", cls: "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800" };
+}
 
 function createLogCard(item) {
   const card = document.createElement("div");
-  card.className = "bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm";
+  card.className = "bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition hover:shadow-md";
 
-  const sessName = item.session === "AN" ? "Afternoon (AN)" : item.session === "FULL" ? "Full Day" : "Morning (FN)";
-  card.innerHTML = `
-    <div class="flex items-center justify-between mb-2 gap-2">
-      <span class="text-xs font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200">${sessName}</span>
-      <span class="text-xs text-slate-400 font-medium">${item.dutyDate || ""} • ${item.timeStr || ""}</span>
-    </div>
-    <div class="text-slate-800 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed bg-slate-50 dark:bg-slate-800/70 p-3 rounded-lg border border-slate-100 dark:border-slate-700">${item.formatted || ""}</div>
-    <div class="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700 gap-2">
-      <span class="truncate text-xs text-slate-400 max-w-[160px]">Raw: ${item.raw || ""}</span>
-      <div class="flex gap-1.5 ml-auto">
-        <button onclick="copyText('${(item.formatted || '').replace(/'/g, "\\'")}', this)" class="text-emerald-700 text-xs bg-emerald-50 px-2 py-1 rounded">Copy</button>
-        <button onclick="deleteLog('${item.id}', ${JSON.stringify(item.attachments || [])})" class="text-red-700 text-xs bg-red-50 px-2 py-1 rounded">Delete</button>
-      </div>
-    </div>
-  `;
+  const header = document.createElement("div");
+  header.className = "flex items-center justify-between mb-2 gap-2";
+  const session = getSessionInfo(item.session);
+
+  const badge = document.createElement("span");
+  badge.className = "text-xs font-semibold px-2 py-0.5 rounded-full border " + session.cls;
+  badge.textContent = session.name;
+
+  const date = document.createElement("span");
+  date.className = "text-xs text-slate-400 dark:text-slate-500 font-medium text-right";
+  date.textContent = `${item.dutyDate || ""} • ${item.timeStr || ""}`;
+  header.append(badge, date);
+
+  const formatted = document.createElement("div");
+  formatted.className = "text-slate-800 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed font-medium bg-slate-50 dark:bg-slate-800/70 p-3 rounded-lg border border-slate-100 dark:border-slate-700";
+  formatted.textContent = item.formatted || "";
+
+  // Render NEW field-media attachments. Existing notes without attachments still work.
+  const attachments = Array.isArray(item.attachments) ? item.attachments : [];
+
+  if (attachments.length) {
+    const attachWrap = document.createElement("div");
+    attachWrap.className = "mt-2.5 space-y-2";
+
+    attachments.forEach(att => {
+      if (att.type === "image" && att.url) {
+        const box = document.createElement("div");
+        box.className = "rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800";
+
+        const img = document.createElement("img");
+        img.src = att.url;
+        img.alt = att.name || "Field photo";
+        img.loading = "lazy";
+        img.className = "w-full max-h-64 object-contain cursor-pointer";
+        img.addEventListener("click", () => {
+          window.open(att.url, "_blank", "noopener");
+        });
+
+        box.appendChild(img);
+        attachWrap.appendChild(box);
+
+      } else if (att.type === "audio" && att.url) {
+        const box = document.createElement("div");
+        box.className =
+          "flex items-center gap-2 p-2 rounded-lg bg-slate-100 " +
+          "dark:bg-slate-800 border border-slate-200 dark:border-slate-700";
+
+        const icon = document.createElement("i");
+        icon.className = "ph ph-waveform text-emerald-600 text-lg";
+
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.preload = "metadata";
+        audio.src = att.url;
+        audio.className = "w-full h-9";
+
+        box.append(icon, audio);
+        attachWrap.appendChild(box);
+
+      } else if (att.type === "video" && att.url) {
+        const box = document.createElement("div");
+        box.className =
+          "rounded-lg overflow-hidden border border-slate-200 " +
+          "dark:border-slate-700 bg-slate-100 dark:bg-slate-800";
+
+        const video = document.createElement("video");
+        video.controls = true;
+        video.preload = "metadata";
+        video.playsInline = true;
+        video.src = att.url;
+        video.className = "w-full max-h-72 object-contain";
+
+        box.appendChild(video);
+        attachWrap.appendChild(box);
+      }
+    });
+
+    card.appendChild(attachWrap);
+  }
+
+  const footer = document.createElement("div");
+  footer.className = "flex flex-wrap justify-between items-center mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700 gap-2";
+
+  const raw = document.createElement("span");
+  raw.className = "truncate text-xs text-slate-400 dark:text-slate-500 max-w-[160px]";
+  raw.title = item.raw || "";
+  raw.textContent = "Input: " + (item.raw || "");
+
+  const actions = document.createElement("div");
+  actions.className = "flex items-center gap-1.5 ml-auto";
+
+  const copyBtn = document.createElement("button");
+  copyBtn.className = "text-emerald-700 dark:text-emerald-300 font-semibold text-xs bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1.5 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/50";
+  copyBtn.innerHTML = '<i class="ph ph-copy"></i> Copy';
+  copyBtn.addEventListener("click", () => copyText(item.formatted || "", copyBtn));
+
+  const editBtn = document.createElement("button");
+  editBtn.className = "text-blue-700 dark:text-blue-300 font-semibold text-xs bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1.5 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50";
+  editBtn.innerHTML = '<i class="ph ph-pencil-simple"></i> Edit';
+  editBtn.addEventListener("click", () => editLog(item));
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "text-red-700 dark:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/30 px-2.5 py-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50";
+  deleteBtn.innerHTML = '<i class="ph ph-trash"></i> Delete';
+  deleteBtn.addEventListener("click", () => deleteLog(item.id, item.attachments || []));
+
+  actions.append(copyBtn, editBtn, deleteBtn);
+  footer.append(raw, actions);
+  card.append(header, formatted, footer);
   return card;
 }
 
-window.loadLogsForDate = function (dateFilter) {
-  if (unsubscribeSnapshot) unsubscribeSnapshot();
-  let q = dateFilter && dateFilter !== "ALL"
-    ? query(collection(db, "phi_pocket_logs"), where("dutyDate", "==", dateFilter))
-    : query(collection(db, "phi_pocket_logs"), orderBy("timestamp", "desc"));
+// ================= LOAD LOGS =================
+window.loadLogsForDate = function (dateFilter = null) {
+  if (unsubscribeSnapshot) {
+    unsubscribeSnapshot();
+    unsubscribeSnapshot = null;
+  }
 
-  unsubscribeSnapshot = onSnapshot(q, snap => {
+  let q;
+  if (dateFilter && dateFilter !== "ALL") {
+    q = query(collection(db, "phi_pocket_logs"), where("dutyDate", "==", dateFilter));
+  } else {
+    q = query(collection(db, "phi_pocket_logs"), orderBy("timestamp", "desc"));
+  }
+
+  unsubscribeSnapshot = onSnapshot(q, snapshot => {
     const list = $("logsList");
     list.innerHTML = "";
-    if (snap.empty) {
-      list.innerHTML = '<div class="text-center py-6 text-slate-400 text-xs">සටහන් කිසිවක් නැත.</div>';
+
+    const items = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+    if (dateFilter && dateFilter !== "ALL") {
+      items.sort((a, b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0));
+    }
+
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "text-center py-8 text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700";
+      empty.textContent = "තෝරාගත් දිනය සඳහා සටහන් කිසිවක් නැත.";
+      list.appendChild(empty);
       return;
     }
-    snap.docs.forEach(d => list.appendChild(createLogCard({ id: d.id, ...d.data() })));
+
+    items.forEach(item => list.appendChild(createLogCard(item)));
+  }, error => {
+    console.error("Firestore error:", error);
+    const list = $("logsList");
+    list.innerHTML = "";
+    const box = document.createElement("div");
+    box.className = "p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs";
+    box.textContent = "Firestore error: " + (error.message || error.code);
+    list.appendChild(box);
+    setStatus("Firestore error: " + (error.message || error.code), "error");
   });
 };
 
-window.onFilterChange = () => loadLogsForDate($("filterDate").value || "ALL");
-window.showAllLogs = () => loadLogsForDate("ALL");
+window.onFilterChange = function () {
+  const date = $("filterDate").value;
+  loadLogsForDate(date || "ALL");
+};
+window.showAllLogs = function () {
+  $("filterDate").value = "";
+  loadLogsForDate("ALL");
+};
 
 window.addEventListener("DOMContentLoaded", () => {
   const today = getTodayISO();
@@ -668,96 +1830,208 @@ window.addEventListener("DOMContentLoaded", () => {
   updateKeyStatus();
   setSession("FN");
   loadLogsForDate(today);
-
-  ["keyup", "click", "focus", "select", "input"].forEach(evt => {
-    $("rawNote")?.addEventListener(evt, rememberNoteCursor);
-  });
 });
 </script>
 </head>
 
-<body class="bg-slate-100 dark:bg-slate-950 min-h-screen p-4 max-w-md mx-auto text-slate-800 dark:text-slate-100 font-sans pb-16">
+<body class="bg-slate-100 dark:bg-slate-950 min-h-screen p-4 max-w-md mx-auto text-slate-800 dark:text-slate-100 font-sans pb-16 transition-colors duration-200">
 
 <header class="mb-4 text-center relative">
-  <button onclick="toggleTheme()" class="absolute right-0 top-0 w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center">
+  <button onclick="toggleTheme()" title="Toggle dark mode" class="absolute right-0 top-0 w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-sm flex items-center justify-center hover:scale-105 transition">
     <i id="themeIcon" class="ph ph-moon"></i>
   </button>
+
   <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded-full text-xs font-bold mb-1">
     <i class="ph ph-notebook"></i> Health 253 Assistant
   </div>
   <h1 class="text-lg font-bold text-slate-900 dark:text-white">PHI Pocket Log Portal</h1>
+  <p class="text-xs text-slate-500 dark:text-slate-400">Live Voice to Simple English Sync</p>
 </header>
 
 <!-- API KEY -->
 <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-4">
   <div class="flex items-center justify-between mb-2">
-    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Gemini API Key</label>
+    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Gemini API Key</label>
     <span id="keyStatus" class="text-[10px] text-slate-400"></span>
   </div>
   <div class="flex gap-2">
-    <input id="geminiKey" type="password" placeholder="Paste Gemini API key" class="flex-1 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800">
-    <button onclick="saveApiKey()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-lg">Save</button>
-    <button onclick="clearApiKey()" class="bg-slate-100 dark:bg-slate-800 text-xs px-3 py-2 rounded-lg">Clear</button>
+    <input id="geminiKey" type="password" autocomplete="off" placeholder="Paste new Gemini API key" class="flex-1 min-w-0 text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-emerald-500">
+    <button onclick="saveApiKey()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg">Save</button>
+    <button onclick="clearApiKey()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold px-3 py-2 rounded-lg">Clear</button>
   </div>
+  <p class="text-[10px] text-slate-400 mt-2">For local/testing use. For a public website, move Gemini calls to a backend/Cloud Function.</p>
 </div>
 
-<!-- FORM -->
+<!-- DUTY FORM -->
 <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-5">
   <div class="flex items-center justify-between mb-2">
-    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Duty Details</label>
-    <input type="date" id="entryDate" class="text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-800">
+    <label class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Duty Details</label>
+    <div class="flex items-center gap-1">
+      <span class="text-xs text-slate-400">Date:</span>
+      <input type="date" id="entryDate" class="text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500">
+    </div>
   </div>
 
   <div class="flex gap-2 mb-3">
-    <button type="button" id="btn-FN" onclick="setSession('FN')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">🌅 Morning</button>
-    <button type="button" id="btn-AN" onclick="setSession('AN')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">🌇 Afternoon</button>
+    <button type="button" id="btn-FN" onclick="setSession('FN')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">🌅 Morning (FN)</button>
+    <button type="button" id="btn-AN" onclick="setSession('AN')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">🌇 Afternoon (AN)</button>
     <button type="button" id="btn-FULL" onclick="setSession('FULL')" class="flex-1 py-2 text-xs font-semibold rounded-lg border">📅 Full Day</button>
   </div>
 
+  <!-- Note Area & Controls -->
   <div class="relative">
-    <textarea id="rawNote" rows="5" class="w-full p-3 pr-24 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800 outline-none" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
+    <textarea id="rawNote" rows="5" class="w-full p-3 pr-24 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
     
+    <!-- Voice Controls -->
     <div class="absolute right-2 bottom-2.5 flex items-center gap-1 bg-slate-50 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-      <button type="button" onclick="openImportPicker()" class="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-700 rounded-full" title="File OCR"><i class="ph ph-file-image"></i></button>
-      <button type="button" onclick="insertCurrentLocation()" class="p-2 bg-amber-100 dark:bg-amber-900/40 text-amber-700 rounded-full" title="GPS"><i class="ph ph-map-pin"></i></button>
-      <select id="micLang" class="text-[10px] bg-transparent outline-none max-w-[65px]">
+      <button type="button" onclick="openImportPicker()" class="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 rounded-full transition cursor-pointer" title="Add image/document and extract text">
+        <i class="ph ph-file-image text-base"></i>
+      </button>
+
+      <button type="button" onclick="insertCurrentLocation()" class="p-2 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 rounded-full transition cursor-pointer" title="Add current GPS coordinates">
+        <i class="ph ph-map-pin text-base"></i>
+      </button>
+
+      <select id="micLang" class="text-[10px] bg-transparent text-slate-600 dark:text-slate-300 outline-none px-1 cursor-pointer max-w-[68px]">
         <option value="si-LK">සිංහල</option>
         <option value="en-US">English</option>
       </select>
-      <button type="button" id="micBtn" onclick="toggleMic()" class="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 rounded-full" title="Voice"><i class="ph ph-microphone"></i></button>
+
+      <button type="button" id="micBtn" onclick="toggleMic()" class="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 rounded-full transition cursor-pointer" title="Record voice and convert to text">
+        <i class="ph ph-microphone text-base"></i>
+      </button>
+
+      <!-- Existing text/GPS controls remain unchanged -->
     </div>
   </div>
 
+  <!-- Separate Field Media box: new attachment options only -->
   <div class="mt-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
-    <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">Field Media Attachments</span>
-    <div class="grid grid-cols-3 gap-2 mt-2">
-      <button type="button" id="attachAudioBtn" onclick="toggleAttachmentAudio()" class="py-2.5 px-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-semibold">🎙️ Audio</button>
-      <button type="button" id="attachVideoBtn" onclick="toggleAttachmentVideo()" class="py-2.5 px-2 rounded-xl border border-purple-200 bg-purple-50 text-purple-700 text-xs font-semibold">🎥 Video</button>
-      <button type="button" onclick="openPhotoAttachmentPicker()" class="py-2.5 px-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-semibold">📷 Photo</button>
+    <div class="flex items-center gap-1.5 mb-2">
+      <i class="ph ph-paperclip text-slate-500 dark:text-slate-400"></i>
+      <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">Field Media Attachments</span>
+      <span class="text-[10px] text-slate-400 dark:text-slate-500">(new options)</span>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2">
+      <button type="button" id="attachAudioBtn" onclick="toggleAttachmentAudio()" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition" title="Record audio attachment">
+        <i class="ph ph-microphone text-lg"></i>
+        <span class="text-[10px] font-semibold">Audio</span>
+      </button>
+
+      <button type="button" id="attachVideoBtn" onclick="toggleAttachmentVideo()" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition" title="Record video attachment">
+        <i class="ph ph-video-camera text-lg"></i>
+        <span class="text-[10px] font-semibold">Video</span>
+      </button>
+
+      <button type="button" onclick="openPhotoAttachmentPicker()" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition" title="Take or attach field photo">
+        <i class="ph ph-camera text-lg"></i>
+        <span class="text-[10px] font-semibold">Photo</span>
+      </button>
     </div>
   </div>
 
-  <input id="documentInput" type="file" class="hidden" accept="image/*,application/pdf,.docx,.txt" onchange="handleDocumentImport(event)" />
-  <input id="photoAttachmentInput" type="file" class="hidden" accept="image/*" capture="environment" onchange="handlePhotoAttachment(event)" />
+  <input
+    id="documentInput"
+    type="file"
+    class="hidden"
+    accept="image/*,application/pdf,.pdf,.docx,.txt,.csv,.json"
+    onchange="handleDocumentImport(event)"
+  />
+
+  <!-- NEW: separate photo attachment input; NO OCR -->
+  <input
+    id="photoAttachmentInput"
+    type="file"
+    class="hidden"
+    accept="image/*"
+    capture="environment"
+    onchange="handlePhotoAttachment(event)"
+  />
+
+  <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
+    <i class="ph ph-info"></i>
+    📄 Image/PDF/DOCX → text • 📍 GPS → coordinates • Imported text is inserted at the cursor
+  </div>
 
   <div id="pendingMediaAttachments" class="hidden mt-2 space-y-1"></div>
-  <div id="mediaStatus" class="text-[10px] text-slate-400 mt-1"></div>
+  <div id="mediaStatus" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1"></div>
 
   <div class="flex justify-between items-center mt-3 gap-2">
-    <span id="status" class="text-xs font-medium text-slate-500"></span>
-    <button id="saveBtn" onclick="saveLog()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm shadow-sm flex items-center gap-1.5">
+    <span id="status" class="text-xs font-medium text-slate-500 dark:text-slate-400"></span>
+    <button id="saveBtn" onclick="saveLog()" class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-1.5">
       <i class="ph ph-paper-plane-right"></i> Format & Save
     </button>
   </div>
 </div>
 
-<!-- HISTORY -->
-<div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 mb-4 flex items-center justify-between gap-2">
-  <input type="date" id="filterDate" onchange="onFilterChange()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-800 flex-1">
-  <button onclick="showAllLogs()" class="text-xs font-semibold px-2.5 py-1 rounded-lg border">All Logs</button>
+<!-- FILTER -->
+<div class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-4">
+  <div class="flex items-center justify-between gap-2">
+    <div class="flex items-center gap-1.5 flex-1">
+      <i class="ph ph-calendar text-emerald-600 text-base"></i>
+      <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Filter Date:</span>
+      <input type="date" id="filterDate" onchange="onFilterChange()" class="text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500 flex-1">
+    </div>
+    <button onclick="showAllLogs()" class="text-xs font-semibold text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-white bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 transition">All Logs</button>
+  </div>
 </div>
 
-<div id="logsList" class="space-y-3"></div>
+<!-- HISTORY -->
+<div>
+  <div class="flex justify-between items-center mb-2 px-1 gap-2">
+    <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300">Pocket Note History</h2>
+    <span class="text-xs text-slate-400 dark:text-slate-500 text-right">Ready to write in Health 253</span>
+  </div>
+  <div id="logsList" class="space-y-3"></div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+  <div class="max-w-md mx-auto mt-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+      <div>
+        <h3 class="font-bold text-slate-900 dark:text-white">Edit Pocket Note</h3>
+        <p class="text-[11px] text-slate-400">Change the saved data and press Update.</p>
+      </div>
+      <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">✕</button>
+    </div>
+
+    <div class="p-4 space-y-3">
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Date</label>
+          <input id="editDate" type="date" class="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+        </div>
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Session</label>
+          <select id="editSession" class="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+            <option value="FN">Morning (FN)</option>
+            <option value="AN">Afternoon (AN)</option>
+            <option value="FULL">Full Day</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Original / Raw Note</label>
+        <textarea id="editRaw" rows="4" class="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-xl p-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Official Formatted Note</label>
+        <textarea id="editFormatted" rows="7" class="w-full text-sm border border-slate-200 dark:border-slate-700 rounded-xl p-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+      </div>
+
+      <div id="editStatus" class="text-xs"></div>
+
+      <div class="flex gap-2 pt-1">
+        <button onclick="closeEditModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-sm">Cancel</button>
+        <button id="updateEditBtn" onclick="updateExistingLog()" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm"><i class="ph ph-check"></i> Update</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
