@@ -946,7 +946,6 @@ window.saveLog = async function () {
       timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     });
     input.value = "";
-    finalTranscript = "";
     $("filterDate").value = dutyDate;
     setStatus("Saved successfully!", "success");
     loadLogsForDate(dutyDate);
