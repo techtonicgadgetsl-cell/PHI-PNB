@@ -30,13 +30,6 @@ import {
   updateDoc,
   doc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // ================= FIREBASE CONFIG =================
 const firebaseConfig = {
@@ -50,16 +43,85 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const GEMINI_MODEL = "gemini-3.7-flash";
+const GEMINI_FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite"];
+const GEMINI_RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function callGeminiGenerateContent(body) {
+  if (!geminiApiKey) {
+    throw new Error("Gemini API key is not set. Open API Key, paste your key and save it.");
+  }
+
+  const models = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS];
+  let lastError = null;
+
+  for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
+    const model = models[modelIndex];
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      let response;
+      let data = null;
+
+      try {
+        response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          }
+        );
+      } catch (networkError) {
+        lastError = networkError;
+        if (attempt < 2) {
+          const delay = 1500 * Math.pow(2, attempt) + Math.floor(Math.random() * 500);
+          await sleep(delay);
+          continue;
+        }
+        break;
+      }
+
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
+
+      if (response.ok) return data;
+
+      const message = data?.error?.message || `HTTP ${response.status}`;
+      lastError = new Error(`Gemini API (${model}): ${message}`);
+
+      // These errors are often temporary. Retry before switching models.
+      if (GEMINI_RETRYABLE_STATUS.has(response.status)) {
+        if (attempt < 2) {
+          const delay = 1500 * Math.pow(2, attempt) + Math.floor(Math.random() * 500);
+          await sleep(delay);
+          continue;
+        }
+        // 3 attempts failed: move to the next fallback model.
+        break;
+      }
+
+      // Authentication, invalid request, invalid model, etc. should not be hidden.
+      throw lastError;
+    }
+  }
+
+  console.error("Gemini temporary failure after retries:", lastError);
+  throw new Error(
+    "Gemini is temporarily busy. I retried automatically and tried fallback models. Please wait a few seconds and try again."
+  );
+}
+
 let geminiApiKey = sessionStorage.getItem("phi_gemini_api_key") || "";
 let selectedSession = "FN";
 let unsubscribeSnapshot = null;
 let editingLogId = null;
-
-// NEW: separate field-media attachments.
-// These do NOT change the existing Gemini voice-to-text or image-to-text tools.
-let pendingMediaAttachments = [];
 
 const $ = id => document.getElementById(id);
 const getTodayISO = () => new Date().toISOString().slice(0, 10);
@@ -116,542 +178,6 @@ window.clearApiKey = function () {
   setStatus("Gemini API key cleared.");
 };
 
-
-// ================= FIELD MEDIA ATTACHMENTS =================
-// Existing tools remain unchanged:
-// 🎙️ Existing Mic = record voice -> Gemini transcription -> text in note.
-// 📄 Existing Image/PDF/DOCX = extract text -> text in note.
-//
-// New separate tools:
-// 🎙️ Audio Attachment = record audio only and attach it.
-// 🎥 Video Attachment = record video + microphone and attach it.
-// 📷 Photo Attachment = take/select photo and attach it (NO OCR).
-
-function formatMediaSize(bytes) {
-  if (!bytes) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0)} ${units[i]}`;
-}
-
-function setMediaStatus(message = "", type = "normal") {
-  const el = $("mediaStatus");
-  if (!el) return;
-  el.textContent = message;
-  el.className =
-    "text-[10px] mt-1 " +
-    (type === "error"
-      ? "text-red-600 dark:text-red-400"
-      : type === "success"
-        ? "text-emerald-600 dark:text-emerald-400"
-        : "text-slate-400 dark:text-slate-500");
-}
-
-function renderPendingMediaAttachments() {
-  const wrap = $("pendingMediaAttachments");
-  if (!wrap) return;
-
-  wrap.innerHTML = "";
-
-  if (!pendingMediaAttachments.length) {
-    wrap.classList.add("hidden");
-    return;
-  }
-
-  wrap.classList.remove("hidden");
-
-  pendingMediaAttachments.forEach((item, index) => {
-    const row = document.createElement("div");
-    row.className =
-      "flex items-center gap-2 px-2.5 py-2 rounded-lg " +
-      "bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs";
-
-    const icon = document.createElement("i");
-    icon.className =
-      "ph " +
-      (item.type === "video"
-        ? "ph-video-camera"
-        : item.type === "audio"
-          ? "ph-waveform"
-          : "ph-camera") +
-      " text-emerald-600 text-base shrink-0";
-
-    const info = document.createElement("div");
-    info.className = "min-w-0 flex-1";
-
-    const name = document.createElement("div");
-    name.className = "font-semibold truncate";
-    name.textContent = item.name || `${item.type} attachment`;
-
-    const size = document.createElement("div");
-    size.className = "text-[10px] text-slate-400";
-    size.textContent = formatMediaSize(item.blob?.size || item.size || 0);
-
-    info.append(name, size);
-
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className =
-      "p-1.5 rounded-full text-red-500 hover:bg-red-100 " +
-      "dark:hover:bg-red-900/30 shrink-0";
-    remove.title = "Remove attachment";
-    remove.innerHTML = '<i class="ph ph-x"></i>';
-    remove.addEventListener("click", () => {
-      pendingMediaAttachments.splice(index, 1);
-      renderPendingMediaAttachments();
-      setMediaStatus("");
-    });
-
-    row.append(icon, info, remove);
-    wrap.appendChild(row);
-  });
-}
-
-function addPendingMedia(blob, type, name) {
-  if (!blob || !blob.size) {
-    setMediaStatus("No media was captured.", "error");
-    return;
-  }
-
-  pendingMediaAttachments.push({
-    type,
-    name,
-    blob,
-    size: blob.size,
-    contentType: blob.type || "application/octet-stream"
-  });
-
-  renderPendingMediaAttachments();
-
-  const label =
-    type === "video" ? "🎥 Video" :
-    type === "audio" ? "🎙️ Audio" :
-    "📷 Photo";
-
-  setMediaStatus(`${label} attached to this daily note.`, "success");
-}
-
-function clearPendingMediaAttachments() {
-  pendingMediaAttachments = [];
-  renderPendingMediaAttachments();
-  setMediaStatus("");
-}
-
-async function uploadPendingMediaAttachments(logId) {
-  if (!pendingMediaAttachments.length) return [];
-
-  const uploaded = [];
-
-  try {
-    for (const item of pendingMediaAttachments) {
-      const safeName = String(item.name || `${item.type}.bin`)
-        .replace(/[^a-zA-Z0-9._-]+/g, "_")
-        .slice(-100);
-
-      const storagePath =
-        `phi_pocket_attachments/${logId}/` +
-        `${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${safeName}`;
-
-      const storageRef = ref(storage, storagePath);
-
-      const snapshot = await uploadBytes(storageRef, item.blob, {
-        contentType: item.contentType || item.blob.type || "application/octet-stream"
-      });
-
-      const url = await getDownloadURL(snapshot.ref);
-
-      uploaded.push({
-        type: item.type,
-        name: item.name,
-        size: item.size || item.blob.size,
-        contentType: item.contentType || item.blob.type || "application/octet-stream",
-        url,
-        storagePath
-      });
-    }
-
-    return uploaded;
-  } catch (error) {
-    for (const item of uploaded) {
-      try {
-        await deleteObject(ref(storage, item.storagePath));
-      } catch {}
-    }
-
-    throw new Error(
-      "Media upload failed. Check Firebase Storage rules/permissions. " +
-      (error?.message || "")
-    );
-  }
-}
-
-async function deleteStoredMediaAttachments(attachments = []) {
-  for (const item of attachments || []) {
-    if (!item?.storagePath) continue;
-    try {
-      await deleteObject(ref(storage, item.storagePath));
-    } catch (error) {
-      console.warn("Could not delete media attachment:", error);
-    }
-  }
-}
-
-// ---------- Separate Audio Attachment Recorder ----------
-let attachmentAudioRecorder = null;
-let attachmentAudioStream = null;
-let attachmentAudioChunks = [];
-let attachmentAudioMimeType = "";
-
-function getSupportedAttachmentAudioMimeType() {
-  const types = [
-    "audio/webm;codecs=opus",
-    "audio/webm",
-    "audio/mp4",
-    "audio/ogg;codecs=opus"
-  ];
-
-  for (const type of types) {
-    if (
-      window.MediaRecorder &&
-      typeof MediaRecorder.isTypeSupported === "function" &&
-      MediaRecorder.isTypeSupported(type)
-    ) return type;
-  }
-
-  return "";
-}
-
-function setAttachmentAudioUI(recording) {
-  const btn = $("attachAudioBtn");
-  if (!btn) return;
-
-  if (recording) {
-    btn.classList.remove(
-      "bg-emerald-100", "dark:bg-emerald-900/50",
-      "text-emerald-700", "dark:text-emerald-300"
-    );
-    btn.classList.add("bg-red-500", "text-white", "animate-pulse");
-    btn.innerHTML = '<i class="ph ph-stop"></i>';
-    btn.title = "Stop audio attachment";
-  } else {
-    btn.classList.remove("bg-red-500", "text-white", "animate-pulse");
-    btn.classList.add(
-      "bg-emerald-100", "dark:bg-emerald-900/50",
-      "text-emerald-700", "dark:text-emerald-300"
-    );
-    btn.innerHTML = '<i class="ph ph-microphone"></i>';
-    btn.title = "Record audio attachment";
-  }
-}
-
-window.toggleAttachmentAudio = async function () {
-  if (attachmentAudioRecorder && attachmentAudioRecorder.state !== "inactive") {
-    setMediaStatus("Stopping audio recording...");
-    attachmentAudioRecorder.stop();
-    return;
-  }
-
-  const secure =
-    window.location.protocol === "https:" ||
-    window.location.hostname === "localhost";
-
-  if (!secure) {
-    setMediaStatus("Audio recording requires HTTPS.", "error");
-    return;
-  }
-
-  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-    setMediaStatus("This browser does not support audio recording.", "error");
-    return;
-  }
-
-  try {
-    attachmentAudioStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
-      }
-    });
-
-    attachmentAudioMimeType = getSupportedAttachmentAudioMimeType();
-
-    attachmentAudioRecorder = new MediaRecorder(
-      attachmentAudioStream,
-      attachmentAudioMimeType ? { mimeType: attachmentAudioMimeType } : {}
-    );
-
-    attachmentAudioChunks = [];
-
-    attachmentAudioRecorder.ondataavailable = event => {
-      if (event.data?.size) attachmentAudioChunks.push(event.data);
-    };
-
-    attachmentAudioRecorder.onerror = event => {
-      console.error("Separate audio recorder error:", event);
-      setMediaStatus("Audio recording failed. Try again.", "error");
-      if (attachmentAudioStream) {
-        attachmentAudioStream.getTracks().forEach(track => track.stop());
-        attachmentAudioStream = null;
-      }
-      attachmentAudioRecorder = null;
-      setAttachmentAudioUI(false);
-    };
-
-    attachmentAudioRecorder.onstop = () => {
-      const mime =
-        attachmentAudioMimeType ||
-        attachmentAudioChunks[0]?.type ||
-        "audio/webm";
-
-      const blob = new Blob(attachmentAudioChunks, { type: mime });
-
-      if (attachmentAudioStream) {
-        attachmentAudioStream.getTracks().forEach(track => track.stop());
-        attachmentAudioStream = null;
-      }
-
-      attachmentAudioRecorder = null;
-      attachmentAudioChunks = [];
-      setAttachmentAudioUI(false);
-
-      const ext =
-        mime.includes("mp4") ? "mp4" :
-        mime.includes("ogg") ? "ogg" : "webm";
-
-      addPendingMedia(
-        blob,
-        "audio",
-        `field-audio-${new Date().toISOString().replace(/[:.]/g, "-")}.${ext}`
-      );
-    };
-
-    attachmentAudioRecorder.start(250);
-    setAttachmentAudioUI(true);
-    setMediaStatus("🎙️ Recording field audio... press the same button to stop.");
-  } catch (error) {
-    console.error("Separate audio attachment error:", error);
-
-    if (attachmentAudioStream) {
-      attachmentAudioStream.getTracks().forEach(track => track.stop());
-      attachmentAudioStream = null;
-    }
-
-    attachmentAudioRecorder = null;
-    setAttachmentAudioUI(false);
-
-    setMediaStatus(
-      error?.name === "NotAllowedError"
-        ? "Microphone permission denied. Allow microphone access in Chrome."
-        : "Audio recording error: " + (error?.message || error),
-      "error"
-    );
-  }
-};
-
-// ---------- Separate Video Attachment Recorder ----------
-let attachmentVideoRecorder = null;
-let attachmentVideoStream = null;
-let attachmentVideoChunks = [];
-let attachmentVideoMimeType = "";
-
-function getSupportedAttachmentVideoMimeType() {
-  const types = [
-    "video/webm;codecs=vp9,opus",
-    "video/webm;codecs=vp8,opus",
-    "video/webm",
-    "video/mp4"
-  ];
-
-  for (const type of types) {
-    if (
-      window.MediaRecorder &&
-      typeof MediaRecorder.isTypeSupported === "function" &&
-      MediaRecorder.isTypeSupported(type)
-    ) return type;
-  }
-
-  return "";
-}
-
-function setAttachmentVideoUI(recording) {
-  const btn = $("attachVideoBtn");
-  if (!btn) return;
-
-  if (recording) {
-    btn.classList.remove(
-      "bg-purple-100", "dark:bg-purple-900/40",
-      "text-purple-700", "dark:text-purple-300"
-    );
-    btn.classList.add("bg-red-500", "text-white", "animate-pulse");
-    btn.innerHTML = '<i class="ph ph-stop"></i>';
-    btn.title = "Stop video attachment";
-  } else {
-    btn.classList.remove("bg-red-500", "text-white", "animate-pulse");
-    btn.classList.add(
-      "bg-purple-100", "dark:bg-purple-900/40",
-      "text-purple-700", "dark:text-purple-300"
-    );
-    btn.innerHTML = '<i class="ph ph-video-camera"></i>';
-    btn.title = "Record video attachment";
-  }
-}
-
-window.toggleAttachmentVideo = async function () {
-  if (attachmentVideoRecorder && attachmentVideoRecorder.state !== "inactive") {
-    setMediaStatus("Stopping video recording...");
-    attachmentVideoRecorder.stop();
-    return;
-  }
-
-  const secure =
-    window.location.protocol === "https:" ||
-    window.location.hostname === "localhost";
-
-  if (!secure) {
-    setMediaStatus("Video recording requires HTTPS.", "error");
-    return;
-  }
-
-  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-    setMediaStatus("This browser does not support video recording.", "error");
-    return;
-  }
-
-  try {
-    attachmentVideoStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      },
-      audio: true
-    });
-
-    attachmentVideoMimeType = getSupportedAttachmentVideoMimeType();
-
-    attachmentVideoRecorder = new MediaRecorder(
-      attachmentVideoStream,
-      attachmentVideoMimeType ? { mimeType: attachmentVideoMimeType } : {}
-    );
-
-    attachmentVideoChunks = [];
-
-    attachmentVideoRecorder.ondataavailable = event => {
-      if (event.data?.size) attachmentVideoChunks.push(event.data);
-    };
-
-    attachmentVideoRecorder.onerror = event => {
-      console.error("Separate video recorder error:", event);
-      setMediaStatus("Video recording failed. Try again.", "error");
-
-      if (attachmentVideoStream) {
-        attachmentVideoStream.getTracks().forEach(track => track.stop());
-        attachmentVideoStream = null;
-      }
-
-      attachmentVideoRecorder = null;
-      setAttachmentVideoUI(false);
-    };
-
-    attachmentVideoRecorder.onstop = () => {
-      const mime =
-        attachmentVideoMimeType ||
-        attachmentVideoChunks[0]?.type ||
-        "video/webm";
-
-      const blob = new Blob(attachmentVideoChunks, { type: mime });
-
-      if (attachmentVideoStream) {
-        attachmentVideoStream.getTracks().forEach(track => track.stop());
-        attachmentVideoStream = null;
-      }
-
-      attachmentVideoRecorder = null;
-      attachmentVideoChunks = [];
-      setAttachmentVideoUI(false);
-
-      const ext = mime.includes("mp4") ? "mp4" : "webm";
-
-      addPendingMedia(
-        blob,
-        "video",
-        `field-video-${new Date().toISOString().replace(/[:.]/g, "-")}.${ext}`
-      );
-    };
-
-    attachmentVideoRecorder.start(250);
-    setAttachmentVideoUI(true);
-    setMediaStatus("🎥 Recording field video... press the same button to stop.");
-  } catch (error) {
-    console.error("Separate video attachment error:", error);
-
-    if (attachmentVideoStream) {
-      attachmentVideoStream.getTracks().forEach(track => track.stop());
-      attachmentVideoStream = null;
-    }
-
-    attachmentVideoRecorder = null;
-    setAttachmentVideoUI(false);
-
-    setMediaStatus(
-      error?.name === "NotAllowedError"
-        ? "Camera/microphone permission denied. Allow access in Chrome."
-        : "Video recording error: " + (error?.message || error),
-      "error"
-    );
-  }
-};
-
-// ---------- Separate Photo Attachment ----------
-window.openPhotoAttachmentPicker = function () {
-  const input = $("photoAttachmentInput");
-  if (input) input.click();
-};
-
-window.handlePhotoAttachment = function (event) {
-  const file = event.target.files?.[0];
-  event.target.value = "";
-
-  if (!file) return;
-
-  if (!file.type.startsWith("image/")) {
-    setMediaStatus("Please select an image.", "error");
-    return;
-  }
-
-  addPendingMedia(
-    file,
-    "image",
-    file.name || `field-photo-${Date.now()}.jpg`
-  );
-};
-
-// Stop NEW attachment recorders when page is hidden.
-window.addEventListener("pagehide", () => {
-  try {
-    if (attachmentAudioRecorder && attachmentAudioRecorder.state !== "inactive") {
-      attachmentAudioRecorder.stop();
-    }
-  } catch {}
-
-  try {
-    if (attachmentVideoRecorder && attachmentVideoRecorder.state !== "inactive") {
-      attachmentVideoRecorder.stop();
-    }
-  } catch {}
-
-  if (attachmentAudioStream) {
-    attachmentAudioStream.getTracks().forEach(track => track.stop());
-    attachmentAudioStream = null;
-  }
-
-  if (attachmentVideoStream) {
-    attachmentVideoStream.getTracks().forEach(track => track.stop());
-    attachmentVideoStream = null;
-  }
-});
-
 // ================= SESSION =================
 window.setSession = function (session) {
   selectedSession = session;
@@ -667,34 +193,6 @@ window.setSession = function (session) {
 
 function setEditSession(session) {
   $("editSession").value = session;
-}
-
-// Retry transient Gemini errors without changing the existing voice/image-to-text behavior.
-async function fetchGeminiWithRetry(url, options, maxAttempts = 3) {
-  const retryable = new Set([429, 500, 502, 503, 504]);
-  let lastError = null;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const response = await fetch(url, options);
-      if (response.ok || !retryable.has(response.status) || attempt === maxAttempts) {
-        return response;
-      }
-
-      const delay = 1500 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 500);
-      setStatus(`Gemini is busy. Retrying automatically (${attempt}/${maxAttempts - 1})...`, "normal");
-      await new Promise(resolve => setTimeout(resolve, delay));
-    } catch (error) {
-      lastError = error;
-      if (attempt === maxAttempts) throw error;
-      const delay = 1500 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 500);
-      setStatus(`Connection problem. Retrying automatically (${attempt}/${maxAttempts - 1})...`, "normal");
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }
-
-  if (lastError) throw lastError;
-  throw new Error("Gemini request failed.");
 }
 
 // ================= REAL VOICE RECORDER + GEMINI TRANSCRIPTION =================
@@ -809,44 +307,21 @@ Rules:
 5. Do not add greetings, explanations, or commentary.
 6. Return ONLY the transcribed note text.`;
 
-  const response = await fetchGeminiWithRetry(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
+  const data = await callGeminiGenerateContent({
+    contents: [
+      {
+        parts: [
+          { text: prompt },
           {
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType: mimeType,
-                  data: base64Audio
-                }
-              }
-            ]
+            inlineData: {
+              mimeType: mimeType,
+              data: base64Audio
+            }
           }
         ]
-      })
-    }
-  );
-
-  let data;
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error("Gemini returned an invalid response.");
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      "Gemini audio transcription failed: " +
-      (data?.error?.message || `HTTP ${response.status}`)
-    );
-  }
+      }
+    ]
+  });
 
   const result = data?.candidates?.[0]?.content?.parts
     ?.map(part => part.text || "")
@@ -1174,44 +649,21 @@ Rules:
 5. Return ONLY the extracted text.
 6. If the image contains a table or list, preserve its logical order as plain text.`;
 
-  const response = await fetchGeminiWithRetry(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        contents: [
+  const data = await callGeminiGenerateContent({
+    contents: [
+      {
+        parts: [
+          { text: prompt },
           {
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType: file.type || "application/octet-stream",
-                  data: base64
-                }
-              }
-            ]
+            inlineData: {
+              mimeType: file.type || "application/octet-stream",
+              data: base64
+            }
           }
         ]
-      })
-    }
-  );
-
-  let data;
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error("Gemini returned an invalid response.");
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      data?.error?.message ||
-      `Document/image extraction failed (HTTP ${response.status}).`
-    );
-  }
+      }
+    ]
+  });
 
   const result = data?.candidates?.[0]?.content?.parts
     ?.map(part => part.text || "")
@@ -1477,19 +929,15 @@ Guidelines:
 Raw Field Note:
 ${rawText}`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
-  const response = await fetchGeminiWithRetry(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+  const data = await callGeminiGenerateContent({
+    contents: [{ parts: [{ text: prompt }] }]
   });
 
-  let data;
-  try { data = await response.json(); }
-  catch { throw new Error("Gemini returned an invalid response."); }
-  if (!response.ok) throw new Error("Gemini API: " + (data?.error?.message || `HTTP ${response.status}`));
+  const text = data?.candidates?.[0]?.content?.parts
+    ?.map(part => part.text || "")
+    .join("")
+    .trim();
 
-  const text = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
   if (!text) throw new Error("Gemini returned no text.");
   return text;
 }
@@ -1504,54 +952,28 @@ window.saveLog = async function () {
   const input = $("rawNote");
   const rawText = input.value.trim();
   const dutyDate = $("entryDate").value || getTodayISO();
-
-  if (!rawText && !pendingMediaAttachments.length) {
-    return setStatus(
-      "Type or record a note, or add a separate audio/video/photo attachment first.",
-      "error"
-    );
-  }
+  if (!rawText) return setStatus("Type or record a note first.", "error");
 
   const saveBtn = $("saveBtn");
   saveBtn.disabled = true;
   saveBtn.classList.add("opacity-60", "cursor-not-allowed");
-  setStatus(rawText ? "Processing with Gemini AI..." : "Saving field media...");
-
-  let uploadedAttachments = [];
+  setStatus("Processing with Gemini AI...");
 
   try {
-    // Existing text formatting stays exactly as before when there is text.
-    const formattedLog = rawText
-      ? await formatWithGemini(rawText, selectedSession)
-      : "• Field media attached to this daily note.";
-
-    // Create the Firestore id first so Storage files have a stable folder.
-    const logRef = doc(collection(db, "phi_pocket_logs"));
-
-    uploadedAttachments =
-      await uploadPendingMediaAttachments(logRef.id);
-
-    await setDoc(logRef, {
+    const formattedLog = await formatWithGemini(rawText, selectedSession);
+    await addDoc(collection(db, "phi_pocket_logs"), {
       raw: rawText,
       formatted: formattedLog,
       session: selectedSession,
       dutyDate,
       timestamp: serverTimestamp(),
-      timeStr: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit"
-      }),
-      attachments: uploadedAttachments
+      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     });
-
     input.value = "";
-    clearPendingMediaAttachments();
-
     $("filterDate").value = dutyDate;
     setStatus("Saved successfully!", "success");
     loadLogsForDate(dutyDate);
   } catch (error) {
-    await deleteStoredMediaAttachments(uploadedAttachments);
     console.error(error);
     setStatus(error.message || "Save failed.", "error");
   } finally {
@@ -1573,14 +995,13 @@ window.copyText = async function (text, button) {
 };
 
 // ================= DELETE =================
-window.deleteLog = async function (id, attachments = []) {
+window.deleteLog = async function (id) {
   if (!id) return;
   const ok = confirm("Delete this Pocket Note permanently?\n\nThis cannot be undone.");
   if (!ok) return;
 
   try {
     await deleteDoc(doc(db, "phi_pocket_logs", id));
-    await deleteStoredMediaAttachments(attachments);
     setStatus("Log deleted successfully.", "success");
   } catch (error) {
     console.error(error);
@@ -1675,69 +1096,6 @@ function createLogCard(item) {
   formatted.className = "text-slate-800 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed font-medium bg-slate-50 dark:bg-slate-800/70 p-3 rounded-lg border border-slate-100 dark:border-slate-700";
   formatted.textContent = item.formatted || "";
 
-  // Render NEW field-media attachments. Existing notes without attachments still work.
-  const attachments = Array.isArray(item.attachments) ? item.attachments : [];
-
-  if (attachments.length) {
-    const attachWrap = document.createElement("div");
-    attachWrap.className = "mt-2.5 space-y-2";
-
-    attachments.forEach(att => {
-      if (att.type === "image" && att.url) {
-        const box = document.createElement("div");
-        box.className = "rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800";
-
-        const img = document.createElement("img");
-        img.src = att.url;
-        img.alt = att.name || "Field photo";
-        img.loading = "lazy";
-        img.className = "w-full max-h-64 object-contain cursor-pointer";
-        img.addEventListener("click", () => {
-          window.open(att.url, "_blank", "noopener");
-        });
-
-        box.appendChild(img);
-        attachWrap.appendChild(box);
-
-      } else if (att.type === "audio" && att.url) {
-        const box = document.createElement("div");
-        box.className =
-          "flex items-center gap-2 p-2 rounded-lg bg-slate-100 " +
-          "dark:bg-slate-800 border border-slate-200 dark:border-slate-700";
-
-        const icon = document.createElement("i");
-        icon.className = "ph ph-waveform text-emerald-600 text-lg";
-
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        audio.preload = "metadata";
-        audio.src = att.url;
-        audio.className = "w-full h-9";
-
-        box.append(icon, audio);
-        attachWrap.appendChild(box);
-
-      } else if (att.type === "video" && att.url) {
-        const box = document.createElement("div");
-        box.className =
-          "rounded-lg overflow-hidden border border-slate-200 " +
-          "dark:border-slate-700 bg-slate-100 dark:bg-slate-800";
-
-        const video = document.createElement("video");
-        video.controls = true;
-        video.preload = "metadata";
-        video.playsInline = true;
-        video.src = att.url;
-        video.className = "w-full max-h-72 object-contain";
-
-        box.appendChild(video);
-        attachWrap.appendChild(box);
-      }
-    });
-
-    card.appendChild(attachWrap);
-  }
-
   const footer = document.createElement("div");
   footer.className = "flex flex-wrap justify-between items-center mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700 gap-2";
 
@@ -1762,7 +1120,7 @@ function createLogCard(item) {
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "text-red-700 dark:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/30 px-2.5 py-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50";
   deleteBtn.innerHTML = '<i class="ph ph-trash"></i> Delete';
-  deleteBtn.addEventListener("click", () => deleteLog(item.id, item.attachments || []));
+  deleteBtn.addEventListener("click", () => deleteLog(item.id));
 
   actions.append(copyBtn, editBtn, deleteBtn);
   footer.append(raw, actions);
@@ -1897,36 +1255,8 @@ window.addEventListener("DOMContentLoaded", () => {
         <option value="en-US">English</option>
       </select>
 
-      <button type="button" id="micBtn" onclick="toggleMic()" class="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 rounded-full transition cursor-pointer" title="Record voice and convert to text">
+      <button type="button" id="micBtn" onclick="toggleMic()" class="p-2 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 rounded-full transition cursor-pointer" title="Record voice">
         <i class="ph ph-microphone text-base"></i>
-      </button>
-
-      <!-- Existing text/GPS controls remain unchanged -->
-    </div>
-  </div>
-
-  <!-- Separate Field Media box: new attachment options only -->
-  <div class="mt-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
-    <div class="flex items-center gap-1.5 mb-2">
-      <i class="ph ph-paperclip text-slate-500 dark:text-slate-400"></i>
-      <span class="text-[11px] font-bold text-slate-600 dark:text-slate-300">Field Media Attachments</span>
-      <span class="text-[10px] text-slate-400 dark:text-slate-500">(new options)</span>
-    </div>
-
-    <div class="grid grid-cols-3 gap-2">
-      <button type="button" id="attachAudioBtn" onclick="toggleAttachmentAudio()" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition" title="Record audio attachment">
-        <i class="ph ph-microphone text-lg"></i>
-        <span class="text-[10px] font-semibold">Audio</span>
-      </button>
-
-      <button type="button" id="attachVideoBtn" onclick="toggleAttachmentVideo()" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition" title="Record video attachment">
-        <i class="ph ph-video-camera text-lg"></i>
-        <span class="text-[10px] font-semibold">Video</span>
-      </button>
-
-      <button type="button" onclick="openPhotoAttachmentPicker()" class="flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition" title="Take or attach field photo">
-        <i class="ph ph-camera text-lg"></i>
-        <span class="text-[10px] font-semibold">Photo</span>
       </button>
     </div>
   </div>
@@ -1939,23 +1269,10 @@ window.addEventListener("DOMContentLoaded", () => {
     onchange="handleDocumentImport(event)"
   />
 
-  <!-- NEW: separate photo attachment input; NO OCR -->
-  <input
-    id="photoAttachmentInput"
-    type="file"
-    class="hidden"
-    accept="image/*"
-    capture="environment"
-    onchange="handlePhotoAttachment(event)"
-  />
-
   <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
     <i class="ph ph-info"></i>
     📄 Image/PDF/DOCX → text • 📍 GPS → coordinates • Imported text is inserted at the cursor
   </div>
-
-  <div id="pendingMediaAttachments" class="hidden mt-2 space-y-1"></div>
-  <div id="mediaStatus" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1"></div>
 
   <div class="flex justify-between items-center mt-3 gap-2">
     <span id="status" class="text-xs font-medium text-slate-500 dark:text-slate-400"></span>
