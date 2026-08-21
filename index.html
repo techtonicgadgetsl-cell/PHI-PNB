@@ -28,8 +28,16 @@ import {
   serverTimestamp,
   deleteDoc,
   updateDoc,
-  doc
+  doc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // ================= FIREBASE CONFIG =================
 const firebaseConfig = {
@@ -43,6 +51,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const GEMINI_MODEL = "gemini-3.7-flash";
 const GEMINI_FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite"];
 const GEMINI_RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
@@ -96,18 +105,15 @@ async function callGeminiGenerateContent(body) {
       const message = data?.error?.message || `HTTP ${response.status}`;
       lastError = new Error(`Gemini API (${model}): ${message}`);
 
-      // These errors are often temporary. Retry before switching models.
       if (GEMINI_RETRYABLE_STATUS.has(response.status)) {
         if (attempt < 2) {
           const delay = 1500 * Math.pow(2, attempt) + Math.floor(Math.random() * 500);
           await sleep(delay);
           continue;
         }
-        // 3 attempts failed: move to the next fallback model.
         break;
       }
 
-      // Authentication, invalid request, invalid model, etc. should not be hidden.
       throw lastError;
     }
   }
@@ -122,6 +128,7 @@ let geminiApiKey = sessionStorage.getItem("phi_gemini_api_key") || "";
 let selectedSession = "FN";
 let unsubscribeSnapshot = null;
 let editingLogId = null;
+let pendingGeneralFiles = [];
 
 const $ = id => document.getElementById(id);
 const getTodayISO = () => new Date().toISOString().slice(0, 10);
@@ -148,6 +155,16 @@ function setStatus(message, type = "normal") {
   el.className = "text-xs font-medium " +
     (type === "error" ? "text-red-600 dark:text-red-400" :
      type === "success" ? "text-emerald-600 dark:text-emerald-400" :
+     "text-slate-500 dark:text-slate-400");
+}
+
+function setAttachStatus(message, type = "normal") {
+  const el = $("attachStatus");
+  if (!el) return;
+  el.textContent = message || "";
+  el.className = "text-xs font-medium " +
+    (type === "error" ? "text-red-600 dark:text-red-400" :
+     type === "success" ? "text-indigo-600 dark:text-indigo-400" :
      "text-slate-500 dark:text-slate-400");
 }
 
@@ -195,11 +212,160 @@ function setEditSession(session) {
   $("editSession").value = session;
 }
 
-// ================= REAL VOICE RECORDER + GEMINI TRANSCRIPTION =================
-// This uses the phone's real microphone through MediaRecorder.
-// After pressing Stop, the recorded audio is sent to Gemini and converted
-// to Sinhala/English text, then placed into the note box.
+// ================= GENERAL FILE ATTACHMENTS =================
+function formatGeneralFileSize(bytes) {
+  if (!bytes) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0)} ${units[i]}`;
+}
 
+function renderPendingGeneralFiles() {
+  const wrap = $("pendingGeneralFilesList");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+
+  if (!pendingGeneralFiles.length) {
+    wrap.classList.add("hidden");
+    return;
+  }
+
+  wrap.classList.remove("hidden");
+  pendingGeneralFiles.forEach((file, index) => {
+    const row = document.createElement("div");
+    row.className = "flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs";
+
+    let iconClass = "ph-file";
+    if (file.type.startsWith("image/")) iconClass = "ph-image";
+    else if (file.type.startsWith("video/")) iconClass = "ph-video-camera";
+    else if (file.type.startsWith("audio/")) iconClass = "ph-waveform";
+    else if (file.type.includes("pdf")) iconClass = "ph-file-pdf";
+
+    const icon = document.createElement("i");
+    icon.className = `ph ${iconClass} text-indigo-600 text-base shrink-0`;
+
+    const info = document.createElement("div");
+    info.className = "min-w-0 flex-1";
+
+    const name = document.createElement("div");
+    name.className = "font-medium truncate";
+    name.textContent = file.name;
+
+    const size = document.createElement("div");
+    size.className = "text-[10px] text-slate-400";
+    size.textContent = formatGeneralFileSize(file.size);
+
+    info.append(name, size);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "p-1 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 shrink-0";
+    removeBtn.innerHTML = '<i class="ph ph-x"></i>';
+    removeBtn.addEventListener("click", () => {
+      pendingGeneralFiles.splice(index, 1);
+      renderPendingGeneralFiles();
+    });
+
+    row.append(icon, info, removeBtn);
+    wrap.appendChild(row);
+  });
+}
+
+window.openGeneralFilePicker = function () {
+  $("generalFileInput").click();
+};
+
+window.handleGeneralFileSelect = function (e) {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  pendingGeneralFiles.push(...files);
+  renderPendingGeneralFiles();
+  setAttachStatus(`${pendingGeneralFiles.length} file(s) selected. Press "Attach Data to Log" to save.`);
+  e.target.value = "";
+};
+
+async function uploadGeneralFilesToStorage(logId) {
+  if (!pendingGeneralFiles.length) return [];
+  const uploaded = [];
+
+  for (const file of pendingGeneralFiles) {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-100);
+    const storagePath = `phi_pocket_attachments/${logId}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safeName}`;
+    const storageRef = ref(storage, storagePath);
+
+    const snap = await uploadBytes(storageRef, file, { contentType: file.type || "application/octet-stream" });
+    const url = await getDownloadURL(snap.ref);
+
+    uploaded.push({
+      name: file.name,
+      size: file.size,
+      type: file.type || "application/octet-stream",
+      url,
+      storagePath
+    });
+  }
+  return uploaded;
+}
+
+async function deleteAttachedStorageFiles(files = []) {
+  for (const f of files || []) {
+    if (f?.storagePath) {
+      try {
+        await deleteObject(ref(storage, f.storagePath));
+      } catch (err) {
+        console.warn("Storage delete failed:", err);
+      }
+    }
+  }
+}
+
+// Separate Action: Save Direct Attached Files to Log (No AI processing)
+window.saveAttachedDataOnly = async function () {
+  if (!pendingGeneralFiles.length) {
+    return setAttachStatus("Please select photos, videos, audio, or PDF files first.", "error");
+  }
+
+  const dutyDate = $("entryDate").value || getTodayISO();
+  const btn = $("attachSaveBtn");
+  btn.disabled = true;
+  btn.classList.add("opacity-60", "cursor-not-allowed");
+  setAttachStatus("Uploading files directly to Firebase Storage...", "normal");
+
+  let uploadedFiles = [];
+
+  try {
+    const logRef = doc(collection(db, "phi_pocket_logs"));
+    uploadedFiles = await uploadGeneralFilesToStorage(logRef.id);
+
+    const summaryText = `• Attached ${uploadedFiles.length} field file(s) for ${selectedSession} session.`;
+
+    await setDoc(logRef, {
+      raw: summaryText,
+      formatted: summaryText,
+      session: selectedSession,
+      dutyDate,
+      timestamp: serverTimestamp(),
+      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      attachments: uploadedFiles
+    });
+
+    pendingGeneralFiles = [];
+    renderPendingGeneralFiles();
+
+    $("filterDate").value = dutyDate;
+    setAttachStatus("Files attached & saved to log successfully!", "success");
+    loadLogsForDate(dutyDate);
+  } catch (error) {
+    await deleteAttachedStorageFiles(uploadedFiles);
+    console.error(error);
+    setAttachStatus(error.message || "File attach failed.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("opacity-60", "cursor-not-allowed");
+  }
+};
+
+// ================= REAL VOICE RECORDER + GEMINI TRANSCRIPTION =================
 let mediaRecorder = null;
 let recordingStream = null;
 let audioChunks = [];
@@ -502,7 +668,6 @@ window.toggleMic = function () {
   }
 };
 
-// Stop the microphone if the page is closed or hidden.
 window.addEventListener("pagehide", () => {
   try {
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
@@ -515,18 +680,7 @@ window.addEventListener("pagehide", () => {
   }
 });
 
-
-
 // ================= IMAGE / DOCUMENT TEXT IMPORT =================
-// Supports:
-// - Images: JPG, PNG, WEBP, GIF, etc. -> Gemini vision OCR
-// - PDF: Gemini document understanding
-// - DOCX: browser-side text extraction with Mammoth
-// - TXT / CSV: direct text import
-//
-// IMPORTANT: extracted text is inserted at the saved cursor/selection,
-// so existing text before and after the cursor is preserved.
-
 let savedCursorStart = 0;
 let savedCursorEnd = 0;
 
@@ -548,7 +702,6 @@ function insertTextAtSavedCursor(insertedText) {
   const before = value.slice(0, start);
   const after = value.slice(end);
 
-  // Keep imported/location content readable without destroying existing text.
   const leftSpacer = before && !before.endsWith("\n") ? "\n" : "";
   const rightSpacer = after && !after.startsWith("\n") ? "\n" : "";
 
@@ -736,11 +889,7 @@ window.handleDocumentImport = async function(event) {
   }
 };
 
-
 // ================= GPS LOCATION COLLECTOR =================
-// Uses the phone/browser GPS and inserts the coordinates exactly
-// at the saved cursor position. HTTPS is required on real phones.
-
 window.insertCurrentLocation = function() {
   rememberNoteCursor();
 
@@ -760,10 +909,6 @@ window.insertCurrentLocation = function() {
     return;
   }
 
-  // We collect multiple GPS fixes and keep the most accurate one.
-  // The browser cannot force the phone to reach 15 m accuracy;
-  // the actual accuracy depends on GPS signal, Wi-Fi/cell positioning,
-  // phone hardware, and whether the user is indoors.
   setStatus(
     "Searching for a high-accuracy GPS fix... Keep Location/GPS ON and stay near an open area.",
     "normal"
@@ -829,7 +974,6 @@ window.insertCurrentLocation = function() {
 
     readingCount++;
 
-    // Keep the best reading received so far.
     if (
       !bestPosition ||
       accuracy < Number(bestPosition.coords.accuracy)
@@ -842,13 +986,11 @@ window.insertCurrentLocation = function() {
       );
     }
 
-    // Stop early when the phone reaches the requested accuracy.
     if (accuracy <= TARGET_ACCURACY_M) {
       finish(position, false);
       return;
     }
 
-    // Do not wait forever.
     if (Date.now() - startedAt >= MAX_WAIT_MS) {
       finish(bestPosition, true);
     }
@@ -857,7 +999,6 @@ window.insertCurrentLocation = function() {
   const handleError = error => {
     if (finished) return;
 
-    // A temporary error can still be followed by a better reading.
     if (Date.now() - startedAt < MAX_WAIT_MS) {
       if (error.code === error.PERMISSION_DENIED) {
         finish(null);
@@ -879,7 +1020,6 @@ window.insertCurrentLocation = function() {
       }
     );
 
-    // Safety timeout (slightly after MAX_WAIT_MS so the in-loop check fires first).
     setTimeout(() => {
       if (!finished) {
         finish(bestPosition, true);
@@ -896,7 +1036,6 @@ window.insertCurrentLocation = function() {
   }
 };
 
-// Keep the cursor position updated while the user types/clicks.
 document.addEventListener("DOMContentLoaded", () => {
   const note = $("rawNote");
   if (!note) return;
@@ -942,7 +1081,7 @@ ${rawText}`;
   return text;
 }
 
-// ================= SAVE NEW LOG =================
+// ================= SAVE LOG WITH GEMINI (ONLY FOR TEXT) =================
 window.saveLog = async function () {
   if (editingLogId) {
     await updateExistingLog();
@@ -967,7 +1106,8 @@ window.saveLog = async function () {
       session: selectedSession,
       dutyDate,
       timestamp: serverTimestamp(),
-      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      attachments: []
     });
     input.value = "";
     $("filterDate").value = dutyDate;
@@ -995,13 +1135,14 @@ window.copyText = async function (text, button) {
 };
 
 // ================= DELETE =================
-window.deleteLog = async function (id) {
+window.deleteLog = async function (id, attachments = []) {
   if (!id) return;
   const ok = confirm("Delete this Pocket Note permanently?\n\nThis cannot be undone.");
   if (!ok) return;
 
   try {
     await deleteDoc(doc(db, "phi_pocket_logs", id));
+    await deleteAttachedStorageFiles(attachments);
     setStatus("Log deleted successfully.", "success");
   } catch (error) {
     console.error(error);
@@ -1096,6 +1237,61 @@ function createLogCard(item) {
   formatted.className = "text-slate-800 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed font-medium bg-slate-50 dark:bg-slate-800/70 p-3 rounded-lg border border-slate-100 dark:border-slate-700";
   formatted.textContent = item.formatted || "";
 
+  const attachments = Array.isArray(item.attachments) ? item.attachments : [];
+  let attachWrap = null;
+
+  if (attachments.length) {
+    attachWrap = document.createElement("div");
+    attachWrap.className = "mt-2.5 space-y-2";
+
+    attachments.forEach(att => {
+      const type = att.type || "";
+      if (type.startsWith("image/") && att.url) {
+        const box = document.createElement("div");
+        box.className = "rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800";
+        const img = document.createElement("img");
+        img.src = att.url;
+        img.alt = att.name || "Photo";
+        img.loading = "lazy";
+        img.className = "w-full max-h-64 object-contain cursor-pointer";
+        img.onclick = () => window.open(att.url, "_blank");
+        box.appendChild(img);
+        attachWrap.appendChild(box);
+      } else if (type.startsWith("audio/") && att.url) {
+        const box = document.createElement("div");
+        box.className = "flex items-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700";
+        const icon = document.createElement("i");
+        icon.className = "ph ph-waveform text-indigo-600 text-lg";
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.preload = "metadata";
+        audio.src = att.url;
+        audio.className = "w-full h-8";
+        box.append(icon, audio);
+        attachWrap.appendChild(box);
+      } else if (type.startsWith("video/") && att.url) {
+        const box = document.createElement("div");
+        box.className = "rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800";
+        const video = document.createElement("video");
+        video.controls = true;
+        video.preload = "metadata";
+        video.playsInline = true;
+        video.src = att.url;
+        video.className = "w-full max-h-64 object-contain";
+        box.appendChild(video);
+        attachWrap.appendChild(box);
+      } else if (att.url) {
+        const linkBox = document.createElement("a");
+        linkBox.href = att.url;
+        linkBox.target = "_blank";
+        linkBox.rel = "noopener";
+        linkBox.className = "flex items-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 text-xs font-medium text-slate-700 dark:text-slate-200";
+        linkBox.innerHTML = `<i class="ph ph-file-text text-indigo-600 text-base"></i> <span class="truncate flex-1">${att.name || "Attachment"}</span> <i class="ph ph-arrow-square-out text-slate-400"></i>`;
+        attachWrap.appendChild(linkBox);
+      }
+    });
+  }
+
   const footer = document.createElement("div");
   footer.className = "flex flex-wrap justify-between items-center mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700 gap-2";
 
@@ -1120,11 +1316,15 @@ function createLogCard(item) {
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "text-red-700 dark:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/30 px-2.5 py-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50";
   deleteBtn.innerHTML = '<i class="ph ph-trash"></i> Delete';
-  deleteBtn.addEventListener("click", () => deleteLog(item.id));
+  deleteBtn.addEventListener("click", () => deleteLog(item.id, item.attachments || []));
 
   actions.append(copyBtn, editBtn, deleteBtn);
   footer.append(raw, actions);
-  card.append(header, formatted, footer);
+
+  card.append(header, formatted);
+  if (attachWrap) card.append(attachWrap);
+  card.append(footer);
+
   return card;
 }
 
@@ -1240,7 +1440,7 @@ window.addEventListener("DOMContentLoaded", () => {
   <div class="relative">
     <textarea id="rawNote" rows="5" class="w-full p-3 pr-24 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
     
-    <!-- Voice Controls -->
+    <!-- Voice & OCR Controls -->
     <div class="absolute right-2 bottom-2.5 flex items-center gap-1 bg-slate-50 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
       <button type="button" onclick="openImportPicker()" class="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 rounded-full transition cursor-pointer" title="Add image/document and extract text">
         <i class="ph ph-file-image text-base"></i>
@@ -1269,16 +1469,41 @@ window.addEventListener("DOMContentLoaded", () => {
     onchange="handleDocumentImport(event)"
   />
 
-  <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
-    <i class="ph ph-info"></i>
-    📄 Image/PDF/DOCX → text • 📍 GPS → coordinates • Imported text is inserted at the cursor
-  </div>
-
   <div class="flex justify-between items-center mt-3 gap-2">
     <span id="status" class="text-xs font-medium text-slate-500 dark:text-slate-400"></span>
     <button id="saveBtn" onclick="saveLog()" class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-1.5">
       <i class="ph ph-paper-plane-right"></i> Format & Save
     </button>
+  </div>
+
+  <!-- SEPARATE ATTACHMENT SECTION -->
+  <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <button type="button" onclick="openGeneralFilePicker()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+        <i class="ph ph-paperclip text-base text-indigo-600"></i> Select Files
+      </button>
+
+      <button id="attachSaveBtn" type="button" onclick="saveAttachedDataOnly()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm">
+        <i class="ph ph-cloud-arrow-up"></i> Attach Data to Log
+      </button>
+    </div>
+    
+    <input
+      id="generalFileInput"
+      type="file"
+      multiple
+      class="hidden"
+      accept="image/*,video/*,audio/*,application/pdf,.docx,.txt"
+      onchange="handleGeneralFileSelect(event)"
+    />
+
+    <div id="pendingGeneralFilesList" class="hidden mt-2 space-y-1.5"></div>
+    <div id="attachStatus" class="text-[11px] mt-1.5 text-slate-500 dark:text-slate-400"></div>
+  </div>
+
+  <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
+    <i class="ph ph-info"></i>
+    📄 Format & Save → Text Gemini AI sync • 📎 Attach Data to Log → Direct storage without AI analysis
   </div>
 </div>
 
