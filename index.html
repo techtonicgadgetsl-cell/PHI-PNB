@@ -732,51 +732,140 @@ window.insertCurrentLocation = function() {
     return;
   }
 
-  setStatus("Getting GPS location... Please allow Location permission.", "normal");
+  // We collect multiple GPS fixes and keep the most accurate one.
+  // The browser cannot force the phone to reach 15 m accuracy;
+  // the actual accuracy depends on GPS signal, Wi-Fi/cell positioning,
+  // phone hardware, and whether the user is indoors.
+  setStatus(
+    "Searching for a high-accuracy GPS fix... Keep Location/GPS ON and stay near an open area.",
+    "normal"
+  );
 
-  navigator.geolocation.getCurrentPosition(
-    position => {
-      const lat = position.coords.latitude.toFixed(6);
-      const lon = position.coords.longitude.toFixed(6);
+  let bestPosition = null;
+  let watchId = null;
+  let finished = false;
 
-      const accuracy =
-        Number.isFinite(position.coords.accuracy)
-          ? Math.round(position.coords.accuracy)
-          : null;
+  const startedAt = Date.now();
+  const MAX_WAIT_MS = 90000;
+  const TARGET_ACCURACY_M = 15;
+  let readingCount = 0;
 
-      const locationText =
-        `📍 Location: ${lat}, ${lon}` +
-        (accuracy ? ` (±${accuracy} m)` : "");
+  const finish = (position, forcedFallback = false) => {
+    if (finished) return;
+    finished = true;
 
-      insertTextAtSavedCursor(locationText);
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
 
+    if (!position) {
       setStatus(
-        `GPS location added: ${lat}, ${lon}`,
+        "Could not get a GPS fix. Turn on Location/GPS and try again outdoors.",
+        "error"
+      );
+      return;
+    }
+
+    const lat = position.coords.latitude.toFixed(6);
+    const lon = position.coords.longitude.toFixed(6);
+    const accuracy = Math.round(position.coords.accuracy);
+
+    const locationText =
+      `📍 Location: ${lat}, ${lon} (±${accuracy} m)`;
+
+    insertTextAtSavedCursor(locationText);
+
+    if (forcedFallback && accuracy > TARGET_ACCURACY_M) {
+      const hint = accuracy > 100
+        ? " This looks like network/Wi-Fi based location, not a real GPS fix. On your phone, set Location mode to 'High accuracy' (uses GPS satellites), go outdoors with open sky, and try again."
+        : " Try outdoors for better accuracy.";
+      setStatus(
+        `Best GPS fix added: ±${accuracy} m. 15 m was not reached in 90 seconds.${hint}`,
+        "normal"
+      );
+    } else {
+      setStatus(
+        `High-accuracy GPS added: ${lat}, ${lon} (±${accuracy} m)`,
         "success"
       );
-    },
-    error => {
-      let message = "Could not get GPS location.";
-
-      if (error.code === error.PERMISSION_DENIED) {
-        message =
-          "Location permission denied. Chrome Site Settings → Location → Allow කරන්න.";
-      } else if (error.code === error.POSITION_UNAVAILABLE) {
-        message =
-          "GPS location is temporarily unavailable. Turn on Location/GPS and try again.";
-      } else if (error.code === error.TIMEOUT) {
-        message =
-          "GPS timed out. Move to an open area and try again.";
-      }
-
-      setStatus(message, "error");
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 20000,
-      maximumAge: 0
     }
-  );
+  };
+
+  const handlePosition = position => {
+    if (finished) return;
+
+    const accuracy = Number(position.coords.accuracy);
+
+    if (!Number.isFinite(accuracy)) return;
+
+    readingCount++;
+
+    // Keep the best reading received so far.
+    if (
+      !bestPosition ||
+      accuracy < Number(bestPosition.coords.accuracy)
+    ) {
+      bestPosition = position;
+
+      setStatus(
+        `GPS improving... current accuracy ±${Math.round(accuracy)} m (reading ${readingCount})`,
+        "normal"
+      );
+    }
+
+    // Stop early when the phone reaches the requested accuracy.
+    if (accuracy <= TARGET_ACCURACY_M) {
+      finish(position, false);
+      return;
+    }
+
+    // Do not wait forever.
+    if (Date.now() - startedAt >= MAX_WAIT_MS) {
+      finish(bestPosition, true);
+    }
+  };
+
+  const handleError = error => {
+    if (finished) return;
+
+    // A temporary error can still be followed by a better reading.
+    if (Date.now() - startedAt < MAX_WAIT_MS) {
+      if (error.code === error.PERMISSION_DENIED) {
+        finish(null);
+      }
+      return;
+    }
+
+    finish(bestPosition, true);
+  };
+
+  try {
+    watchId = navigator.geolocation.watchPosition(
+      handlePosition,
+      handleError,
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      }
+    );
+
+    // Safety timeout (slightly after MAX_WAIT_MS so the in-loop check fires first).
+    setTimeout(() => {
+      if (!finished) {
+        finish(bestPosition, true);
+      }
+    }, MAX_WAIT_MS + 2000);
+
+  } catch (error) {
+    console.error("High accuracy GPS error:", error);
+
+    setStatus(
+      "GPS error: " + (error.message || error.name),
+      "error"
+    );
+  }
 };
 
 // Keep the cursor position updated while the user types/clicks.
