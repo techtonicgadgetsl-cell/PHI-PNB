@@ -13,7 +13,7 @@
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -29,15 +29,8 @@ import {
   deleteDoc,
   updateDoc,
   doc,
-  setDoc
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // ================= FIREBASE CONFIG =================
 const firebaseConfig = {
@@ -51,7 +44,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const GEMINI_MODEL = "gemini-3.7-flash";
 const GEMINI_FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite"];
 const GEMINI_RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
@@ -120,7 +112,7 @@ async function callGeminiGenerateContent(body) {
 
   console.error("Gemini temporary failure after retries:", lastError);
   throw new Error(
-    "Gemini is temporarily busy. I retried automatically and tried fallback models. Please wait a few seconds and try again."
+    "Gemini is temporarily busy. Please wait a few seconds and try again."
   );
 }
 
@@ -128,10 +120,71 @@ let geminiApiKey = sessionStorage.getItem("phi_gemini_api_key") || "";
 let selectedSession = "FN";
 let unsubscribeSnapshot = null;
 let editingLogId = null;
-let pendingGeneralFiles = [];
 
 const $ = id => document.getElementById(id);
 const getTodayISO = () => new Date().toISOString().slice(0, 10);
+
+// ================= ADVANCE PROGRAMME (H 510) SYNC & ALERTS =================
+async function syncAdvanceProgrammeAlerts() {
+  const todayObj = new Date();
+  const tomorrowObj = new Date();
+  tomorrowObj.setDate(todayObj.getDate() + 1);
+
+  const getMonthStr = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  
+  const todayMonth = getMonthStr(todayObj);
+  const todayDay = todayObj.getDate();
+
+  const tomorrowMonth = getMonthStr(tomorrowObj);
+  const tomorrowDay = tomorrowObj.getDate();
+
+  // 1. Fetch Today's Duty (Red Alert 🔴)
+  try {
+    const docToday = await getDoc(doc(db, "phi_advance_schedules", todayMonth));
+    if (docToday.exists()) {
+      const data = docToday.data();
+      const todayDuty = data.days?.[todayDay];
+      if (todayDuty && (todayDuty.fn || todayDuty.an)) {
+        $("alertTodayDuty").innerText = `FN: ${todayDuty.fn || 'None'} | AN: ${todayDuty.an || 'None'}`;
+        $("boxTodayAlert").classList.remove("hidden");
+        window.todayScheduledText = `FN: ${todayDuty.fn || ''}\nAN: ${todayDuty.an || ''}`.trim();
+      } else {
+        $("boxTodayAlert").classList.add("hidden");
+      }
+    } else {
+      $("boxTodayAlert").classList.add("hidden");
+    }
+  } catch (e) {
+    console.warn("Could not sync today advance duty:", e);
+  }
+
+  // 2. Fetch Tomorrow's Duty (Green Alert 🟢)
+  try {
+    const docTomorrow = await getDoc(doc(db, "phi_advance_schedules", tomorrowMonth));
+    if (docTomorrow.exists()) {
+      const data = docTomorrow.data();
+      const tomorrowDuty = data.days?.[tomorrowDay];
+      if (tomorrowDuty && (tomorrowDuty.fn || tomorrowDuty.an)) {
+        $("alertTomorrowDuty").innerText = `FN: ${tomorrowDuty.fn || 'None'} | AN: ${tomorrowDuty.an || 'None'}`;
+        $("boxTomorrowAlert").classList.remove("hidden");
+      } else {
+        $("boxTomorrowAlert").classList.add("hidden");
+      }
+    } else {
+      $("boxTomorrowAlert").classList.add("hidden");
+    }
+  } catch (e) {
+    console.warn("Could not sync tomorrow advance duty:", e);
+  }
+}
+
+window.applyScheduledToNote = function() {
+  if (window.todayScheduledText) {
+    rememberNoteCursor();
+    insertTextAtSavedCursor(window.todayScheduledText);
+    setStatus("Today's scheduled duty inserted into note.", "success");
+  }
+};
 
 // ================= THEME =================
 function applyTheme(theme) {
@@ -155,16 +208,6 @@ function setStatus(message, type = "normal") {
   el.className = "text-xs font-medium " +
     (type === "error" ? "text-red-600 dark:text-red-400" :
      type === "success" ? "text-emerald-600 dark:text-emerald-400" :
-     "text-slate-500 dark:text-slate-400");
-}
-
-function setAttachStatus(message, type = "normal") {
-  const el = $("attachStatus");
-  if (!el) return;
-  el.textContent = message || "";
-  el.className = "text-xs font-medium " +
-    (type === "error" ? "text-red-600 dark:text-red-400" :
-     type === "success" ? "text-indigo-600 dark:text-indigo-400" :
      "text-slate-500 dark:text-slate-400");
 }
 
@@ -212,159 +255,6 @@ function setEditSession(session) {
   $("editSession").value = session;
 }
 
-// ================= GENERAL FILE ATTACHMENTS =================
-function formatGeneralFileSize(bytes) {
-  if (!bytes) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  return `${(bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0)} ${units[i]}`;
-}
-
-function renderPendingGeneralFiles() {
-  const wrap = $("pendingGeneralFilesList");
-  if (!wrap) return;
-  wrap.innerHTML = "";
-
-  if (!pendingGeneralFiles.length) {
-    wrap.classList.add("hidden");
-    return;
-  }
-
-  wrap.classList.remove("hidden");
-  pendingGeneralFiles.forEach((file, index) => {
-    const row = document.createElement("div");
-    row.className = "flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs";
-
-    let iconClass = "ph-file";
-    if (file.type.startsWith("image/")) iconClass = "ph-image";
-    else if (file.type.startsWith("video/")) iconClass = "ph-video-camera";
-    else if (file.type.startsWith("audio/")) iconClass = "ph-waveform";
-    else if (file.type.includes("pdf")) iconClass = "ph-file-pdf";
-
-    const icon = document.createElement("i");
-    icon.className = `ph ${iconClass} text-indigo-600 text-base shrink-0`;
-
-    const info = document.createElement("div");
-    info.className = "min-w-0 flex-1";
-
-    const name = document.createElement("div");
-    name.className = "font-medium truncate";
-    name.textContent = file.name;
-
-    const size = document.createElement("div");
-    size.className = "text-[10px] text-slate-400";
-    size.textContent = formatGeneralFileSize(file.size);
-
-    info.append(name, size);
-
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "p-1 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 shrink-0";
-    removeBtn.innerHTML = '<i class="ph ph-x"></i>';
-    removeBtn.addEventListener("click", () => {
-      pendingGeneralFiles.splice(index, 1);
-      renderPendingGeneralFiles();
-    });
-
-    row.append(icon, info, removeBtn);
-    wrap.appendChild(row);
-  });
-}
-
-window.openGeneralFilePicker = function () {
-  $("generalFileInput").click();
-};
-
-window.handleGeneralFileSelect = function (e) {
-  const files = Array.from(e.target.files || []);
-  if (!files.length) return;
-  pendingGeneralFiles.push(...files);
-  renderPendingGeneralFiles();
-  setAttachStatus(`${pendingGeneralFiles.length} file(s) selected. Press "Attach Data to Log" to save.`);
-  e.target.value = "";
-};
-
-async function uploadGeneralFilesToStorage(logId) {
-  if (!pendingGeneralFiles.length) return [];
-  const uploaded = [];
-
-  for (const file of pendingGeneralFiles) {
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(-100);
-    const storagePath = `phi_pocket_attachments/${logId}/${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safeName}`;
-    const storageRef = ref(storage, storagePath);
-
-    const snap = await uploadBytes(storageRef, file, { contentType: file.type || "application/octet-stream" });
-    const url = await getDownloadURL(snap.ref);
-
-    uploaded.push({
-      name: file.name,
-      size: file.size,
-      type: file.type || "application/octet-stream",
-      url,
-      storagePath
-    });
-  }
-  return uploaded;
-}
-
-async function deleteAttachedStorageFiles(files = []) {
-  for (const f of files || []) {
-    if (f?.storagePath) {
-      try {
-        await deleteObject(ref(storage, f.storagePath));
-      } catch (err) {
-        console.warn("Storage delete failed:", err);
-      }
-    }
-  }
-}
-
-// Separate Action: Save Direct Attached Files to Log (No AI processing)
-window.saveAttachedDataOnly = async function () {
-  if (!pendingGeneralFiles.length) {
-    return setAttachStatus("Please select photos, videos, audio, or PDF files first.", "error");
-  }
-
-  const dutyDate = $("entryDate").value || getTodayISO();
-  const btn = $("attachSaveBtn");
-  btn.disabled = true;
-  btn.classList.add("opacity-60", "cursor-not-allowed");
-  setAttachStatus("Uploading files directly to Firebase Storage...", "normal");
-
-  let uploadedFiles = [];
-
-  try {
-    const logRef = doc(collection(db, "phi_pocket_logs"));
-    uploadedFiles = await uploadGeneralFilesToStorage(logRef.id);
-
-    const summaryText = `• Attached ${uploadedFiles.length} field file(s) for ${selectedSession} session.`;
-
-    await setDoc(logRef, {
-      raw: summaryText,
-      formatted: summaryText,
-      session: selectedSession,
-      dutyDate,
-      timestamp: serverTimestamp(),
-      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      attachments: uploadedFiles
-    });
-
-    pendingGeneralFiles = [];
-    renderPendingGeneralFiles();
-
-    $("filterDate").value = dutyDate;
-    setAttachStatus("Files attached & saved to log successfully!", "success");
-    loadLogsForDate(dutyDate);
-  } catch (error) {
-    await deleteAttachedStorageFiles(uploadedFiles);
-    console.error(error);
-    setAttachStatus(error.message || "File attach failed.", "error");
-  } finally {
-    btn.disabled = false;
-    btn.classList.remove("opacity-60", "cursor-not-allowed");
-  }
-};
-
 // ================= REAL VOICE RECORDER + GEMINI TRANSCRIPTION =================
 let mediaRecorder = null;
 let recordingStream = null;
@@ -379,7 +269,6 @@ function getSupportedAudioMimeType() {
     "audio/mp4",
     "audio/ogg;codecs=opus"
   ];
-
   for (const type of types) {
     if (window.MediaRecorder &&
         typeof MediaRecorder.isTypeSupported === "function" &&
@@ -395,35 +284,13 @@ function setMicUI(recording) {
   if (!btn) return;
 
   if (recording) {
-    btn.classList.remove(
-      "bg-emerald-100",
-      "dark:bg-emerald-900/50",
-      "text-emerald-700",
-      "dark:text-emerald-300"
-    );
-    btn.classList.add(
-      "bg-red-500",
-      "text-white",
-      "animate-pulse",
-      "ring-4",
-      "ring-red-200"
-    );
+    btn.classList.remove("bg-emerald-100", "dark:bg-emerald-900/50", "text-emerald-700", "dark:text-emerald-300");
+    btn.classList.add("bg-red-500", "text-white", "animate-pulse", "ring-4", "ring-red-200");
     btn.innerHTML = '<i class="ph ph-stop text-base"></i>';
     btn.title = "Stop recording";
   } else {
-    btn.classList.remove(
-      "bg-red-500",
-      "text-white",
-      "animate-pulse",
-      "ring-4",
-      "ring-red-200"
-    );
-    btn.classList.add(
-      "bg-emerald-100",
-      "dark:bg-emerald-900/50",
-      "text-emerald-700",
-      "dark:text-emerald-300"
-    );
+    btn.classList.remove("bg-red-500", "text-white", "animate-pulse", "ring-4", "ring-red-200");
+    btn.classList.add("bg-emerald-100", "dark:bg-emerald-900/50", "text-emerald-700", "dark:text-emerald-300");
     btn.innerHTML = '<i class="ph ph-microphone text-base"></i>';
     btn.title = "Record voice";
   }
@@ -432,7 +299,6 @@ function setMicUI(recording) {
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-
     reader.onloadend = () => {
       try {
         const result = String(reader.result || "");
@@ -442,7 +308,6 @@ function blobToBase64(blob) {
         reject(e);
       }
     };
-
     reader.onerror = () => reject(reader.error || new Error("Could not read audio."));
     reader.readAsDataURL(blob);
   });
@@ -455,102 +320,60 @@ async function transcribeRecordedAudio(blob) {
 
   const base64Audio = await blobToBase64(blob);
   const mimeType = blob.type || recordingMimeType || "audio/webm";
-
-  const language =
-    $("micLang")?.value === "en-US"
-      ? "English"
-      : "Sinhala (සිංහල). If the speaker mixes Singlish and English, preserve the meaning naturally.";
+  const language = $("micLang")?.value === "en-US"
+    ? "English"
+    : "Sinhala (සිංහල). If the speaker mixes Singlish and English, preserve the meaning naturally.";
 
   const prompt = `Transcribe this recorded voice note for a Sri Lankan Public Health Inspector.
-
 Target language: ${language}
-
 Rules:
 1. Transcribe what the speaker actually says.
 2. Do not invent locations, names, numbers, or duties.
 3. Keep Sinhala words if they are spoken in Sinhala.
 4. If the speaker uses Singlish, convert it into readable English where appropriate.
-5. Do not add greetings, explanations, or commentary.
-6. Return ONLY the transcribed note text.`;
+5. Return ONLY the transcribed note text.`;
 
   const data = await callGeminiGenerateContent({
     contents: [
       {
         parts: [
           { text: prompt },
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Audio
-            }
-          }
+          { inlineData: { mimeType: mimeType, data: base64Audio } }
         ]
       }
     ]
   });
 
-  const result = data?.candidates?.[0]?.content?.parts
-    ?.map(part => part.text || "")
-    .join("")
-    .trim();
-
-  if (!result) {
-    throw new Error("Gemini did not return a transcription.");
-  }
-
+  const result = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
+  if (!result) throw new Error("Gemini did not return a transcription.");
   return result;
 }
 
 async function startVoiceRecording() {
-  const isSecure =
-    window.location.protocol === "https:" ||
-    window.location.hostname === "localhost";
-
+  const isSecure = window.location.protocol === "https:" || window.location.hostname === "localhost";
   if (!isSecure) {
-    alert(
-      "Microphone requires HTTPS. Open this website using its https:// GitHub Pages address."
-    );
+    alert("Microphone requires HTTPS. Open this website using its https:// GitHub Pages address.");
     return;
   }
-
-  if (!navigator.mediaDevices?.getUserMedia) {
-    alert(
-      "This browser does not support microphone recording. Please use the latest Chrome on Android."
-    );
-    return;
-  }
-
-  if (!window.MediaRecorder) {
-    alert(
-      "This browser does not support audio recording. Please update Chrome."
-    );
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    alert("This browser does not support audio recording. Please use Google Chrome.");
     return;
   }
 
   try {
     setStatus("Requesting microphone permission...", "normal");
-
     recordingStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true
-      }
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
     });
 
     recordingMimeType = getSupportedAudioMimeType();
-
-    const options = recordingMimeType
-      ? { mimeType: recordingMimeType }
-      : {};
+    const options = recordingMimeType ? { mimeType: recordingMimeType } : {};
 
     mediaRecorder = new MediaRecorder(recordingStream, options);
     audioChunks = [];
 
     mediaRecorder.ondataavailable = event => {
-      if (event.data && event.data.size > 0) {
-        audioChunks.push(event.data);
-      }
+      if (event.data && event.data.size > 0) audioChunks.push(event.data);
     };
 
     mediaRecorder.onerror = event => {
@@ -559,14 +382,8 @@ async function startVoiceRecording() {
     };
 
     mediaRecorder.onstop = async () => {
-      const blobType =
-        recordingMimeType ||
-        audioChunks[0]?.type ||
-        "audio/webm";
-
-      const audioBlob = new Blob(audioChunks, {
-        type: blobType
-      });
+      const blobType = recordingMimeType || audioChunks[0]?.type || "audio/webm";
+      const audioBlob = new Blob(audioChunks, { type: blobType });
 
       if (recordingStream) {
         recordingStream.getTracks().forEach(track => track.stop());
@@ -579,69 +396,27 @@ async function startVoiceRecording() {
       }
 
       setStatus("Voice recorded. Converting to text...", "normal");
-
       try {
-        const transcript =
-          await transcribeRecordedAudio(audioBlob);
-
-        const noteArea = $("rawNote");
-        const existing = noteArea.value.trim();
-
-        noteArea.value = existing
-          ? existing + " " + transcript
-          : transcript;
-
+        const transcript = await transcribeRecordedAudio(audioBlob);
+        insertTextAtSavedCursor(transcript);
         setStatus("Voice converted successfully!", "success");
       } catch (error) {
         console.error("Transcription error:", error);
-        setStatus(
-          error.message || "Voice transcription failed.",
-          "error"
-        );
+        setStatus(error.message || "Voice transcription failed.", "error");
       }
     };
 
     mediaRecorder.start(250);
     isRecording = true;
     setMicUI(true);
-
-    setStatus(
-      $("micLang")?.value === "en-US"
-        ? "Recording English... කතා කරන්න. Stop කරන්න mic button එක ඔබන්න."
-        : "Recording Sinhala... කතා කරන්න. Stop කරන්න mic button එක ඔබන්න.",
-      "success"
-    );
-
+    setStatus("Recording voice... Speak now. Tap mic to stop.", "success");
   } catch (error) {
-    console.error("Microphone permission/recording error:", error);
-
-    if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-      setStatus(
-        "Microphone permission denied. Chrome Site Settings → Microphone → Allow කරන්න.",
-        "error"
-      );
-    } else if (error.name === "NotFoundError") {
-      setStatus(
-        "No microphone found on this device.",
-        "error"
-      );
-    } else if (error.name === "NotReadableError") {
-      setStatus(
-        "Microphone is busy or blocked by another app. Close other voice/recorder apps and try again.",
-        "error"
-      );
-    } else {
-      setStatus(
-        "Microphone error: " + (error.message || error.name),
-        "error"
-      );
-    }
-
+    console.error("Microphone recording error:", error);
+    setStatus("Microphone error: " + (error.message || error.name), "error");
     if (recordingStream) {
       recordingStream.getTracks().forEach(track => track.stop());
       recordingStream = null;
     }
-
     isRecording = false;
     setMicUI(false);
   }
@@ -653,14 +428,14 @@ function stopVoiceRecording() {
     setMicUI(false);
     return;
   }
-
-  setStatus("Stopping recording...", "normal");
+  setStatus("Processing recording...", "normal");
   mediaRecorder.stop();
   isRecording = false;
   setMicUI(false);
 }
 
 window.toggleMic = function () {
+  rememberNoteCursor();
   if (isRecording) {
     stopVoiceRecording();
   } else {
@@ -669,15 +444,8 @@ window.toggleMic = function () {
 };
 
 window.addEventListener("pagehide", () => {
-  try {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-      mediaRecorder.stop();
-    }
-  } catch {}
-
-  if (recordingStream) {
-    recordingStream.getTracks().forEach(track => track.stop());
-  }
+  try { if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop(); } catch {}
+  if (recordingStream) recordingStream.getTracks().forEach(track => track.stop());
 });
 
 // ================= IMAGE / DOCUMENT TEXT IMPORT =================
@@ -705,24 +473,14 @@ function insertTextAtSavedCursor(insertedText) {
   const leftSpacer = before && !before.endsWith("\n") ? "\n" : "";
   const rightSpacer = after && !after.startsWith("\n") ? "\n" : "";
 
-  const finalText =
-    before +
-    leftSpacer +
-    insertedText.trim() +
-    rightSpacer +
-    after;
-
+  const finalText = before + leftSpacer + insertedText.trim() + rightSpacer + after;
   note.value = finalText;
 
-  const newCursor =
-    (before + leftSpacer + insertedText.trim()).length;
-
+  const newCursor = (before + leftSpacer + insertedText.trim()).length;
   note.focus();
   note.setSelectionRange(newCursor, newCursor);
-
   savedCursorStart = newCursor;
   savedCursorEnd = newCursor;
-
   note.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
@@ -736,16 +494,12 @@ function bytesToSize(bytes) {
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-
     reader.onload = () => {
       const result = String(reader.result || "");
       const comma = result.indexOf(",");
       resolve(comma >= 0 ? result.slice(comma + 1) : result);
     };
-
-    reader.onerror = () =>
-      reject(reader.error || new Error("Could not read the file."));
-
+    reader.onerror = () => reject(reader.error || new Error("Could not read the file."));
     reader.readAsDataURL(file);
   });
 }
@@ -756,77 +510,39 @@ function extensionOf(filename) {
 }
 
 async function extractDocxText(file) {
-  if (!window.mammoth) {
-    throw new Error("DOCX reader is not loaded. Refresh the page and try again.");
-  }
-
+  if (!window.mammoth) throw new Error("DOCX reader is not loaded.");
   const arrayBuffer = await file.arrayBuffer();
-
-  const result = await window.mammoth.extractRawText({
-    arrayBuffer
-  });
-
+  const result = await window.mammoth.extractRawText({ arrayBuffer });
   const extracted = (result.value || "").trim();
-
-  if (!extracted) {
-    throw new Error("No readable text was found in the DOCX file.");
-  }
-
+  if (!extracted) throw new Error("No readable text found in DOCX.");
   return extracted;
 }
 
 async function extractPlainText(file) {
   const text = await file.text();
-
-  if (!text.trim()) {
-    throw new Error("The selected document is empty.");
-  }
-
+  if (!text.trim()) throw new Error("The selected document is empty.");
   return text.trim();
 }
 
 async function extractVisionText(file) {
-  if (!geminiApiKey) {
-    throw new Error("Save your Gemini API key first.");
-  }
-
+  if (!geminiApiKey) throw new Error("Save your Gemini API key first.");
   const base64 = await fileToBase64(file);
-
   const prompt = `Extract all useful readable text from this uploaded image/document for a Sri Lankan PHI field note.
-
-Rules:
-1. Read Sinhala, Singlish, and English where possible.
-2. Preserve names, places, dates, numbers, addresses, measurements, and bullet points.
-3. Do not invent missing text.
-4. Keep the original meaning.
-5. Return ONLY the extracted text.
-6. If the image contains a table or list, preserve its logical order as plain text.`;
+Rules: Preserve names, places, dates, numbers, addresses, and lists accurately. Return ONLY the extracted text.`;
 
   const data = await callGeminiGenerateContent({
     contents: [
       {
         parts: [
           { text: prompt },
-          {
-            inlineData: {
-              mimeType: file.type || "application/octet-stream",
-              data: base64
-            }
-          }
+          { inlineData: { mimeType: file.type || "application/octet-stream", data: base64 } }
         ]
       }
     ]
   });
 
-  const result = data?.candidates?.[0]?.content?.parts
-    ?.map(part => part.text || "")
-    .join("")
-    .trim();
-
-  if (!result) {
-    throw new Error("No readable text was found in the selected file.");
-  }
-
+  const result = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
+  if (!result) throw new Error("No readable text found in file.");
   return result;
 }
 
@@ -838,221 +554,88 @@ window.openImportPicker = function() {
 window.handleDocumentImport = async function(event) {
   const file = event.target.files?.[0];
   event.target.value = "";
-
   if (!file) return;
 
   rememberNoteCursor();
-
   const ext = extensionOf(file.name);
   const isImage = file.type.startsWith("image/");
   const isPdf = file.type === "application/pdf" || ext === "pdf";
-  const isDocx =
-    file.type ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-    ext === "docx";
-  const isText =
-    file.type.startsWith("text/") ||
-    ["txt", "csv", "json"].includes(ext);
+  const isDocx = file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || ext === "docx";
+  const isText = file.type.startsWith("text/") || ["txt", "csv", "json"].includes(ext);
 
   try {
-    setStatus(
-      `Reading ${file.name} (${bytesToSize(file.size)})...`,
-      "normal"
-    );
-
+    setStatus(`Reading ${file.name} (${bytesToSize(file.size)})...`, "normal");
     let extracted = "";
-
-    if (isImage || isPdf) {
-      extracted = await extractVisionText(file);
-    } else if (isDocx) {
-      extracted = await extractDocxText(file);
-    } else if (isText) {
-      extracted = await extractPlainText(file);
-    } else {
-      throw new Error(
-        "Unsupported file. Use an image, PDF, DOCX, TXT, CSV, or JSON file."
-      );
-    }
+    if (isImage || isPdf) extracted = await extractVisionText(file);
+    else if (isDocx) extracted = await extractDocxText(file);
+    else if (isText) extracted = await extractPlainText(file);
+    else throw new Error("Unsupported file format.");
 
     insertTextAtSavedCursor(extracted);
-
-    setStatus(
-      `Text imported from ${file.name} and inserted at the cursor.`,
-      "success"
-    );
+    setStatus(`Text imported from ${file.name}.`, "success");
   } catch (error) {
-    console.error("Document/image import error:", error);
-    setStatus(
-      error.message || "Could not extract text from the file.",
-      "error"
-    );
+    console.error("Document import error:", error);
+    setStatus(error.message || "Could not extract text.", "error");
   }
 };
 
 // ================= GPS LOCATION COLLECTOR =================
 window.insertCurrentLocation = function() {
   rememberNoteCursor();
-
   if (!window.isSecureContext) {
-    setStatus(
-      "GPS requires HTTPS. Open the GitHub Pages https:// address.",
-      "error"
-    );
+    setStatus("GPS requires HTTPS.", "error");
     return;
   }
-
   if (!navigator.geolocation) {
-    setStatus(
-      "This browser does not support GPS location.",
-      "error"
-    );
+    setStatus("Browser does not support GPS.", "error");
     return;
   }
 
-  setStatus(
-    "Searching for a high-accuracy GPS fix... Keep Location/GPS ON and stay near an open area.",
-    "normal"
-  );
-
+  setStatus("Acquiring GPS fix...", "normal");
   let bestPosition = null;
   let watchId = null;
   let finished = false;
-
-  const startedAt = Date.now();
-  const MAX_WAIT_MS = 90000;
+  const MAX_WAIT_MS = 30000;
   const TARGET_ACCURACY_M = 15;
-  let readingCount = 0;
 
-  const finish = (position, forcedFallback = false) => {
+  const finish = (position) => {
     if (finished) return;
     finished = true;
-
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-      watchId = null;
-    }
-
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     if (!position) {
-      setStatus(
-        "Could not get a GPS fix. Turn on Location/GPS and try again outdoors.",
-        "error"
-      );
+      setStatus("Could not get GPS fix. Please turn on Location.", "error");
       return;
     }
-
     const lat = position.coords.latitude.toFixed(6);
     const lon = position.coords.longitude.toFixed(6);
     const accuracy = Math.round(position.coords.accuracy);
-
-    const locationText =
-      `📍 Location: ${lat}, ${lon} (±${accuracy} m)`;
-
-    insertTextAtSavedCursor(locationText);
-
-    if (forcedFallback && accuracy > TARGET_ACCURACY_M) {
-      const hint = accuracy > 100
-        ? " This looks like network/Wi-Fi based location, not a real GPS fix. On your phone, set Location mode to 'High accuracy' (uses GPS satellites), go outdoors with open sky, and try again."
-        : " Try outdoors for better accuracy.";
-      setStatus(
-        `Best GPS fix added: ±${accuracy} m. 15 m was not reached in 90 seconds.${hint}`,
-        "normal"
-      );
-    } else {
-      setStatus(
-        `High-accuracy GPS added: ${lat}, ${lon} (±${accuracy} m)`,
-        "success"
-      );
-    }
-  };
-
-  const handlePosition = position => {
-    if (finished) return;
-
-    const accuracy = Number(position.coords.accuracy);
-
-    if (!Number.isFinite(accuracy)) return;
-
-    readingCount++;
-
-    if (
-      !bestPosition ||
-      accuracy < Number(bestPosition.coords.accuracy)
-    ) {
-      bestPosition = position;
-
-      setStatus(
-        `GPS improving... current accuracy ±${Math.round(accuracy)} m (reading ${readingCount})`,
-        "normal"
-      );
-    }
-
-    if (accuracy <= TARGET_ACCURACY_M) {
-      finish(position, false);
-      return;
-    }
-
-    if (Date.now() - startedAt >= MAX_WAIT_MS) {
-      finish(bestPosition, true);
-    }
-  };
-
-  const handleError = error => {
-    if (finished) return;
-
-    if (Date.now() - startedAt < MAX_WAIT_MS) {
-      if (error.code === error.PERMISSION_DENIED) {
-        finish(null);
-      }
-      return;
-    }
-
-    finish(bestPosition, true);
+    insertTextAtSavedCursor(`📍 Location: ${lat}, ${lon} (±${accuracy} m)`);
+    setStatus(`GPS added: ${lat}, ${lon} (±${accuracy} m)`, "success");
   };
 
   try {
     watchId = navigator.geolocation.watchPosition(
-      handlePosition,
-      handleError,
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-      }
+      pos => {
+        if (finished) return;
+        const acc = Number(pos.coords.accuracy);
+        if (!bestPosition || acc < Number(bestPosition.coords.accuracy)) bestPosition = pos;
+        if (acc <= TARGET_ACCURACY_M) finish(pos);
+      },
+      err => { if (!finished) finish(bestPosition); },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
-
-    setTimeout(() => {
-      if (!finished) {
-        finish(bestPosition, true);
-      }
-    }, MAX_WAIT_MS + 2000);
-
-  } catch (error) {
-    console.error("High accuracy GPS error:", error);
-
-    setStatus(
-      "GPS error: " + (error.message || error.name),
-      "error"
-    );
+    setTimeout(() => { if (!finished) finish(bestPosition); }, MAX_WAIT_MS);
+  } catch (e) {
+    setStatus("GPS error: " + e.message, "error");
   }
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-  const note = $("rawNote");
-  if (!note) return;
-
-  ["keyup", "click", "focus", "select", "input"].forEach(eventName => {
-    note.addEventListener(eventName, rememberNoteCursor);
-  });
-});
-
-// ================= GEMINI =================
+// ================= GEMINI NOTE FORMATTER =================
 async function formatWithGemini(rawText, sessionType) {
-  if (!geminiApiKey) throw new Error("Gemini API key is not set. Open API Key, paste your key and save it.");
+  if (!geminiApiKey) throw new Error("Gemini API key is not set. Paste your key and save it.");
 
   const sessionLabel = sessionType === "FN" ? "Morning (FN)" : sessionType === "AN" ? "Afternoon (AN)" : "Full Day";
-  
   const prompt = `You are a helpful assistant for a Public Health Inspector (PHI) in Sri Lanka writing daily notes in the small Pocket Notebook (Health 253).
-
 Convert the raw field note (given in Sinhala, Singlish, or rough text) into simple, clear, natural, everyday English bullet points. 
 Avoid heavy legal jargon or overly complex bureaucratic words. Write like a normal person writing quick field notes.
 
@@ -1072,16 +655,12 @@ ${rawText}`;
     contents: [{ parts: [{ text: prompt }] }]
   });
 
-  const text = data?.candidates?.[0]?.content?.parts
-    ?.map(part => part.text || "")
-    .join("")
-    .trim();
-
+  const text = data?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
   if (!text) throw new Error("Gemini returned no text.");
   return text;
 }
 
-// ================= SAVE LOG WITH GEMINI (ONLY FOR TEXT) =================
+// ================= SAVE NEW LOG =================
 window.saveLog = async function () {
   if (editingLogId) {
     await updateExistingLog();
@@ -1106,8 +685,7 @@ window.saveLog = async function () {
       session: selectedSession,
       dutyDate,
       timestamp: serverTimestamp(),
-      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      attachments: []
+      timeStr: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     });
     input.value = "";
     $("filterDate").value = dutyDate;
@@ -1130,19 +708,18 @@ window.copyText = async function (text, button) {
     button.textContent = "Copied";
     setTimeout(() => button.textContent = old, 1200);
   } catch {
-    setStatus("Copy failed. Browser permission may be blocking clipboard access.", "error");
+    setStatus("Copy failed.", "error");
   }
 };
 
 // ================= DELETE =================
-window.deleteLog = async function (id, attachments = []) {
+window.deleteLog = async function (id) {
   if (!id) return;
   const ok = confirm("Delete this Pocket Note permanently?\n\nThis cannot be undone.");
   if (!ok) return;
 
   try {
     await deleteDoc(doc(db, "phi_pocket_logs", id));
-    await deleteAttachedStorageFiles(attachments);
     setStatus("Log deleted successfully.", "success");
   } catch (error) {
     console.error(error);
@@ -1237,61 +814,6 @@ function createLogCard(item) {
   formatted.className = "text-slate-800 dark:text-slate-100 text-sm whitespace-pre-wrap leading-relaxed font-medium bg-slate-50 dark:bg-slate-800/70 p-3 rounded-lg border border-slate-100 dark:border-slate-700";
   formatted.textContent = item.formatted || "";
 
-  const attachments = Array.isArray(item.attachments) ? item.attachments : [];
-  let attachWrap = null;
-
-  if (attachments.length) {
-    attachWrap = document.createElement("div");
-    attachWrap.className = "mt-2.5 space-y-2";
-
-    attachments.forEach(att => {
-      const type = att.type || "";
-      if (type.startsWith("image/") && att.url) {
-        const box = document.createElement("div");
-        box.className = "rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800";
-        const img = document.createElement("img");
-        img.src = att.url;
-        img.alt = att.name || "Photo";
-        img.loading = "lazy";
-        img.className = "w-full max-h-64 object-contain cursor-pointer";
-        img.onclick = () => window.open(att.url, "_blank");
-        box.appendChild(img);
-        attachWrap.appendChild(box);
-      } else if (type.startsWith("audio/") && att.url) {
-        const box = document.createElement("div");
-        box.className = "flex items-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700";
-        const icon = document.createElement("i");
-        icon.className = "ph ph-waveform text-indigo-600 text-lg";
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        audio.preload = "metadata";
-        audio.src = att.url;
-        audio.className = "w-full h-8";
-        box.append(icon, audio);
-        attachWrap.appendChild(box);
-      } else if (type.startsWith("video/") && att.url) {
-        const box = document.createElement("div");
-        box.className = "rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800";
-        const video = document.createElement("video");
-        video.controls = true;
-        video.preload = "metadata";
-        video.playsInline = true;
-        video.src = att.url;
-        video.className = "w-full max-h-64 object-contain";
-        box.appendChild(video);
-        attachWrap.appendChild(box);
-      } else if (att.url) {
-        const linkBox = document.createElement("a");
-        linkBox.href = att.url;
-        linkBox.target = "_blank";
-        linkBox.rel = "noopener";
-        linkBox.className = "flex items-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 text-xs font-medium text-slate-700 dark:text-slate-200";
-        linkBox.innerHTML = `<i class="ph ph-file-text text-indigo-600 text-base"></i> <span class="truncate flex-1">${att.name || "Attachment"}</span> <i class="ph ph-arrow-square-out text-slate-400"></i>`;
-        attachWrap.appendChild(linkBox);
-      }
-    });
-  }
-
   const footer = document.createElement("div");
   footer.className = "flex flex-wrap justify-between items-center mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700 gap-2";
 
@@ -1316,15 +838,11 @@ function createLogCard(item) {
   const deleteBtn = document.createElement("button");
   deleteBtn.className = "text-red-700 dark:text-red-300 font-semibold text-xs bg-red-50 dark:bg-red-900/30 px-2.5 py-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50";
   deleteBtn.innerHTML = '<i class="ph ph-trash"></i> Delete';
-  deleteBtn.addEventListener("click", () => deleteLog(item.id, item.attachments || []));
+  deleteBtn.addEventListener("click", () => deleteLog(item.id));
 
   actions.append(copyBtn, editBtn, deleteBtn);
   footer.append(raw, actions);
-
-  card.append(header, formatted);
-  if (attachWrap) card.append(attachWrap);
-  card.append(footer);
-
+  card.append(header, formatted, footer);
   return card;
 }
 
@@ -1388,6 +906,7 @@ window.addEventListener("DOMContentLoaded", () => {
   updateKeyStatus();
   setSession("FN");
   loadLogsForDate(today);
+  syncAdvanceProgrammeAlerts();
 });
 </script>
 </head>
@@ -1405,6 +924,26 @@ window.addEventListener("DOMContentLoaded", () => {
   <h1 class="text-lg font-bold text-slate-900 dark:text-white">PHI Pocket Log Portal</h1>
   <p class="text-xs text-slate-500 dark:text-slate-400">Live Voice to Simple English Sync</p>
 </header>
+
+<!-- ================= ADVANCE PROGRAMME (H 510) TODAY (🔴) & TOMORROW (🟢) ALERTS ================= -->
+<div class="space-y-2 mb-4">
+  <!-- Today's Red Alert (🔴) -->
+  <div id="boxTodayAlert" onclick="applyScheduledToNote()" class="hidden bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 p-3 rounded-2xl cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-950/60 transition shadow-sm">
+    <div class="flex items-center justify-between text-xs font-bold text-rose-700 dark:text-rose-400 mb-1">
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> 🔴 Today's Scheduled Duty (H 510)</span>
+      <span class="text-[10px] underline font-semibold">Tap to Insert</span>
+    </div>
+    <div id="alertTodayDuty" class="text-xs text-rose-900 dark:text-rose-200 font-medium leading-relaxed"></div>
+  </div>
+
+  <!-- Tomorrow's Green Alert (🟢) -->
+  <div id="boxTomorrowAlert" class="hidden bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 p-3 rounded-2xl shadow-sm">
+    <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-1">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 🟢 Tomorrow's Scheduled Duty (H 510)
+    </div>
+    <div id="alertTomorrowDuty" class="text-xs text-emerald-900 dark:text-emerald-200 font-medium leading-relaxed"></div>
+  </div>
+</div>
 
 <!-- API KEY -->
 <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-4">
@@ -1440,7 +979,7 @@ window.addEventListener("DOMContentLoaded", () => {
   <div class="relative">
     <textarea id="rawNote" rows="5" class="w-full p-3 pr-24 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none placeholder:text-slate-400" placeholder="සිංහලෙන් කියවන්න (Mic) හෝ Singlish වලින් ටයිප් කරන්න..."></textarea>
     
-    <!-- Voice & OCR Controls -->
+    <!-- Voice Controls -->
     <div class="absolute right-2 bottom-2.5 flex items-center gap-1 bg-slate-50 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
       <button type="button" onclick="openImportPicker()" class="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 rounded-full transition cursor-pointer" title="Add image/document and extract text">
         <i class="ph ph-file-image text-base"></i>
@@ -1469,41 +1008,16 @@ window.addEventListener("DOMContentLoaded", () => {
     onchange="handleDocumentImport(event)"
   />
 
+  <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
+    <i class="ph ph-info"></i>
+    📄 Image/PDF/DOCX → text • 📍 GPS → coordinates • Imported text is inserted at the cursor
+  </div>
+
   <div class="flex justify-between items-center mt-3 gap-2">
     <span id="status" class="text-xs font-medium text-slate-500 dark:text-slate-400"></span>
     <button id="saveBtn" onclick="saveLog()" class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-sm flex items-center gap-1.5">
       <i class="ph ph-paper-plane-right"></i> Format & Save
     </button>
-  </div>
-
-  <!-- SEPARATE ATTACHMENT SECTION -->
-  <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <button type="button" onclick="openGeneralFilePicker()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-        <i class="ph ph-paperclip text-base text-indigo-600"></i> Select Files
-      </button>
-
-      <button id="attachSaveBtn" type="button" onclick="saveAttachedDataOnly()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm">
-        <i class="ph ph-cloud-arrow-up"></i> Attach Data to Log
-      </button>
-    </div>
-    
-    <input
-      id="generalFileInput"
-      type="file"
-      multiple
-      class="hidden"
-      accept="image/*,video/*,audio/*,application/pdf,.docx,.txt"
-      onchange="handleGeneralFileSelect(event)"
-    />
-
-    <div id="pendingGeneralFilesList" class="hidden mt-2 space-y-1.5"></div>
-    <div id="attachStatus" class="text-[11px] mt-1.5 text-slate-500 dark:text-slate-400"></div>
-  </div>
-
-  <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
-    <i class="ph ph-info"></i>
-    📄 Format & Save → Text Gemini AI sync • 📎 Attach Data to Log → Direct storage without AI analysis
   </div>
 </div>
 
