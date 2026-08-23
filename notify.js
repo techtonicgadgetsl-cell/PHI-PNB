@@ -1,12 +1,10 @@
-// notify.js - Auto Daily Reminder for PHI Duties
 const https = require('https');
 
-// ================= CONFIGURATIONS =================
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "YOUR_TELEGRAM_BOT_TOKEN_HERE";
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "YOUR_CHAT_ID_HERE";
-const FIREBASE_PROJECT_ID = "phi-pnb"; // ඔබගේ Firebase Project ID එක
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const FIREBASE_PROJECT_ID = "phi-pnb";
 
-async function fetchFirestore(url) {
+function fetchFirestore(url) {
   return new Promise((resolve, reject) => {
     https.get(url, (res) => {
       let data = '';
@@ -41,7 +39,10 @@ function sendTelegramMessage(text) {
     const req = https.request(options, (res) => {
       let responseBody = '';
       res.on('data', chunk => responseBody += chunk);
-      res.on('end', () => resolve(responseBody));
+      res.on('end', () => {
+        console.log("Telegram API Response:", responseBody);
+        resolve(responseBody);
+      });
     });
 
     req.on('error', reject);
@@ -51,7 +52,6 @@ function sendTelegramMessage(text) {
 }
 
 async function runDailyReminder() {
-  // Sri Lanka Time (UTC + 5:30)
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -63,24 +63,24 @@ async function runDailyReminder() {
 
   console.log(`Checking duties for ${monthKey}, Day: ${day} (${dayName})...`);
 
-  // Firestore REST API Endpoint for phi_advance_schedules
   const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/phi_advance_schedules/${monthKey}`;
 
   try {
     const res = await fetchFirestore(url);
-    if (!res.fields || !res.fields.days) {
-      console.log("No advance programme found for this month.");
-      return;
+    
+    let fnDuty = "No specific duty scheduled";
+    let anDuty = "No specific duty scheduled";
+    let officerName = "PHI Officer";
+    let phiArea = "Range Area";
+
+    if (res.fields) {
+      officerName = res.fields.phiName?.stringValue || officerName;
+      phiArea = res.fields.phiArea?.stringValue || phiArea;
+      const daysMap = res.fields.days?.mapValue?.fields || {};
+      const todayData = daysMap[day]?.mapValue?.fields || {};
+      fnDuty = todayData.fn?.stringValue || fnDuty;
+      anDuty = todayData.an?.stringValue || anDuty;
     }
-
-    // Parse Firestore structured JSON map
-    const daysMap = res.fields.days.mapValue?.fields || {};
-    const todayData = daysMap[day]?.mapValue?.fields || {};
-
-    const fnDuty = todayData.fn?.stringValue || "No specific duty scheduled";
-    const anDuty = todayData.an?.stringValue || "No specific duty scheduled";
-    const officerName = res.fields.phiName?.stringValue || "PHI Officer";
-    const phiArea = res.fields.phiArea?.stringValue || "Range Area";
 
     const message = `📋 <b>PHI DAILY DUTY REMINDER (Health 510)</b>
 ━━━━━━━━━━━━━━━━━━
@@ -95,9 +95,8 @@ async function runDailyReminder() {
 ━━━━━━━━━━━━━━━━━━
 <i>Pocket Note Book (Health 253) එකේ සටහන් කිරීමට App එක විවෘත කරන්න.</i>`;
 
-    console.log("Sending Telegram notification...");
     await sendTelegramMessage(message);
-    console.log("Notification sent successfully!");
+    console.log("Process complete.");
 
   } catch (error) {
     console.error("Error executing reminder:", error);
