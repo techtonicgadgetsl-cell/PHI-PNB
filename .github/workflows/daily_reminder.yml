@@ -1,16 +1,34 @@
-name: Daily PHI Duty Reminder
+name: Daily PHI Duty & Official Reminders
 
 on:
   schedule:
-    # 01:30 UTC = 07:00 AM Sri Lanka Time (UTC + 5:30)
+    # 01:30 UTC = 07:00 AM Sri Lanka Time
     - cron: '30 1 * * *'
+    # 02:00 UTC = 07:30 AM Sri Lanka Time
+    - cron: '0 2 * * *'
+    # 02:30 UTC = 08:00 AM Sri Lanka Time
+    - cron: '30 2 * * *'
+    # 06:30 UTC = 12:00 PM Sri Lanka Time
+    - cron: '30 6 * * *'
   workflow_dispatch:
+    inputs:
+      test_slot:
+        description: 'Select slot to trigger manually'
+        required: true
+        default: 'ALL_TEST'
+        type: choice
+        options:
+          - ALL_TEST
+          - SLOT_0700
+          - SLOT_0730
+          - SLOT_0800
+          - SLOT_1200
 
 jobs:
-  send-reminder:
+  dispatch-reminders:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -18,8 +36,30 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Determine Trigger Time Slot
+        id: slot
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "SELECTED_SLOT=${{ github.event.inputs.test_slot }}" >> $GITHUB_ENV
+          else
+            CRON_HOUR=$(date -u +%H)
+            CRON_MIN=$(date -u +%M)
+            if [ "$CRON_HOUR" = "01" ]; then
+              echo "SELECTED_SLOT=SLOT_0700" >> $GITHUB_ENV
+            elif [ "$CRON_HOUR" = "02" ] && [ "$CRON_MIN" -lt "15" ]; then
+              echo "SELECTED_SLOT=SLOT_0730" >> $GITHUB_ENV
+            elif [ "$CRON_HOUR" = "02" ]; then
+              echo "SELECTED_SLOT=SLOT_0800" >> $GITHUB_ENV
+            elif [ "$CRON_HOUR" = "06" ]; then
+              echo "SELECTED_SLOT=SLOT_1200" >> $GITHUB_ENV
+            else
+              echo "SELECTED_SLOT=DAILY_DUTY" >> $GITHUB_ENV
+            fi
+          fi
+
       - name: Execute Notification Script
         env:
           TELEGRAM_BOT_TOKEN: "8853364712:AAEif92LUwmj2N4hdqo1SBKqE3XM0NMNTxI"
           TELEGRAM_CHAT_ID: "1485164955"
+          TRIGGER_SLOT: ${{ env.SELECTED_SLOT }}
         run: node notify.js
