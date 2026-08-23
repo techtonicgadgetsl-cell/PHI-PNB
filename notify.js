@@ -56,57 +56,79 @@ function sendTelegramMessage(text) {
   });
 }
 
-async function runDailyReminder() {
-  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = now.getDate();
+async function getDutyForDate(dateObj) {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = dateObj.getDate();
   const monthKey = `${year}-${month}`;
   
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const dayName = daysOfWeek[now.getDay()];
-
-  console.log(`Checking duties for ${monthKey}, Day: ${day} (${dayName})...`);
+  const dayName = daysOfWeek[dateObj.getDay()];
+  const formattedDate = `${year}-${month}-${String(day).padStart(2, '0')}`;
 
   const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/phi_advance_schedules/${monthKey}`;
 
+  let fn = "රාජකාරියක් සටහන් කර නැත (No schedule)";
+  let an = "රාජකාරියක් සටහන් කර නැත (No schedule)";
+  let officerName = "PHI Officer";
+  let phiArea = "Range Area";
+
   try {
     const res = await fetchFirestore(url);
-    
-    let fnDuty = "රාජකාරියක් සටහන් කර නැත (No schedule)";
-    let anDuty = "රාජකාරියක් සටහන් කර නැත (No schedule)";
-    let officerName = "PHI Officer";
-    let phiArea = "Range Area";
-
     if (res.fields) {
       officerName = res.fields.phiName?.stringValue || officerName;
       phiArea = res.fields.phiArea?.stringValue || phiArea;
       const daysMap = res.fields.days?.mapValue?.fields || {};
-      const todayData = daysMap[day]?.mapValue?.fields || {};
-      fnDuty = todayData.fn?.stringValue || fnDuty;
-      anDuty = todayData.an?.stringValue || anDuty;
+      const dayData = daysMap[day]?.mapValue?.fields || {};
+      fn = dayData.fn?.stringValue || fn;
+      an = dayData.an?.stringValue || an;
     }
+  } catch (e) {
+    console.warn(`Could not fetch schedule for ${formattedDate}:`, e.message);
+  }
 
-    const message = `📋 <b>PHI DAILY DUTY REMINDER (Health 510)</b>
-━━━━━━━━━━━━━━━━━━
-📅 <b>දිනය:</b> ${year}-${month}-${String(day).padStart(2, '0')} (${dayName})
-👤 <b>නිලධාරී:</b> ${officerName} | ${phiArea}
+  return { formattedDate, dayName, fn, an, officerName, phiArea };
+}
 
-🌅 <b>Forenoon (8:00 AM - 12:00 PM):</b>
-• ${fnDuty}
+async function runDailyReminder() {
+  // Current Sri Lanka Time (UTC + 5:30)
+  const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
+  
+  // Calculate Tomorrow's Date
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
 
-🌇 <b>Afternoon (1:00 PM - 4:00 PM):</b>
-• ${anDuty}
-━━━━━━━━━━━━━━━━━━
+  console.log("Fetching Today's & Tomorrow's schedules...");
+
+  const todayInfo = await getDutyForDate(today);
+  const tomorrowInfo = await getDutyForDate(tomorrow);
+
+  const message = `📋 <b>PHI DUTY REMINDER (Health 510)</b>
+👤 <b>Officer:</b> ${todayInfo.officerName} | ${todayInfo.phiArea}
+━━━━━━━━━━━━━━━━━━━━
+
+🔴 <b>TODAY'S SCHEDULE</b>
+📅 <b>Date:</b> ${todayInfo.formattedDate} (${todayInfo.dayName})
+🌅 <b>FN (8:00 AM - 12:00 PM):</b>
+• ${todayInfo.fn}
+🌇 <b>AN (1:00 PM - 4:00 PM):</b>
+• ${todayInfo.an}
+
+━━━━━━━━━━━━━━━━━━━━
+
+🟢 <b>TOMORROW'S SCHEDULE</b>
+📅 <b>Date:</b> ${tomorrowInfo.formattedDate} (${tomorrowInfo.dayName})
+🌅 <b>FN (8:00 AM - 12:00 PM):</b>
+• ${tomorrowInfo.fn}
+🌇 <b>AN (1:00 PM - 4:00 PM):</b>
+• ${tomorrowInfo.an}
+
+━━━━━━━━━━━━━━━━━━━━
 <i>Pocket Note Book (Health 253) එකේ සටහන් කිරීමට App එක විවෘත කරන්න.</i>`;
 
-    console.log("Sending Telegram notification...");
-    await sendTelegramMessage(message);
-    console.log("Completed!");
-
-  } catch (error) {
-    console.error("Error in reminder process:", error);
-  }
+  console.log("Sending Dual Alert to Telegram...");
+  await sendTelegramMessage(message);
+  console.log("Completed successfully!");
 }
 
 runDailyReminder();
