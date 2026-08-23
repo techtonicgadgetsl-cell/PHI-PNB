@@ -28,6 +28,7 @@ import {
   serverTimestamp,
   deleteDoc,
   updateDoc,
+  setDoc,
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -183,6 +184,97 @@ window.applyScheduledToNote = function() {
     rememberNoteCursor();
     insertTextAtSavedCursor(window.todayScheduledText);
     setStatus("Today's scheduled duty inserted into note.", "success");
+  }
+};
+
+// ================= IN-APP ADVANCE PROGRAMME VIEWER / EDITOR =================
+window.openAdvProgModal = async function() {
+  const currentMonth = getTodayISO().slice(0, 7);
+  $("advModalMonth").value = currentMonth;
+  await window.loadAdvMonthToModal(currentMonth);
+  $("advProgModal").classList.remove("hidden");
+  document.body.classList.add("overflow-hidden");
+};
+
+window.closeAdvProgModal = function() {
+  $("advProgModal").classList.add("hidden");
+  document.body.classList.remove("overflow-hidden");
+  syncAdvanceProgrammeAlerts();
+};
+
+window.loadAdvMonthToModal = async function(monthVal) {
+  if (!monthVal) return;
+  const list = $("advModalList");
+  const status = $("advModalStatus");
+  list.innerHTML = `<div class="text-center py-4 text-xs text-slate-400">Loading schedule...</div>`;
+  status.innerText = "";
+
+  const [year, month] = monthVal.split('-').map(Number);
+  const totalDays = new Date(year, month, 0).getDate();
+  const daysShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  try {
+    const docSnap = await getDoc(doc(db, "phi_advance_schedules", monthVal));
+    const data = docSnap.exists() ? docSnap.data().days || {} : {};
+
+    list.innerHTML = "";
+    for (let d = 1; d <= totalDays; d++) {
+      const dateObj = new Date(year, month - 1, d);
+      const dayName = daysShort[dateObj.getDay()];
+      const isSun = dateObj.getDay() === 0;
+      const isSat = dateObj.getDay() === 6;
+      const savedFn = data[d]?.fn || (isSun ? "Sunday Holiday" : "");
+      const savedAn = data[d]?.an || (isSun ? "Sunday Holiday" : (isSat ? "Off" : ""));
+
+      const row = document.createElement("div");
+      row.className = "p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 space-y-1.5";
+      row.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold ${isSun ? 'text-red-500' : (isSat ? 'text-amber-500' : 'text-slate-700 dark:text-slate-300')}">${String(d).padStart(2, '0')} - ${dayName}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="adv_m_fn_${d}" value="${savedFn}" placeholder="FN Duty..." class="text-xs p-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:ring-1 focus:ring-blue-500">
+          <input type="text" id="adv_m_an_${d}" value="${savedAn}" placeholder="AN Duty..." class="text-xs p-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:ring-1 focus:ring-amber-500">
+        </div>
+      `;
+      list.appendChild(row);
+    }
+  } catch (err) {
+    list.innerHTML = `<div class="text-xs text-red-500 text-center py-4">Error loading schedule: ${err.message}</div>`;
+  }
+};
+
+window.saveAdvMonthFromModal = async function() {
+  const monthVal = $("advModalMonth").value;
+  const status = $("advModalStatus");
+  if (!monthVal) return;
+
+  const [year, month] = monthVal.split('-').map(Number);
+  const totalDays = new Date(year, month, 0).getDate();
+  const daysData = {};
+
+  for (let d = 1; d <= totalDays; d++) {
+    const fnVal = $(`adv_m_fn_${d}`)?.value.trim() || "";
+    const anVal = $(`adv_m_an_${d}`)?.value.trim() || "";
+    daysData[d] = { fn: fnVal, an: anVal };
+  }
+
+  status.innerText = "Saving to Firebase...";
+  status.className = "text-xs font-semibold text-slate-500";
+
+  try {
+    await setDoc(doc(db, "phi_advance_schedules", monthVal), {
+      monthYear: monthVal,
+      days: daysData,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    status.innerText = "✓ Saved to Cloud!";
+    status.className = "text-xs font-semibold text-emerald-500";
+    setTimeout(() => { if (status) status.innerText = ""; }, 3000);
+  } catch (err) {
+    status.innerText = "Error: " + err.message;
+    status.className = "text-xs font-semibold text-red-500";
   }
 };
 
@@ -913,10 +1005,18 @@ window.addEventListener("DOMContentLoaded", () => {
 
 <body class="bg-slate-100 dark:bg-slate-950 min-h-screen p-4 max-w-md mx-auto text-slate-800 dark:text-slate-100 font-sans pb-16 transition-colors duration-200">
 
+<!-- Header with Action Buttons -->
 <header class="mb-4 text-center relative">
-  <button onclick="toggleTheme()" title="Toggle dark mode" class="absolute right-0 top-0 w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-sm flex items-center justify-center hover:scale-105 transition">
-    <i id="themeIcon" class="ph ph-moon"></i>
-  </button>
+  <div class="absolute right-0 top-0 flex items-center gap-1.5">
+    <!-- View & Edit Advance Programme Button -->
+    <button onclick="openAdvProgModal()" title="View & Edit H 510 Advance Programme" class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 shadow-sm flex items-center justify-center hover:scale-105 transition">
+      <i class="ph ph-calendar-check text-lg"></i>
+    </button>
+    <!-- Dark/Light Theme Button -->
+    <button onclick="toggleTheme()" title="Toggle dark mode" class="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 shadow-sm flex items-center justify-center hover:scale-105 transition">
+      <i id="themeIcon" class="ph ph-moon"></i>
+    </button>
+  </div>
 
   <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded-full text-xs font-bold mb-1">
     <i class="ph ph-notebook"></i> Health 253 Assistant
@@ -942,6 +1042,24 @@ window.addEventListener("DOMContentLoaded", () => {
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 🟢 Tomorrow's Scheduled Duty (H 510)
     </div>
     <div id="alertTomorrowDuty" class="text-xs text-emerald-900 dark:text-emerald-200 font-medium leading-relaxed"></div>
+  </div>
+</div>
+
+<!-- QUICK ADVANCE PROGRAMME LINK CARD -->
+<div class="bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border border-emerald-500/30 p-3 rounded-2xl mb-4 flex items-center justify-between gap-2 shadow-sm">
+  <div class="flex items-center gap-2">
+    <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
+      <i class="ph ph-calendar-plus"></i>
+    </div>
+    <div>
+      <div class="text-xs font-bold text-slate-900 dark:text-slate-100">H 510 Advance Programme</div>
+      <div class="text-[10px] text-slate-500 dark:text-slate-400">View or modify monthly schedules</div>
+    </div>
+  </div>
+  <div class="flex gap-1.5">
+    <button onclick="openAdvProgModal()" class="text-xs font-bold bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl shadow-sm hover:bg-slate-50 transition">
+      View & Edit
+    </button>
   </div>
 </div>
 
@@ -1040,6 +1158,48 @@ window.addEventListener("DOMContentLoaded", () => {
     <span class="text-xs text-slate-400 dark:text-slate-500 text-right">Ready to write in Health 253</span>
   </div>
   <div id="logsList" class="space-y-3"></div>
+</div>
+
+<!-- ================= IN-APP ADVANCE PROGRAMME VIEW / EDIT MODAL ================= -->
+<div id="advProgModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm p-3 overflow-y-auto">
+  <div class="max-w-md mx-auto mt-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="flex items-center justify-between p-3.5 border-b border-slate-200 dark:border-slate-700">
+      <div>
+        <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+          <i class="ph ph-calendar-check text-emerald-600"></i> Advance Programme (H 510)
+        </h3>
+        <p class="text-[11px] text-slate-400">View and update monthly duties in Cloud</p>
+      </div>
+      <button onclick="closeAdvProgModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 flex items-center justify-center font-bold">✕</button>
+    </div>
+
+    <!-- Month Selector & Controls -->
+    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <label class="text-xs font-bold text-slate-600 dark:text-slate-300">Month:</label>
+        <input type="month" id="advModalMonth" onchange="loadAdvMonthToModal(this.value)" class="text-xs border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+      </div>
+      <a href="h510_advance_programme.html" target="_blank" class="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1 hover:underline">
+        <i class="ph ph-arrow-square-out"></i> Full Form
+      </a>
+    </div>
+
+    <!-- Days Scrollable List -->
+    <div id="advModalList" class="p-3 space-y-2 overflow-y-auto flex-1">
+      <!-- 1-31 dynamically generated editable day items -->
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="p-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-between gap-2">
+      <span id="advModalStatus" class="text-xs font-semibold"></span>
+      <div class="flex gap-2">
+        <button onclick="closeAdvProgModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs">Close</button>
+        <button onclick="saveAdvMonthFromModal()" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm flex items-center gap-1">
+          <i class="ph ph-floppy-disk"></i> Save Cloud
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- EDIT MODAL -->
