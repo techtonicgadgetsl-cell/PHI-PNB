@@ -4,6 +4,7 @@ const https = require('https');
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8853364712:AAEif92LUwmj2N4hdqo1SBKqE3XM0NMNTxI";
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "1485164955";
 const FIREBASE_PROJECT_ID = "phi-pnb";
+const APP_URL = "https://techtonicgadgetsl-cell.github.io/PHI-PNB/";
 
 function fetchFirestore(url) {
   return new Promise((resolve, reject) => {
@@ -23,7 +24,17 @@ function sendTelegramMessage(text) {
     const payload = JSON.stringify({
       chat_id: TELEGRAM_CHAT_ID,
       text: text,
-      parse_mode: 'HTML'
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "📱 Open Pocket Log App",
+              url: APP_URL
+            }
+          ]
+        ]
+      }
     });
 
     const options = {
@@ -91,10 +102,7 @@ async function getDutyForDate(dateObj) {
 }
 
 async function runDailyReminder() {
-  // Current Sri Lanka Time (UTC + 5:30)
   const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
-  
-  // Calculate Tomorrow's Date
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
@@ -124,9 +132,9 @@ async function runDailyReminder() {
 • ${tomorrowInfo.an}
 
 ━━━━━━━━━━━━━━━━━━━━
-<i>Pocket Note Book (Health 253) එකේ සටහන් කිරීමට App එක විවෘත කරන්න.</i>`;
+👉 <a href="${APP_URL}"><b>Pocket Note Book (Health 253) එකේ සටහන් කිරීමට App එක විවෘත කරන්න</b></a>`;
 
-  console.log("Sending Dual Alert to Telegram...");
+  console.log("Sending Dual Alert with App Button to Telegram...");
   await sendTelegramMessage(message);
   console.log("Completed successfully!");
 }
