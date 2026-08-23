@@ -1,0 +1,107 @@
+// notify.js - Auto Daily Reminder for PHI Duties
+const https = require('https');
+
+// ================= CONFIGURATIONS =================
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "YOUR_TELEGRAM_BOT_TOKEN_HERE";
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "YOUR_CHAT_ID_HERE";
+const FIREBASE_PROJECT_ID = "phi-pnb"; // ඔබගේ Firebase Project ID එක
+
+async function fetchFirestore(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); }
+        catch (e) { reject(e); }
+      });
+    }).on('error', reject);
+  });
+}
+
+function sendTelegramMessage(text) {
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: text,
+      parse_mode: 'HTML'
+    });
+
+    const options = {
+      hostname: 'api.telegram.org',
+      port: 443,
+      path: `/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let responseBody = '';
+      res.on('data', chunk => responseBody += chunk);
+      res.on('end', () => resolve(responseBody));
+    });
+
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
+async function runDailyReminder() {
+  // Sri Lanka Time (UTC + 5:30)
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = now.getDate();
+  const monthKey = `${year}-${month}`;
+  
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = daysOfWeek[now.getDay()];
+
+  console.log(`Checking duties for ${monthKey}, Day: ${day} (${dayName})...`);
+
+  // Firestore REST API Endpoint for phi_advance_schedules
+  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/phi_advance_schedules/${monthKey}`;
+
+  try {
+    const res = await fetchFirestore(url);
+    if (!res.fields || !res.fields.days) {
+      console.log("No advance programme found for this month.");
+      return;
+    }
+
+    // Parse Firestore structured JSON map
+    const daysMap = res.fields.days.mapValue?.fields || {};
+    const todayData = daysMap[day]?.mapValue?.fields || {};
+
+    const fnDuty = todayData.fn?.stringValue || "No specific duty scheduled";
+    const anDuty = todayData.an?.stringValue || "No specific duty scheduled";
+    const officerName = res.fields.phiName?.stringValue || "PHI Officer";
+    const phiArea = res.fields.phiArea?.stringValue || "Range Area";
+
+    const message = `📋 <b>PHI DAILY DUTY REMINDER (Health 510)</b>
+━━━━━━━━━━━━━━━━━━
+📅 <b>දිනය:</b> ${year}-${month}-${String(day).padStart(2, '0')} (${dayName})
+👤 <b>නිලධාරී:</b> ${officerName} | ${phiArea}
+
+🌅 <b>Forenoon (8:00 AM - 12:00 PM):</b>
+• ${fnDuty}
+
+🌇 <b>Afternoon (1:00 PM - 4:00 PM):</b>
+• ${anDuty}
+━━━━━━━━━━━━━━━━━━
+<i>Pocket Note Book (Health 253) එකේ සටහන් කිරීමට App එක විවෘත කරන්න.</i>`;
+
+    console.log("Sending Telegram notification...");
+    await sendTelegramMessage(message);
+    console.log("Notification sent successfully!");
+
+  } catch (error) {
+    console.error("Error executing reminder:", error);
+  }
+}
+
+runDailyReminder();
