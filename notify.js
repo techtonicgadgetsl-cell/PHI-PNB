@@ -1,7 +1,8 @@
 const https = require('https');
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+// ================= TELEGRAM CONFIGURATIONS =================
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8853364712:AAEif92LUwmj2N4hdqo1SBKqE3XM0NMNTxI";
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "1485164955";
 const FIREBASE_PROJECT_ID = "phi-pnb";
 
 function fetchFirestore(url) {
@@ -45,7 +46,11 @@ function sendTelegramMessage(text) {
       });
     });
 
-    req.on('error', reject);
+    req.on('error', (err) => {
+      console.error("Telegram Request Error:", err);
+      reject(err);
+    });
+
     req.write(payload);
     req.end();
   });
@@ -68,8 +73,8 @@ async function runDailyReminder() {
   try {
     const res = await fetchFirestore(url);
     
-    let fnDuty = "No specific duty scheduled";
-    let anDuty = "No specific duty scheduled";
+    let fnDuty = "රාජකාරියක් සටහන් කර නැත (No schedule)";
+    let anDuty = "රාජකාරියක් සටහන් කර නැත (No schedule)";
     let officerName = "PHI Officer";
     let phiArea = "Range Area";
 
@@ -95,11 +100,12 @@ async function runDailyReminder() {
 ━━━━━━━━━━━━━━━━━━
 <i>Pocket Note Book (Health 253) එකේ සටහන් කිරීමට App එක විවෘත කරන්න.</i>`;
 
+    console.log("Sending Telegram notification...");
     await sendTelegramMessage(message);
-    console.log("Process complete.");
+    console.log("Completed!");
 
   } catch (error) {
-    console.error("Error executing reminder:", error);
+    console.error("Error in reminder process:", error);
   }
 }
 
