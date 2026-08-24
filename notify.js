@@ -109,7 +109,6 @@ async function checkUnconfirmedDiseaseCases(today) {
 
     for (let key in reports) {
       const r = reports[key];
-      // Check if Confirmed Date is empty or missing
       const isConfirmedEmpty = !r.inDateConfirmed || r.inDateConfirmed.trim() === "";
 
       if (isConfirmedEmpty) {
@@ -138,7 +137,6 @@ async function checkUnconfirmedDiseaseCases(today) {
       return;
     }
 
-    // Sort: Overdue (Red alerts) first, then by days elapsed descending
     unconfirmedList.sort((a, b) => b.daysElapsed - a.daysElapsed);
 
     let msg = `🚨 <b>PENDING COMMUNICABLE DISEASE INVESTIGATIONS</b>\n`;
@@ -303,13 +301,13 @@ async function main() {
       await sendDailyDutyReminder(today);
     } 
     else if (targetSlot === "SLOT_0730") {
-      // 1. Send OT & Claims reminder (if due)
       await checkOtAndClaimsReminder(day);
-      // 2. Send Communicable Disease Unconfirmed Cases List at 7:30 AM
       await checkUnconfirmedDiseaseCases(today);
     } 
     else if (targetSlot === "SLOT_0800") {
       await checkMorningEightAmReports(day);
+      // Fail-safe check: Slot 07:30 missed වුවහොත් 08:00 දී disease alerts trigger වීම
+      await checkUnconfirmedDiseaseCases(today);
     } 
     else if (targetSlot === "SLOT_1200") {
       await checkMiddayTwelvePmReports(today, day, monthIndex, dayOfWeek);
