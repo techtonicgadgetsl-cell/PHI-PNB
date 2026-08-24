@@ -44,16 +44,21 @@ jobs:
           else
             CRON_HOUR=$(date -u +%H)
             CRON_MIN=$(date -u +%M)
+            
+            # 01:30 UTC -> 07:00 AM SL Time
             if [ "$CRON_HOUR" = "01" ]; then
               echo "SELECTED_SLOT=SLOT_0700" >> $GITHUB_ENV
-            elif [ "$CRON_HOUR" = "02" ] && [ "$CRON_MIN" -lt "15" ]; then
+            # 02:00 UTC -> 07:30 AM SL Time (Safe window up to 25 mins delay)
+            elif [ "$CRON_HOUR" = "02" ] && [ "$CRON_MIN" -le "25" ]; then
               echo "SELECTED_SLOT=SLOT_0730" >> $GITHUB_ENV
-            elif [ "$CRON_HOUR" = "02" ]; then
+            # 02:30 UTC -> 08:00 AM SL Time
+            elif [ "$CRON_HOUR" = "02" ] || [ "$CRON_HOUR" = "03" ]; then
               echo "SELECTED_SLOT=SLOT_0800" >> $GITHUB_ENV
-            elif [ "$CRON_HOUR" = "06" ]; then
+            # 06:30 UTC -> 12:00 PM SL Time
+            elif [ "$CRON_HOUR" = "06" ] || [ "$CRON_HOUR" = "07" ]; then
               echo "SELECTED_SLOT=SLOT_1200" >> $GITHUB_ENV
             else
-              echo "SELECTED_SLOT=DAILY_DUTY" >> $GITHUB_ENV
+              echo "SELECTED_SLOT=SLOT_0730" >> $GITHUB_ENV
             fi
           fi
 
