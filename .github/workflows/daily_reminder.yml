@@ -42,22 +42,20 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "SELECTED_SLOT=${{ github.event.inputs.test_slot }}" >> $GITHUB_ENV
           else
-            # Force base-10 interpretation so values like 08/09 aren't
-            # misread as invalid octal by bash arithmetic comparisons.
-            CRON_HOUR=$((10#$(date -u +%H)))
-            CRON_MIN=$((10#$(date -u +%M)))
+            CRON_HOUR=$(date -u +%H)
+            CRON_MIN=$(date -u +%M)
             
             # 01:30 UTC -> 07:00 AM SL Time
-            if [ "$CRON_HOUR" = "1" ]; then
+            if [ "$CRON_HOUR" = "01" ]; then
               echo "SELECTED_SLOT=SLOT_0700" >> $GITHUB_ENV
             # 02:00 UTC -> 07:30 AM SL Time (Safe window up to 25 mins delay)
-            elif [ "$CRON_HOUR" = "2" ] && [ "$CRON_MIN" -le "25" ]; then
+            elif [ "$CRON_HOUR" = "02" ] && [ "$CRON_MIN" -le "25" ]; then
               echo "SELECTED_SLOT=SLOT_0730" >> $GITHUB_ENV
             # 02:30 UTC -> 08:00 AM SL Time
-            elif [ "$CRON_HOUR" = "2" ] || [ "$CRON_HOUR" = "3" ]; then
+            elif [ "$CRON_HOUR" = "02" ] || [ "$CRON_HOUR" = "03" ]; then
               echo "SELECTED_SLOT=SLOT_0800" >> $GITHUB_ENV
             # 06:30 UTC -> 12:00 PM SL Time
-            elif [ "$CRON_HOUR" = "6" ] || [ "$CRON_HOUR" = "7" ]; then
+            elif [ "$CRON_HOUR" = "06" ] || [ "$CRON_HOUR" = "07" ]; then
               echo "SELECTED_SLOT=SLOT_1200" >> $GITHUB_ENV
             else
               echo "SELECTED_SLOT=SLOT_0730" >> $GITHUB_ENV
@@ -66,7 +64,7 @@ jobs:
 
       - name: Execute Notification Script
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: "8853364712:AAEif92LUwmj2N4hdqo1SBKqE3XM0NMNTxI"
+          TELEGRAM_CHAT_ID: "1485164955"
           TRIGGER_SLOT: ${{ env.SELECTED_SLOT }}
         run: node notify.js
