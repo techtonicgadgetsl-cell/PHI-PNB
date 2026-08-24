@@ -1,13 +1,8 @@
 const https = require('https');
 
 // ================= CONFIGURATIONS =================
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-
-if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-  console.error("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID environment variable(s). Set these as GitHub repo secrets.");
-  process.exit(1);
-}
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8853364712:AAEif92LUwmj2N4hdqo1SBKqE3XM0NMNTxI";
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "1485164955";
 const FIREBASE_PROJECT_ID = "phi-pnb";
 const APP_URL = "https://techtonicgadgetsl-cell.github.io/PHI-PNB/";
 
