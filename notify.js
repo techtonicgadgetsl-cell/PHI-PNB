@@ -94,8 +94,8 @@ async function getDutyForDate(dateObj) {
   return { formattedDate, dayName, fn, an, officerName, phiArea };
 }
 
-// 1. Daily Duty Reminder (Today & Tomorrow)
-async function sendDailyDutyReminder(today) {
+// 1. Morning 07:00 AM Dual Schedule Reminder
+async function sendMorningDualDutyReminder(today) {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
@@ -128,10 +128,37 @@ async function sendDailyDutyReminder(today) {
   await sendTelegramMessage(message, true);
 }
 
-// 2. OT / Claims / Petrol Claim & Request Letters
-async function checkOtAndClaimsReminder(day) {
+// 2. Evening 06:00 PM Tomorrow-Only Brief
+async function sendEveningTomorrowSchedule(today) {
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const tomorrowInfo = await getDutyForDate(tomorrow);
+
+  const message = `🌇 <b>EVENING BRIEF: TOMORROW'S SCHEDULE (Health 510)</b>
+👤 <b>Officer:</b> ${tomorrowInfo.officerName} | ${tomorrowInfo.phiArea}
+━━━━━━━━━━━━━━━━━━━━
+
+🟢 <b>TOMORROW'S DUTY PLAN</b>
+📅 <b>Date:</b> ${tomorrowInfo.formattedDate} (${tomorrowInfo.dayName})
+
+🌅 <b>Forenoon (8:00 AM - 12:00 PM):</b>
+• ${tomorrowInfo.fn}
+
+🌇 <b>Afternoon (1:00 PM - 4:00 PM):</b>
+• ${tomorrowInfo.an}
+
+━━━━━━━━━━━━━━━━━━━━
+<i>හෙට දින රාජකාරි සඳහා අවශ්‍ය ලිපිලේඛන හා සැලසුම් සූදානම් කරගන්න.</i>`;
+
+  await sendTelegramMessage(message, true);
+}
+
+// 3. Morning 07:00 AM Official Reminders Bundle
+async function sendMorningOfficialReminders(today, day, monthIndex, dayOfWeek) {
+  // A. OT & Claims Reminder (Days 25, 1, 2, 3, 4, 5)
   if ([25, 1, 2, 3, 4, 5].includes(day)) {
-    const msg = `🔴 <b>CRITICAL REMINDER: OT / CLAIMS SUBMISSION</b>
+    const otMsg = `🔴 <b>CRITICAL REMINDER: OT / CLAIMS SUBMISSION</b>
 ━━━━━━━━━━━━━━━━━━━━
 📌 <b>කරුණාකර පහත ලේඛන කඩිනමින් සකස් කර MOH කාර්යාලය වෙත ඉදිරිපත් කරන්න:</b>
 
@@ -140,14 +167,12 @@ async function checkOtAndClaimsReminder(day) {
 3. 📄 <b>Next Month OT & Off Pay Advance Request Letters</b>
 
 ⚠️ <i>මාසික දීමනා ප්‍රමාදයකින් තොරව ලබාගැනීමට නියමිත දිනට පෙර Submit කරන්න.</i>`;
-    await sendTelegramMessage(msg);
+    await sendTelegramMessage(otMsg);
   }
-}
 
-// 3. Morning 08:00 AM Reports (H 631 Part 02, H 1014, H 1247)
-async function checkMorningEightAmReports(day) {
+  // B. Monthly Reports (Days 1, 2, 3, 4, 5)
   if ([1, 2, 3, 4, 5].includes(day)) {
-    const msg = `📊 <b>MONTHLY REPORT SUBMISSION REMINDER (Day ${day}/05)</b>
+    const repMsg = `📊 <b>MONTHLY REPORT SUBMISSION REMINDER (Day ${day}/05)</b>
 ━━━━━━━━━━━━━━━━━━━━
 පහත මාසික වාර්තා <b>eRHMIS System</b> එකට Update කර <b>Hard Copy</b> සකස් කර භාරදීමට කටයුතු කරන්න:
 
@@ -155,9 +180,10 @@ async function checkMorningEightAmReports(day) {
 🏫 <b>02. H 1014</b> - School Health Monthly Return
 ━━━━━━━━━━━━━━━━━━━━
 ⚠️ <i>මාසයේ මුල් දින 05 තුළ submission එක අවසන් කළ යුතුය.</i>`;
-    await sendTelegramMessage(msg);
+    await sendTelegramMessage(repMsg);
   }
 
+  // C. SMI Check (Day 01)
   if (day === 1) {
     const smiMsg = `🏫 <b>H 1247: SCHOOL MEDICAL INSPECTION (SMI) CHECK</b>
 ━━━━━━━━━━━━━━━━━━━━
@@ -166,36 +192,31 @@ async function checkMorningEightAmReports(day) {
 පසුගිය මස පාසල් වෛද්‍ය පරීක්ෂණ (SMI) දත්ත සහ ප්‍රතිඵල eRHMIS පද්ධතියට නිවැරදිව ඇතුළත් කර අවසන් කර ඇත්දැයි පරීක්ෂා කර තහවුරු කරන්න.`;
     await sendTelegramMessage(smiMsg);
   }
-}
 
-// 4. Midday 12:00 PM Reports
-async function checkMiddayTwelvePmReports(today, day, monthIndex, dayOfWeek) {
+  // D. H 510 Advance Plan Reminder (Days 22, 23, 24)
   if ([22, 23, 24].includes(day)) {
     const nextMonthObj = new Date(today);
     nextMonthObj.setMonth(today.getMonth() + 1);
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const nextMonthName = monthNames[nextMonthObj.getMonth()];
 
-    const msg = `⚠️ <b>H 510 MONTHLY ADVANCE PROGRAMME SUBMISSION</b>
+    const advMsg = `⚠️ <b>H 510 MONTHLY ADVANCE PROGRAMME SUBMISSION</b>
 ━━━━━━━━━━━━━━━━━━━━
 📅 <b>ඉලක්කගත මාසය:</b> ${nextMonthName} ${nextMonthObj.getFullYear()}
 
 ලබන මස <b>Health 510 Advance Programme</b> එක <b>25 වන දිනට පෙර</b> SPHI / MOH වෙත Approval සඳහා යොමු කළ යුතුය.
 
 👉 <a href="${APP_URL}h510_advance_programme.html"><b>H 510 Schedule එක සකස් කිරීමට මෙතන Click කරන්න</b></a>`;
-    await sendTelegramMessage(msg, true);
+    await sendTelegramMessage(advMsg, true);
   }
 
+  // E. Q1 Annual & School Survey Reports (Jan/Feb Weekly, March Daily)
   const isQ1 = [0, 1, 2].includes(monthIndex);
   const isMonday = dayOfWeek === 1;
-
   if (isQ1) {
     let shouldTrigger = false;
-    if ((monthIndex === 0 || monthIndex === 1) && isMonday) {
-      shouldTrigger = true;
-    } else if (monthIndex === 2) {
-      shouldTrigger = true;
-    }
+    if ((monthIndex === 0 || monthIndex === 1) && isMonday) shouldTrigger = true;
+    else if (monthIndex === 2) shouldTrigger = true;
 
     if (shouldTrigger) {
       const q1Msg = `📈 <b>Q1 ANNUAL & SURVEY REPORT REMINDER</b>
@@ -209,7 +230,7 @@ async function checkMiddayTwelvePmReports(today, day, monthIndex, dayOfWeek) {
   }
 }
 
-// ================= MAIN ENTRY =================
+// ================= MAIN RUNNER =================
 async function main() {
   const manualSlot = process.env.TRIGGER_SLOT;
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
@@ -218,38 +239,30 @@ async function main() {
   const monthIndex = now.getMonth();
   const dayOfWeek = now.getDay();
 
-  console.log(`SL Time: ${now.toLocaleTimeString()} | Day: ${day} | Manual Override: ${manualSlot || 'NONE'}`);
+  console.log(`[SL Time: ${now.toLocaleTimeString()}] Target Slot: ${manualSlot || 'AUTO'}`);
 
   try {
-    if (manualSlot && manualSlot !== "AUTO" && manualSlot !== "") {
-      if (manualSlot === "SLOT_0700" || manualSlot === "DAILY_DUTY") await sendDailyDutyReminder(now);
-      else if (manualSlot === "SLOT_0730") await checkOtAndClaimsReminder(day);
-      else if (manualSlot === "SLOT_0800") await checkMorningEightAmReports(day);
-      else if (manualSlot === "SLOT_1200") await checkMiddayTwelvePmReports(now, day, monthIndex, dayOfWeek);
-      else if (manualSlot === "ALL_TEST") {
-        await sendDailyDutyReminder(now);
-        await checkOtAndClaimsReminder(day);
-        await checkMorningEightAmReports(day);
-        await checkMiddayTwelvePmReports(now, day, monthIndex, dayOfWeek);
-      }
+    if (manualSlot === "MORNING_0700") {
+      await sendMorningDualDutyReminder(now);
+      await sendMorningOfficialReminders(now, day, monthIndex, dayOfWeek);
+    } else if (manualSlot === "EVENING_1800") {
+      await sendEveningTomorrowSchedule(now);
+    } else if (manualSlot === "ALL_TEST") {
+      await sendMorningDualDutyReminder(now);
+      await sendMorningOfficialReminders(now, day, monthIndex, dayOfWeek);
+      await sendEveningTomorrowSchedule(now);
     } else {
-      // Automatic time evaluation based on Sri Lanka Time
-      if (hour >= 6 && hour < 8) {
-        // Morning Slot (07:00 - 07:59 AM)
-        await sendDailyDutyReminder(now);
-        await checkOtAndClaimsReminder(day);
-      } else if (hour >= 8 && hour < 11) {
-        // 08:00 AM Slot
-        await checkMorningEightAmReports(day);
-      } else if (hour >= 11 && hour <= 14) {
-        // 12:00 PM Slot
-        await checkMiddayTwelvePmReports(now, day, monthIndex, dayOfWeek);
+      // AUTO MODE based on Sri Lanka Hour
+      if (hour >= 16 && hour <= 21) {
+        // Evening Trigger (Around 6:00 PM)
+        await sendEveningTomorrowSchedule(now);
       } else {
-        // Fallback for any other trigger
-        await sendDailyDutyReminder(now);
+        // Morning Trigger (Around 7:00 AM & Default)
+        await sendMorningDualDutyReminder(now);
+        await sendMorningOfficialReminders(now, day, monthIndex, dayOfWeek);
       }
     }
-    console.log("Reminders sent successfully!");
+    console.log("Completed successfully!");
   } catch (err) {
     console.error("Execution error:", err);
   }
