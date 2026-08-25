@@ -4,23 +4,19 @@ on:
   schedule:
     # 01:30 UTC = 07:00 AM Sri Lanka Time
     - cron: '30 1 * * *'
-    # 02:30 UTC = 08:00 AM Sri Lanka Time
-    - cron: '30 2 * * *'
-    # 06:30 UTC = 12:00 PM Sri Lanka Time
-    - cron: '30 6 * * *'
+    # 12:30 UTC = 06:00 PM Sri Lanka Time
+    - cron: '30 12 * * *'
   workflow_dispatch:
     inputs:
       test_slot:
-        description: 'Select slot'
+        description: 'Select slot to trigger manually'
         required: true
         default: 'ALL_TEST'
         type: choice
         options:
           - ALL_TEST
-          - SLOT_0700
-          - SLOT_0730
-          - SLOT_0800
-          - SLOT_1200
+          - MORNING_0700
+          - EVENING_1800
           - AUTO
 
 jobs:
