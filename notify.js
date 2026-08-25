@@ -6,11 +6,7 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "1485164955";
 const FIREBASE_PROJECT_ID = "phi-pnb";
 const APP_URL = "https://techtonicgadgetsl-cell.github.io/PHI-PNB/";
 
-// Health 411 Portal Configuration
-const H411_DB_URL = "https://h411-3b136-default-rtdb.asia-southeast1.firebasedatabase.app/health_reports.json";
-const H411_APP_URL = "https://techtonicgadgetsl-cell.github.io/H411/";
-
-function fetchJson(url) {
+function fetchFirestore(url) {
   return new Promise((resolve, reject) => {
     https.get(url, (res) => {
       let data = '';
@@ -23,7 +19,7 @@ function fetchJson(url) {
   });
 }
 
-function sendTelegramMessage(text, showAppButton = false, customUrl = null, customBtnText = null) {
+function sendTelegramMessage(text, showAppButton = false) {
   return new Promise((resolve, reject) => {
     const payloadObj = {
       chat_id: TELEGRAM_CHAT_ID,
@@ -34,7 +30,7 @@ function sendTelegramMessage(text, showAppButton = false, customUrl = null, cust
     if (showAppButton) {
       payloadObj.reply_markup = {
         inline_keyboard: [
-          [{ text: customBtnText || "📱 Open Pocket Log App", url: customUrl || APP_URL }]
+          [{ text: "📱 Open Pocket Log App", url: APP_URL }]
         ]
       };
     }
@@ -82,7 +78,7 @@ async function getDutyForDate(dateObj) {
   let phiArea = "Range Area";
 
   try {
-    const res = await fetchJson(url);
+    const res = await fetchFirestore(url);
     if (res.fields) {
       officerName = res.fields.phiName?.stringValue || officerName;
       phiArea = res.fields.phiArea?.stringValue || phiArea;
@@ -92,86 +88,13 @@ async function getDutyForDate(dateObj) {
       an = dayData.an?.stringValue || an;
     }
   } catch (e) {
-    console.warn(`Firestore read warning: ${e.message}`);
+    console.warn(`Firestore read warning for ${formattedDate}:`, e.message);
   }
 
   return { formattedDate, dayName, fn, an, officerName, phiArea };
 }
 
-// ================= 0. COMMUNICABLE DISEASE UNCONFIRMED ALERTS (Health 411) =================
-async function checkUnconfirmedDiseaseCases(today) {
-  try {
-    const reports = await fetchJson(H411_DB_URL);
-    if (!reports) return;
-
-    const unconfirmedList = [];
-    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-    for (let key in reports) {
-      const r = reports[key];
-      const isConfirmedEmpty = !r.inDateConfirmed || r.inDateConfirmed.trim() === "";
-
-      if (isConfirmedEmpty) {
-        let daysElapsed = 0;
-        if (r.inDateNotified) {
-          const notifiedDate = new Date(r.inDateNotified);
-          const diffTime = todayMidnight - new Date(notifiedDate.getFullYear(), notifiedDate.getMonth(), notifiedDate.getDate());
-          daysElapsed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        }
-
-        unconfirmedList.push({
-          refNo: r.inPhiRefNo || "No Ref",
-          name: r.inPatientName || "Unnamed Patient",
-          address: r.inPatientAddress || "No Address",
-          phone: r.inPatientPhone || "No Phone",
-          disease: r.inDiseaseNotified || "Communicable Disease",
-          hospital: r.inHospitalName || "Hospital Not Specified",
-          notifiedDate: r.inDateNotified || "N/A",
-          daysElapsed: daysElapsed
-        });
-      }
-    }
-
-    if (unconfirmedList.length === 0) {
-      console.log("No pending unconfirmed disease cases found.");
-      return;
-    }
-
-    unconfirmedList.sort((a, b) => b.daysElapsed - a.daysElapsed);
-
-    let msg = `🚨 <b>PENDING COMMUNICABLE DISEASE INVESTIGATIONS</b>\n`;
-    msg += `📋 <b>Health 411: Unconfirmed Cases Daily Report</b>\n`;
-    msg += `📅 <b>Date:</b> ${today.toISOString().slice(0, 10)}\n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━\n\n`;
-
-    unconfirmedList.forEach((item, index) => {
-      const isOverdue = item.daysElapsed > 3;
-      const statusIcon = isOverdue ? "🔴 <b>[RED ALERT - OVERDUE]</b>" : "🟢 <b>[GREEN ALERT - PENDING]</b>";
-      
-      msg += `${index + 1}. ${statusIcon}\n`;
-      msg += `👤 <b>Patient:</b> ${item.name}\n`;
-      msg += `🏷️ <b>PHI Ref:</b> ${item.refNo} | 🦠 <b>Disease:</b> ${item.disease}\n`;
-      msg += `📍 <b>Address:</b> ${item.address}\n`;
-      msg += `📞 <b>Contact:</b> ${item.phone}\n`;
-      msg += `🏥 <b>Hospital:</b> ${item.hospital}\n`;
-      msg += `📅 <b>Notified Date:</b> ${item.notifiedDate} (<b>${item.daysElapsed} days elapsed</b>)\n`;
-      if (isOverdue) {
-        msg += `⚠️ <i>Immediate field investigation & confirmation required!</i>\n`;
-      }
-      msg += `────────────────────\n`;
-    });
-
-    msg += `\n👉 <a href="${H411_APP_URL}"><b>Health 411 පද්ධතියට පිවිස Confirm කර Update කරන්න</b></a>`;
-
-    await sendTelegramMessage(msg, true, H411_APP_URL, "🦠 Open Health 411 Portal");
-    console.log(`Sent ${unconfirmedList.length} unconfirmed case reminders to Telegram.`);
-
-  } catch (err) {
-    console.error("Health 411 Check Error:", err.message);
-  }
-}
-
-// 1. Daily Duty Reminder (07:00 AM)
+// 1. Daily Duty Reminder (Today & Tomorrow)
 async function sendDailyDutyReminder(today) {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
@@ -205,7 +128,7 @@ async function sendDailyDutyReminder(today) {
   await sendTelegramMessage(message, true);
 }
 
-// 2. OT / Claims / Petrol Claim & Request Letters (07:30 AM)
+// 2. OT / Claims / Petrol Claim & Request Letters
 async function checkOtAndClaimsReminder(day) {
   if ([25, 1, 2, 3, 4, 5].includes(day)) {
     const msg = `🔴 <b>CRITICAL REMINDER: OT / CLAIMS SUBMISSION</b>
@@ -245,7 +168,7 @@ async function checkMorningEightAmReports(day) {
   }
 }
 
-// 4. Midday 12:00 PM Reports (H 510 Advance, H 631 Part 01 Annual, H 1015 Survey)
+// 4. Midday 12:00 PM Reports
 async function checkMiddayTwelvePmReports(today, day, monthIndex, dayOfWeek) {
   if ([22, 23, 24].includes(day)) {
     const nextMonthObj = new Date(today);
@@ -286,40 +209,47 @@ async function checkMiddayTwelvePmReports(today, day, monthIndex, dayOfWeek) {
   }
 }
 
-// ================= MAIN RUNNER =================
+// ================= MAIN ENTRY =================
 async function main() {
-  const targetSlot = process.env.TRIGGER_SLOT || "DAILY_DUTY";
-  const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
-  const day = today.getDate();
-  const monthIndex = today.getMonth();
-  const dayOfWeek = today.getDay();
+  const manualSlot = process.env.TRIGGER_SLOT;
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
+  const hour = now.getHours();
+  const day = now.getDate();
+  const monthIndex = now.getMonth();
+  const dayOfWeek = now.getDay();
 
-  console.log(`Executing Slot: [${targetSlot}] for Date: ${today.toISOString().slice(0, 10)}`);
+  console.log(`SL Time: ${now.toLocaleTimeString()} | Day: ${day} | Manual Override: ${manualSlot || 'NONE'}`);
 
   try {
-    if (targetSlot === "DAILY_DUTY" || targetSlot === "SLOT_0700") {
-      await sendDailyDutyReminder(today);
-    } 
-    else if (targetSlot === "SLOT_0730") {
-      await checkOtAndClaimsReminder(day);
-      await checkUnconfirmedDiseaseCases(today);
-    } 
-    else if (targetSlot === "SLOT_0800") {
-      await checkMorningEightAmReports(day);
-      // Fail-safe check: Slot 07:30 missed වුවහොත් 08:00 දී disease alerts trigger වීම
-      await checkUnconfirmedDiseaseCases(today);
-    } 
-    else if (targetSlot === "SLOT_1200") {
-      await checkMiddayTwelvePmReports(today, day, monthIndex, dayOfWeek);
-    } 
-    else if (targetSlot === "ALL_TEST") {
-      await sendDailyDutyReminder(today);
-      await checkOtAndClaimsReminder(day);
-      await checkUnconfirmedDiseaseCases(today);
-      await checkMorningEightAmReports(day);
-      await checkMiddayTwelvePmReports(today, day, monthIndex, dayOfWeek);
+    if (manualSlot && manualSlot !== "AUTO" && manualSlot !== "") {
+      if (manualSlot === "SLOT_0700" || manualSlot === "DAILY_DUTY") await sendDailyDutyReminder(now);
+      else if (manualSlot === "SLOT_0730") await checkOtAndClaimsReminder(day);
+      else if (manualSlot === "SLOT_0800") await checkMorningEightAmReports(day);
+      else if (manualSlot === "SLOT_1200") await checkMiddayTwelvePmReports(now, day, monthIndex, dayOfWeek);
+      else if (manualSlot === "ALL_TEST") {
+        await sendDailyDutyReminder(now);
+        await checkOtAndClaimsReminder(day);
+        await checkMorningEightAmReports(day);
+        await checkMiddayTwelvePmReports(now, day, monthIndex, dayOfWeek);
+      }
+    } else {
+      // Automatic time evaluation based on Sri Lanka Time
+      if (hour >= 6 && hour < 8) {
+        // Morning Slot (07:00 - 07:59 AM)
+        await sendDailyDutyReminder(now);
+        await checkOtAndClaimsReminder(day);
+      } else if (hour >= 8 && hour < 11) {
+        // 08:00 AM Slot
+        await checkMorningEightAmReports(day);
+      } else if (hour >= 11 && hour <= 14) {
+        // 12:00 PM Slot
+        await checkMiddayTwelvePmReports(now, day, monthIndex, dayOfWeek);
+      } else {
+        // Fallback for any other trigger
+        await sendDailyDutyReminder(now);
+      }
     }
-    console.log("Execution finished successfully.");
+    console.log("Reminders sent successfully!");
   } catch (err) {
     console.error("Execution error:", err);
   }
