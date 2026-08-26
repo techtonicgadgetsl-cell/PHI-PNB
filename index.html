@@ -45,76 +45,55 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const GEMINI_MODEL = "gemini-3.7-flash";
-const GEMINI_FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite"];
-const GEMINI_RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+// ================= GEMINI OPTIMIZED CONFIG =================
+// Fast models for low latency text and multimodal tasks
+const GEMINI_MODEL = "gemini-3.5-flash-lite"; 
+const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash";
 
 async function callGeminiGenerateContent(body) {
   if (!geminiApiKey) {
     throw new Error("Gemini API key is not set. Open API Key, paste your key and save it.");
   }
 
-  const models = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS];
-  let lastError = null;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
+  
+  try {
+    let response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(20000) // 20 Seconds Max Timeout
+    });
 
-  for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
-    const model = models[modelIndex];
-
-    for (let attempt = 0; attempt < 3; attempt++) {
-      let response;
-      let data = null;
-
-      try {
-        response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-          }
-        );
-      } catch (networkError) {
-        lastError = networkError;
-        if (attempt < 2) {
-          const delay = 1500 * Math.pow(2, attempt) + Math.floor(Math.random() * 500);
-          await sleep(delay);
-          continue;
-        }
-        break;
-      }
-
-      try {
-        data = await response.json();
-      } catch {
-        data = null;
-      }
-
-      if (response.ok) return data;
-
-      const message = data?.error?.message || `HTTP ${response.status}`;
-      lastError = new Error(`Gemini API (${model}): ${message}`);
-
-      if (GEMINI_RETRYABLE_STATUS.has(response.status)) {
-        if (attempt < 2) {
-          const delay = 1500 * Math.pow(2, attempt) + Math.floor(Math.random() * 500);
-          await sleep(delay);
-          continue;
-        }
-        break;
-      }
-
-      throw lastError;
+    // Fast fallback if the primary model is busy/rate-limited
+    if (!response.ok && (response.status === 429 || response.status >= 500)) {
+       console.warn("Primary model busy, switching to fallback...");
+       const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_FALLBACK_MODEL}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
+       response = await fetch(fallbackEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(20000)
+       });
     }
-  }
 
-  console.error("Gemini temporary failure after retries:", lastError);
-  throw new Error(
-    "Gemini is temporarily busy. Please wait a few seconds and try again."
-  );
+    const data = await response.json();
+
+    if (!response.ok) {
+      const message = data?.error?.message || `HTTP ${response.status}`;
+      throw new Error(`Gemini API Error: ${message}`);
+    }
+
+    return data;
+
+  } catch (error) {
+    if (error.name === 'TimeoutError') {
+      throw new Error("Gemini API is taking too long. Please try again.");
+    }
+    console.error("Gemini Request Failed:", error);
+    throw error;
+  }
 }
 
 let geminiApiKey = sessionStorage.getItem("phi_gemini_api_key") || "";
@@ -487,7 +466,7 @@ async function startVoiceRecording() {
         return;
       }
 
-      setStatus("Voice recorded. Converting to text...", "normal");
+      setStatus("Voice recorded. Fast processing via Gemini...", "normal");
       try {
         const transcript = await transcribeRecordedAudio(audioBlob);
         insertTextAtSavedCursor(transcript);
@@ -767,7 +746,7 @@ window.saveLog = async function () {
   const saveBtn = $("saveBtn");
   saveBtn.disabled = true;
   saveBtn.classList.add("opacity-60", "cursor-not-allowed");
-  setStatus("Processing with Gemini AI...");
+  setStatus("Formatting text quickly via Gemini...");
 
   try {
     const formattedLog = await formatWithGemini(rawText, selectedSession);
