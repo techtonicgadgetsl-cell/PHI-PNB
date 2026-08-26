@@ -40,6 +40,7 @@ jobs:
           TELEGRAM_CHAT_ID: "1485164955"
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          EMAIL_TO: "phipoththapitiya@gmail.com , techtonicgadgetsl@gmail.com ,chandimacp195@gmail.com"
+          # ඔබගේ ඊමේල් ලිපින මෙහි කොමාවකින් (,) වෙන් කර ලබාදෙන්න
+          EMAIL_TO: "phipoththapitiya@gmail.com, example2@gmail.com, example3@yahoo.com"
           TRIGGER_SLOT: ${{ github.event.inputs.test_slot || 'AUTO' }}
         run: node notify.js
