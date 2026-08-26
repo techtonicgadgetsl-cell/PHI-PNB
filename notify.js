@@ -1,15 +1,8 @@
 const https = require('https');
 
-// ================= CONFIGURATIONS =================
-// TELEGRAM CONFIG
+// ================= TELEGRAM CONFIGURATIONS =================
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8853364712:AAEif92LUwmj2N4hdqo1SBKqE3XM0NMNTxI";
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "1485164955";
-
-// NOTIFY.LK SMS CONFIG
-const NOTIFY_USER_ID = process.env.NOTIFY_USER_ID || "32784";
-const NOTIFY_API_KEY = process.env.NOTIFY_API_KEY || "hjGLVRyA5TGO1hyiOuRv";
-const NOTIFY_PHONE = process.env.NOTIFY_PHONE || "947XXXXXXXX"; // ගිවිසුම්ගත දුරකථන අංකය මෙතන යාවත්කාලීන කරන්න
-
 const FIREBASE_PROJECT_ID = "phi-pnb";
 const APP_URL = "https://techtonicgadgetsl-cell.github.io/PHI-PNB/";
 
@@ -26,7 +19,6 @@ function fetchFirestore(url) {
   });
 }
 
-// ---------------- TELEGRAM SENDER ----------------
 function sendTelegramMessage(text, showAppButton = false) {
   return new Promise((resolve, reject) => {
     const payloadObj = {
@@ -59,66 +51,38 @@ function sendTelegramMessage(text, showAppButton = false) {
     const req = https.request(options, (res) => {
       let responseBody = '';
       res.on('data', chunk => responseBody += chunk);
-      res.on('end', () => resolve(responseBody));
+      res.on('end', () => {
+        console.log("Telegram API Response Status: OK");
+        resolve(responseBody);
+      });
     });
 
-    req.on('error', reject);
+    req.on('error', (err) => {
+      console.error("Telegram Request Error:", err);
+      reject(err);
+    });
+
     req.write(payload);
     req.end();
   });
 }
 
-// ---------------- SMS (NOTIFY.LK) SENDER ----------------
-function sendSMSMessage(smsText) {
-  return new Promise((resolve, reject) => {
-    // Notify.lk URL Encoding
-    const encodedText = encodeURIComponent(smsText);
-    const sender_id = "NotifyDEMO"; 
-    
-    const url = `https://app.notify.lk/api/v1/send?user_id=${NOTIFY_USER_ID}&api_key=${NOTIFY_API_KEY}&sender_id=${sender_id}&to=${NOTIFY_PHONE}&message=${encodedText}`;
-
-    https.get(url, (res) => {
-      let responseBody = '';
-      res.on('data', chunk => responseBody += chunk);
-      res.on('end', () => {
-        console.log("SMS API Response:", responseBody);
-        resolve(responseBody);
-      });
-    }).on('error', reject);
-  });
-}
-
-// ---------------- DUAL PLATFORM SENDER ----------------
-async function sendAlert(telegramMsg, smsMsg, showAppButton = false) {
-  console.log("-> Sending to Telegram...");
-  await sendTelegramMessage(telegramMsg, showAppButton).catch(e => console.error("Telegram Error:", e));
-  
-  // SMS Phone Number එක හිස් නොමැති නම් පමණක් යවයි
-  if (NOTIFY_PHONE && NOTIFY_PHONE !== "947XXXXXXXX") {
-      console.log("-> Sending to SMS...");
-      await sendSMSMessage(smsMsg).catch(e => console.error("SMS Error:", e));
-  } else {
-      console.log("-> SMS Skip: Phone number not configured.");
-  }
-}
-
-// ---------------- DUTY SCHEDULE LOGIC ----------------
 async function getDutyForDate(dateObj) {
   const year = dateObj.getFullYear();
   const month = String(dateObj.getMonth() + 1).padStart(2, '0');
   const day = dateObj.getDate();
   const monthKey = `${year}-${month}`;
   
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const dayName = daysOfWeek[dateObj.getDay()];
   const formattedDate = `${year}-${month}-${String(day).padStart(2, '0')}`;
 
   const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/phi_advance_schedules/${monthKey}`;
 
-  let fn = "No specific duty";
-  let an = "No specific duty";
+  let fn = "රාජකාරියක් සටහන් කර නැත (No schedule)";
+  let an = "රාජකාරියක් සටහන් කර නැත (No schedule)";
   let officerName = "PHI Officer";
-  let phiArea = "Range";
+  let phiArea = "Range Area";
 
   try {
     const res = await fetchFirestore(url);
@@ -134,7 +98,7 @@ async function getDutyForDate(dateObj) {
     console.warn(`Firestore read warning for ${formattedDate}:`, e.message);
   }
 
-  return { formattedDate, dayName, fn, an, officerName, phiArea, rawDay: day };
+  return { formattedDate, dayName, fn, an, officerName, phiArea };
 }
 
 // 1. Morning 07:00 AM Dual Schedule Reminder
@@ -145,32 +109,30 @@ async function sendMorningDualDutyReminder(today) {
   const todayInfo = await getDutyForDate(today);
   const tomorrowInfo = await getDutyForDate(tomorrow);
 
-  // Telegram Message (Long, HTML)
-  const tgMessage = `📋 <b>PHI DUTY REMINDER (Health 510)</b>
+  const message = `📋 <b>PHI DUTY REMINDER (Health 510)</b>
 👤 <b>Officer:</b> ${todayInfo.officerName} | ${todayInfo.phiArea}
 ━━━━━━━━━━━━━━━━━━━━
 
 🔴 <b>TODAY'S SCHEDULE</b>
 📅 <b>Date:</b> ${todayInfo.formattedDate} (${todayInfo.dayName})
-🌅 <b>FN:</b> ${todayInfo.fn}
-🌇 <b>AN:</b> ${todayInfo.an}
+🌅 <b>FN (8:00 AM - 12:00 PM):</b>
+• ${todayInfo.fn}
+🌇 <b>AN (1:00 PM - 4:00 PM):</b>
+• ${todayInfo.an}
 
 ━━━━━━━━━━━━━━━━━━━━
 
 🟢 <b>TOMORROW'S SCHEDULE</b>
 📅 <b>Date:</b> ${tomorrowInfo.formattedDate} (${tomorrowInfo.dayName})
-🌅 <b>FN:</b> ${tomorrowInfo.fn}
-🌇 <b>AN:</b> ${tomorrowInfo.an}
+🌅 <b>FN (8:00 AM - 12:00 PM):</b>
+• ${tomorrowInfo.fn}
+🌇 <b>AN (1:00 PM - 4:00 PM):</b>
+• ${tomorrowInfo.an}
 
 ━━━━━━━━━━━━━━━━━━━━
 👉 <a href="${APP_URL}"><b>Pocket Note Book (Health 253) එකේ සටහන් කිරීමට App එක විවෘත කරන්න</b></a>`;
 
-  // SMS Message (Short)
-  const smsMessage = `PHI DUTY ALERT
-[TODAY] FN:${todayInfo.fn.substring(0,25)} AN:${todayInfo.an.substring(0,25)}
-[TOMORROW] FN:${tomorrowInfo.fn.substring(0,25)} AN:${tomorrowInfo.an.substring(0,25)}`;
-
-  await sendAlert(tgMessage, smsMessage, true);
+  await sendTelegramMessage(message, true);
 }
 
 // 2. Evening 06:00 PM Tomorrow-Only Brief
@@ -180,78 +142,82 @@ async function sendEveningTomorrowSchedule(today) {
 
   const tomorrowInfo = await getDutyForDate(tomorrow);
 
-  const tgMessage = `🌇 <b>EVENING BRIEF: TOMORROW'S SCHEDULE (Health 510)</b>
+  const message = `🌇 <b>EVENING BRIEF: TOMORROW'S SCHEDULE (Health 510)</b>
 👤 <b>Officer:</b> ${tomorrowInfo.officerName} | ${tomorrowInfo.phiArea}
 ━━━━━━━━━━━━━━━━━━━━
 
 🟢 <b>TOMORROW'S DUTY PLAN</b>
 📅 <b>Date:</b> ${tomorrowInfo.formattedDate} (${tomorrowInfo.dayName})
 
-🌅 <b>FN:</b> ${tomorrowInfo.fn}
-🌇 <b>AN:</b> ${tomorrowInfo.an}
+🌅 <b>Forenoon (8:00 AM - 12:00 PM):</b>
+• ${tomorrowInfo.fn}
+
+🌇 <b>Afternoon (1:00 PM - 4:00 PM):</b>
+• ${tomorrowInfo.an}
 
 ━━━━━━━━━━━━━━━━━━━━
 <i>හෙට දින රාජකාරි සඳහා අවශ්‍ය ලිපිලේඛන හා සැලසුම් සූදානම් කරගන්න.</i>`;
 
-  const smsMessage = `PHI TOMORROW DUTY:
-Date: ${tomorrowInfo.formattedDate}
-FN: ${tomorrowInfo.fn.substring(0,40)}
-AN: ${tomorrowInfo.an.substring(0,40)}`;
-
-  await sendAlert(tgMessage, smsMessage, true);
+  await sendTelegramMessage(message, true);
 }
 
 // 3. Morning 07:00 AM Official Reminders Bundle
 async function sendMorningOfficialReminders(today, day, monthIndex, dayOfWeek) {
-  
-  // A. OT & Claims Reminder (Days 25, 1, 2, 3, 4, 5)
+  // A. OT & Claims Reminder
   if ([25, 1, 2, 3, 4, 5].includes(day)) {
-    const tgMsg = `🔴 <b>CRITICAL REMINDER: OT / CLAIMS SUBMISSION</b>
+    const otMsg = `🔴 <b>CRITICAL REMINDER: OT / CLAIMS SUBMISSION</b>
 ━━━━━━━━━━━━━━━━━━━━
 📌 <b>කරුණාකර පහත ලේඛන කඩිනමින් සකස් කර MOH කාර්යාලය වෙත ඉදිරිපත් කරන්න:</b>
-1. Monthly OT/Claim/Off Pay Form
-2. Petrol Claim Form
-3. Advance Request Letters`;
-    const smsMsg = `URGENT PHI ALERT: Submit your Monthly OT, Petrol Claims & Next Month Advance Letters to MOH office immediately.`;
-    await sendAlert(tgMsg, smsMsg);
+
+1. 📝 <b>Monthly OT / Claim / CT / Off Pay Request Form</b>
+2. ⛽ <b>Monthly Petrol Claim Form & Log</b>
+3. 📄 <b>Next Month OT & Off Pay Advance Request Letters</b>
+
+⚠️ <i>මාසික දීමනා ප්‍රමාදයකින් තොරව ලබාගැනීමට නියමිත දිනට පෙර Submit කරන්න.</i>`;
+    await sendTelegramMessage(otMsg);
   }
 
-  // B. Monthly Reports (Days 1, 2, 3, 4, 5)
+  // B. Monthly Reports
   if ([1, 2, 3, 4, 5].includes(day)) {
-    const tgMsg = `📊 <b>MONTHLY REPORT SUBMISSION REMINDER (Day ${day}/05)</b>
+    const repMsg = `📊 <b>MONTHLY REPORT SUBMISSION REMINDER (Day ${day}/05)</b>
 ━━━━━━━━━━━━━━━━━━━━
 පහත මාසික වාර්තා <b>eRHMIS System</b> එකට Update කර <b>Hard Copy</b> සකස් කර භාරදීමට කටයුතු කරන්න:
-📋 01. H 631 Part 02 (Monthly Report)
-🏫 02. H 1014 (School Monthly Return)`;
-    const smsMsg = `PHI REMINDER: Complete eRHMIS & Hard copy submissions for H 631 Part 02 & H 1014 before the 5th.`;
-    await sendAlert(tgMsg, smsMsg);
-  }
 
-  // C. SMI Check (Day 01)
-  if (day === 1) {
-    const tgMsg = `🏫 <b>H 1247: SCHOOL MEDICAL INSPECTION (SMI) CHECK</b>
+📋 <b>01. H 631 Part 02</b> - PHI Monthly Report
+🏫 <b>02. H 1014</b> - School Health Monthly Return
 ━━━━━━━━━━━━━━━━━━━━
-❓ Are you Updated / Completed the eRHMIS System for SMI?`;
-    const smsMsg = `SMI ALERT: Have you updated the eRHMIS system for last month's School Medical Inspections?`;
-    await sendAlert(tgMsg, smsMsg);
+⚠️ <i>මාසයේ මුල් දින 05 තුළ submission එක අවසන් කළ යුතුය.</i>`;
+    await sendTelegramMessage(repMsg);
   }
 
-  // D. H 510 Advance Plan Reminder (Days 22, 23, 24)
+  // C. SMI Check
+  if (day === 1) {
+    const smiMsg = `🏫 <b>H 1247: SCHOOL MEDICAL INSPECTION (SMI) CHECK</b>
+━━━━━━━━━━━━━━━━━━━━
+❓ <b>Are you Updated / Completed the eRHMIS System for SMI?</b>
+
+පසුගිය මස පාසල් වෛද්‍ය පරීක්ෂණ (SMI) දත්ත සහ ප්‍රතිඵල eRHMIS පද්ධතියට නිවැරදිව ඇතුළත් කර අවසන් කර ඇත්දැයි පරීක්ෂා කර තහවුරු කරන්න.`;
+    await sendTelegramMessage(smiMsg);
+  }
+
+  // D. H 510 Advance Plan Reminder
   if ([22, 23, 24].includes(day)) {
     const nextMonthObj = new Date(today);
     nextMonthObj.setMonth(today.getMonth() + 1);
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const nextMonthName = monthNames[nextMonthObj.getMonth()];
 
-    const tgMsg = `⚠️ <b>H 510 MONTHLY ADVANCE PROGRAMME SUBMISSION</b>
+    const advMsg = `⚠️ <b>H 510 MONTHLY ADVANCE PROGRAMME SUBMISSION</b>
 ━━━━━━━━━━━━━━━━━━━━
 📅 <b>ඉලක්කගත මාසය:</b> ${nextMonthName} ${nextMonthObj.getFullYear()}
-ලබන මස H 510 Advance Programme එක 25 වන දිනට පෙර Approval සඳහා යොමු කළ යුතුය.`;
-    const smsMsg = `H 510 ALERT: Submit your ${nextMonthName} Advance Programme before the 25th for SPHI/MOH approval.`;
-    await sendAlert(tgMsg, smsMsg, true);
+
+ලබන මස <b>Health 510 Advance Programme</b> එක <b>25 වන දිනට පෙර</b> SPHI / MOH වෙත Approval සඳහා යොමු කළ යුතුය.
+
+👉 <a href="${APP_URL}h510_advance_programme.html"><b>H 510 Schedule එක සකස් කිරීමට මෙතන Click කරන්න</b></a>`;
+    await sendTelegramMessage(advMsg, true);
   }
 
-  // E. Q1 Annual & School Survey Reports (Jan/Feb Weekly, March Daily)
+  // E. Q1 Annual & School Survey Reports
   const isQ1 = [0, 1, 2].includes(monthIndex);
   const isMonday = dayOfWeek === 1;
   if (isQ1) {
@@ -260,12 +226,13 @@ async function sendMorningOfficialReminders(today, day, monthIndex, dayOfWeek) {
     else if (monthIndex === 2) shouldTrigger = true;
 
     if (shouldTrigger) {
-      const tgMsg = `📈 <b>Q1 ANNUAL & SURVEY REPORT REMINDER</b>
+      const q1Msg = `📈 <b>Q1 ANNUAL & SURVEY REPORT REMINDER</b>
 ━━━━━━━━━━━━━━━━━━━━
-1. 📊 H 631 Part 01 - Annual Report (eRHMIS + Hard Copy)
-2. 🏫 H 1015 - Sanitary Survey (eRHMIS + Hard Copy)`;
-      const smsMsg = `Q1 REMINDER: Ensure H 631 Part 01 & H 1015 are submitted via eRHMIS & Hard copy within this quarter.`;
-      await sendAlert(tgMsg, smsMsg);
+1. 📊 <b>H 631 Part 01</b> - PHI Annual Report (eRHMIS + Hard Copy)
+2. 🏫 <b>H 1015</b> - School Health Sanitary Survey (eRHMIS + Hard Copy)
+━━━━━━━━━━━━━━━━━━━━
+⚠️ <i>වසරේ පළමු කාර්තුව (Q1) තුළ මෙම වාර්තා සම්පූර්ණ කර අවසන් කළ යුතුය.</i>`;
+      await sendTelegramMessage(q1Msg);
     }
   }
 }
@@ -294,13 +261,15 @@ async function main() {
     } else {
       // AUTO MODE based on Sri Lanka Hour
       if (hour >= 16 && hour <= 21) {
+        // Evening Trigger (Around 6:00 PM)
         await sendEveningTomorrowSchedule(now);
       } else {
+        // Morning Trigger (Around 7:00 AM & Default)
         await sendMorningDualDutyReminder(now);
         await sendMorningOfficialReminders(now, day, monthIndex, dayOfWeek);
       }
     }
-    console.log("Completed successfully!");
+    console.log("Process completed successfully!");
   } catch (err) {
     console.error("Execution error:", err);
   }
