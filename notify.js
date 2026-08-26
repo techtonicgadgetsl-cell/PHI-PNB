@@ -64,7 +64,7 @@ function sendTelegramMessage(text, showAppButton = false) {
   });
 }
 
-// ---------------- EMAIL SENDER ----------------
+// ---------------- EMAIL SENDER (Spam Protected) ----------------
 async function sendEmailMessage(subject, htmlText) {
   if (!EMAIL_USER || !EMAIL_PASS) {
     console.log("Email skip: Credentials not configured.");
@@ -90,7 +90,8 @@ async function sendEmailMessage(subject, htmlText) {
 
   const mailOptions = {
     from: `"PHI Alert System" <${EMAIL_USER}>`,
-    to: EMAIL_TO,
+    to: EMAIL_USER,   // ප්‍රධාන ඊමේල් එක ලෙස Sender ගේ ඊමේල් එකම යොදයි
+    bcc: EMAIL_TO,    // අනිත් සියලුම ඊමේල් ලිපින Bcc එකට යවයි (Spam වීම වළක්වයි)
     subject: subject,
     html: emailHtml
   };
