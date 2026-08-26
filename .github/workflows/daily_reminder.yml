@@ -35,8 +35,5 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: "8853364712:AAEif92LUwmj2N4hdqo1SBKqE3XM0NMNTxI"
           TELEGRAM_CHAT_ID: "1485164955"
-          NOTIFY_USER_ID: "32784"
-          NOTIFY_API_KEY: "hjGLVRyA5TGO1hyiOuRv"
-          NOTIFY_PHONE: ${{ secrets.NOTIFY_PHONE }}
           TRIGGER_SLOT: ${{ github.event.inputs.test_slot || 'AUTO' }}
         run: node notify.js
