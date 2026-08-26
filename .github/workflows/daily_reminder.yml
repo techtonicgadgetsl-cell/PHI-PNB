@@ -40,6 +40,6 @@ jobs:
           TELEGRAM_CHAT_ID: "1485164955"
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          EMAIL_TO: "phipoththapitiya@gmail.com"
+          EMAIL_TO: "phipoththapitiya@gmail.com , techtonicgagetsl@gmail.com ,chandimacp195@gmail.com"
           TRIGGER_SLOT: ${{ github.event.inputs.test_slot || 'AUTO' }}
         run: node notify.js
