@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 02. Communicable Diseases</title>
+    <!-- Tailwind CSS & Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-rose-600 p-2.5 rounded-xl text-white shadow-md hover:bg-rose-500 transition">
+                <i class="fa-solid fa-virus-covid text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">02. Communicable Diseases & Control</h1>
+                <p class="text-xs text-slate-400">Epidemiological Notifications, Timeliness Audits & Dynamic Multi-Year Registry</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-rose-400 font-bold">
+            🔄 CONNECTING...
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR NAVIGATION MENU -->
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-rose-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 UPDATED MODULE ORDER -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <div class="xl:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="border-b pb-2">
+                    <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-square-sliders text-rose-500"></i>
+                        <span>DISEASE ENTRY PORTAL</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Select time scale to modify specific data clusters</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Year</label>
+                        <select id="sel-year" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Month</label>
+                        <select id="sel-month" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-4 text-xs">
+                    
+                    <div class="p-3 bg-slate-50 rounded-xl border space-y-2.5">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider"><i class="fa-solid fa-file-pdf text-rose-500 mr-1"></i>02.01 Master PDF Disease Counts</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 font-medium">Dengue Fever</label>
+                                <input type="number" id="inp-df" class="w-full p-1.5 border rounded-lg bg-white font-bold text-red-600">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 font-medium">Leptospirosis</label>
+                                <input type="number" id="inp-lepto" class="w-full p-1.5 border rounded-lg bg-white font-bold text-blue-600">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 font-medium">Tuberculosis</label>
+                                <input type="number" id="inp-tb" class="w-full p-1.5 border rounded-lg bg-white font-bold text-green-600">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 font-medium">Typhus</label>
+                                <input type="number" id="inp-typhus" class="w-full p-1.5 border rounded-lg bg-white font-bold text-orange-500">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 font-medium">Chicken Pox</label>
+                                <input type="number" id="inp-cpox" class="w-full p-1.5 border rounded-lg bg-white font-bold text-purple-600">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 font-medium">Other</label>
+                                <input type="number" id="inp-other" class="w-full p-1.5 border rounded-lg bg-white font-bold text-black">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-rose-50/50 border border-rose-100 rounded-xl space-y-2.5">
+                        <p class="text-[10px] font-black text-rose-800 uppercase tracking-wider"><i class="fa-solid fa-table text-rose-500 mr-1"></i>02.02 Notification Audits</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-500 font-medium">Total Received</label>
+                                <input type="number" id="inp-notif-tot" class="w-full p-1.5 border rounded-lg bg-white font-black text-slate-800">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Investigated</label>
+                                <input type="number" id="inp-notif-inv" class="w-full p-1.5 border rounded-lg bg-white font-black text-blue-600">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Untraceable</label>
+                                <input type="number" id="inp-notif-unt" class="w-full p-1.5 border rounded-lg bg-white font-medium text-slate-700">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Not in Area</label>
+                                <input type="number" id="inp-notif-nia" class="w-full p-1.5 border rounded-lg bg-white font-medium text-slate-700">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-slate-500 font-medium">Investigated within 7 Days (Timeliness)</label>
+                                <input type="number" id="inp-notif-time" class="w-full p-1.5 border rounded-lg bg-white font-black text-emerald-600">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button onclick="commitPortalValues()" class="w-full py-2.5 bg-rose-700 hover:bg-rose-600 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2 text-xs">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Save & Live Update Display</span>
+                </button>
+            </div>
+
+            <div class="xl:col-span-2 space-y-6 overflow-y-auto custom-scrollbar pr-1">
+                
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-xs font-black text-slate-700 uppercase tracking-tight">02.01 Pathology Count Monthly Review</h4>
+                        <span class="text-[9px] bg-slate-100 font-bold px-2 py-0.5 rounded text-slate-500 font-mono">FILE: MASTER SHEET - ID</span>
+                    </div>
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b text-center">
+                                <tr>
+                                    <th class="p-2.5 text-left">Month Context</th>
+                                    <th class="p-2.5 text-red-600">Dengue</th>
+                                    <th class="p-2.5 text-blue-600">Lepto</th>
+                                    <th class="p-2.5 text-green-600">TB</th>
+                                    <th class="p-2.5 text-orange-500">Typhus</th>
+                                    <th class="p-2.5 text-purple-600">Chicken Pox</th>
+                                    <th class="p-2.5 text-black">Other</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="text-center font-bold bg-white text-slate-700">
+                                    <td id="td-context-1" class="p-3 text-left font-black text-slate-900 border-r bg-slate-50/50">---</td>
+                                    <td id="td-df" class="p-3 text-red-600 text-sm font-black">0</td>
+                                    <td id="td-lepto" class="p-3 text-blue-600">0</td>
+                                    <td id="td-tb" class="p-3 text-green-600">0</td>
+                                    <td id="td-typhus" class="p-3 text-orange-500">0</td>
+                                    <td id="td-cpox" class="p-3 text-purple-600">0</td>
+                                    <td id="td-other" class="p-3 text-black">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-xs font-black text-slate-700 uppercase tracking-tight">02.02 Notification Field Investigations & Timeliness</h4>
+                        <span class="text-[9px] bg-rose-50 font-bold px-2 py-0.5 rounded text-rose-600 font-mono">PPTX PERFORMANCE DEADLINES</span>
+                    </div>
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b text-center">
+                                <tr>
+                                    <th class="p-2.5 text-left">Month Context</th>
+                                    <th class="p-2.5">Total Received</th>
+                                    <th class="p-2.5">Investigated</th>
+                                    <th class="p-2.5">Untraceable</th>
+                                    <th class="p-2.5">Not in Area</th>
+                                    <th class="p-2.5">Timely Logged</th>
+                                    <th class="p-2.5 bg-rose-50/50 text-rose-900 font-black">Timeliness %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="text-center font-bold bg-white text-slate-700">
+                                    <td id="td-context-2" class="p-3 text-left font-black text-slate-900 border-r bg-slate-50/50">---</td>
+                                    <td id="td-notif-tot" class="p-3">0</td>
+                                    <td id="td-notif-inv" class="p-3 text-blue-600">0</td>
+                                    <td id="td-notif-unt" class="p-3">0</td>
+                                    <td id="td-notif-nia" class="p-3">0</td>
+                                    <td id="td-notif-time" class="p-3 text-emerald-600">0</td>
+                                    <td id="td-notif-pct" class="p-3 bg-rose-50/40 text-rose-700 font-black text-sm">0%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Monthly Pathology Distribution Summary (Bar Chart)</h5>
+                        <div class="h-44"><canvas id="localChartPathology"></canvas></div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Investigation Timeliness Summary (Donut Chart)</h5>
+                        <div class="h-44 flex items-center justify-center"><canvas id="localChartTimeliness"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Annual Pathology Trend Evolution Summary (Full Year Line View)</h5>
+                    <div class="h-56"><canvas id="annualChartPathology"></canvas></div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            cloudDb = firebase.database();
+            isCloudActive = true;
+            document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+        } catch (e) {
+            console.warn("Cloud connection interrupted. Reverting back to secure localStorage layer.", e);
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const localBaselineData = [
+            { df: 1, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 3, inv: 3, unt: 0, nia: 0, timely: 3 },
+            { df: 1, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 1, tot: 1, inv: 1, unt: 0, nia: 0, timely: 1 },
+            { df: 1, lepto: 1, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 1, inv: 1, unt: 0, nia: 0, timely: 1 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, timely: 0 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 },
+            { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 }
+        ];
+
+        let currentYearData = [...localBaselineData];
+        let chartPathologyInstance = null;
+        let chartTimelinessInstance = null;
+        let chartAnnualInstance = null;
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            document.getElementById('td-context-1').innerText = "LOAD...";
+            document.getElementById('td-context-2').innerText = "LOAD...";
+
+            if (isCloudActive) {
+                cloudDb.ref(`disease_v3/${year}`).once('value').then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) {
+                        currentYearData = data;
+                    } else {
+                        currentYearData = [...localBaselineData];
+                    }
+                    renderDataUI(monthIdx, year);
+                }).catch((err) => {
+                    console.error("Cloud synchronization bottlenecked, mapping local nodes instead.", err);
+                    loadLocalCacheStorage(year);
+                    renderDataUI(monthIdx, year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+                renderDataUI(monthIdx, year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let localStore = JSON.parse(localStorage.getItem(`phi_disease_local_${year}`));
+            if (localStore) {
+                currentYearData = localStore;
+            } else {
+                currentYearData = [...localBaselineData];
+            }
+        }
+
+        function renderDataUI(monthIdx, year) {
+            const record = currentYearData[monthIdx] || { df: 0, lepto: 0, tb: 0, typhus: 0, cpox: 0, other: 0, tot: 0, inv: 0, unt: 0, nia: 0, timely: 0 };
+
+            document.getElementById('inp-df').value = record.df;
+            document.getElementById('inp-lepto').value = record.lepto;
+            document.getElementById('inp-tb').value = record.tb;
+            document.getElementById('inp-typhus').value = record.typhus;
+            document.getElementById('inp-cpox').value = record.cpox;
+            document.getElementById('inp-other').value = record.other;
+
+            document.getElementById('inp-notif-tot').value = record.tot;
+            document.getElementById('inp-notif-inv').value = record.inv;
+            document.getElementById('inp-notif-unt').value = record.unt;
+            document.getElementById('inp-notif-nia').value = record.nia;
+            document.getElementById('inp-notif-time').value = record.timely;
+
+            const contextString = `${MONTH_NAMES[monthIdx].substring(0,3).toUpperCase()} ${year}`;
+            document.getElementById('td-context-1').innerText = contextString;
+            document.getElementById('td-df').innerText = record.df;
+            document.getElementById('td-lepto').innerText = record.lepto;
+            document.getElementById('td-tb').innerText = record.tb;
+            document.getElementById('td-typhus').innerText = record.typhus;
+            document.getElementById('td-cpox').innerText = record.cpox;
+            document.getElementById('td-other').innerText = record.other;
+
+            document.getElementById('td-context-2').innerText = contextString;
+            document.getElementById('td-notif-tot').innerText = record.tot;
+            document.getElementById('td-notif-inv').innerText = record.inv;
+            document.getElementById('td-notif-unt').innerText = record.unt;
+            document.getElementById('td-notif-nia').innerText = record.nia;
+            document.getElementById('td-notif-time').innerText = record.timely;
+            
+            let timePct = record.inv > 0 ? Math.round((record.timely / record.inv) * 100) : 0;
+            document.getElementById('td-notif-pct').innerText = timePct + "%";
+
+            updateCharts(record, year);
+        }
+
+        function updateCharts(record, year) {
+            const ctx1 = document.getElementById('localChartPathology').getContext('2d');
+            if(chartPathologyInstance) chartPathologyInstance.destroy();
+            chartPathologyInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Dengue', 'Lepto', 'TB', 'Typhus', 'CPox', 'Other'],
+                    datasets: [{
+                        label: 'Pathology Count',
+                        data: [record.df, record.lepto, record.tb, record.typhus, record.cpox, record.other],
+                        backgroundColor: ['#ef4444', '#3b82f6', '#10b981', '#f97316', '#a855f7', '#000000'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+
+            const ctx2 = document.getElementById('localChartTimeliness').getContext('2d');
+            if(chartTimelinessInstance) chartTimelinessInstance.destroy();
+            
+            let timelyCount = record.timely;
+            let delayedCount = Math.max(0, record.inv - record.timely);
+            
+            chartTimelinessInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Timely (<= 7 Days)', 'Delayed (> 7 Days)'],
+                    datasets: [{
+                        data: [timelyCount, delayedCount],
+                        backgroundColor: ['#10b981', '#f43f5e'],
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } } }
+            });
+
+            const ctx3 = document.getElementById('annualChartPathology').getContext('2d');
+            if(chartAnnualInstance) chartAnnualInstance.destroy();
+
+            let dengueArr = currentYearData.map(m => m.df);
+            let leptoArr = currentYearData.map(m => m.lepto);
+            let tbArr = currentYearData.map(m => m.tb);
+            let typhusArr = currentYearData.map(m => m.typhus);
+            let cpoxArr = currentYearData.map(m => m.cpox);
+            let otherArr = currentYearData.map(m => m.other);
+
+            chartAnnualInstance = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: MONTH_NAMES.map(m => m.substring(0,3)),
+                    datasets: [
+                        { label: 'Dengue', data: dengueArr, borderColor: '#ef4444', backgroundColor: '#ef4444', tension: 0.1, fill: false },
+                        { label: 'Lepto', data: leptoArr, borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.1, fill: false },
+                        { label: 'TB', data: tbArr, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.1, fill: false },
+                        { label: 'Typhus', data: typhusArr, borderColor: '#f97316', backgroundColor: '#f97316', tension: 0.1, fill: false },
+                        { label: 'CPox', data: cpoxArr, borderColor: '#a855f7', backgroundColor: '#a855f7', tension: 0.1, fill: false },
+                        { label: 'Other', data: otherArr, borderColor: '#000000', backgroundColor: '#000000', tension: 0.1, fill: false } 
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+            });
+        }
+
+        function commitPortalValues() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            const tot = parseInt(document.getElementById('inp-notif-tot').value) || 0;
+            const inv = parseInt(document.getElementById('inp-notif-inv').value) || 0;
+            const unt = parseInt(document.getElementById('inp-notif-unt').value) || 0;
+            const nia = parseInt(document.getElementById('inp-notif-nia').value) || 0;
+            const timely = parseInt(document.getElementById('inp-notif-time').value) || 0;
+
+            if(inv + unt + nia > tot) {
+                alert("⚠️ Validation Error: Investigated + Untraceable + Not in Area components cannot exceed total received notifications parameter.");
+                return;
+            }
+            if(timely > inv) {
+                alert("⚠️ Validation Error: Timely investigations within 7 days cannot exceed total investigated cases baseline.");
+                return;
+            }
+
+            currentYearData[monthIdx] = {
+                df: parseInt(document.getElementById('inp-df').value) || 0,
+                lepto: parseInt(document.getElementById('inp-lepto').value) || 0,
+                tb: parseInt(document.getElementById('inp-tb').value) || 0,
+                typhus: parseInt(document.getElementById('inp-typhus').value) || 0,
+                cpox: parseInt(document.getElementById('inp-cpox').value) || 0,
+                other: parseInt(document.getElementById('inp-other').value) || 0,
+                tot: tot, inv: inv, unt: unt, nia: nia, timely: timely
+            };
+
+            localStorage.setItem(`phi_disease_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive) {
+                cloudDb.ref(`disease_v3/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Successful: Epidemiological records committed live to cloud node!`);
+                    onFilterChange();
+                }).catch((err) => {
+                    console.error(err);
+                    alert(`🛡️ Offline Mode Safe: Data saved successfully to local terminal storage.`);
+                    onFilterChange();
+                });
+            } else {
+                alert(`🛡️ Offline Mode Safe: Data committed securely to local terminal workspace.`);
+                onFilterChange();
+            }
+        }
+
+        window.onload = function() {
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            if(document.getElementById('sel-year')) document.getElementById('sel-year').value = targetYear.toString();
+            if(document.getElementById('sel-month')) document.getElementById('sel-month').value = previousMonthIdx.toString();
+
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>

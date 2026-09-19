@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 05. Environmental Pollution</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-emerald-600 p-2.5 rounded-xl text-white shadow-md hover:bg-emerald-500 transition">
+                <i class="fa-solid fa-leaf text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">05. Environmental Pollution & Public Complaints</h1>
+                <p class="text-xs text-slate-400">Statutory Nuisance Inspections, 14 Public Grievance Classifications & Enforcements</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-emerald-400 font-bold">
+            🔄 CONNECTING...
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-emerald-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 UPDATED MODULE ORDER -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <div class="xl:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="border-b pb-2">
+                    <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-square-sliders text-emerald-600"></i>
+                        <span>ENVIRONMENTAL PORTAL</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Select time scale to modify public complaint records</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Year</label>
+                        <select id="sel-year" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Month</label>
+                        <select id="sel-month" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1 text-xs">
+                    
+                    <div class="p-3 bg-slate-50 rounded-xl border space-y-2.5">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider"><i class="fa-solid fa-chart-bar mr-1 text-emerald-600"></i>Slide 23: Core Activities & Action Log</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-500 font-medium">Complaints Received</label>
+                                <input type="number" id="inp-env-rec" class="w-full p-1.5 border rounded-lg bg-white font-black text-slate-800">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Detected by PHI</label>
+                                <input type="number" id="inp-env-det" class="w-full p-1.5 border rounded-lg bg-white font-bold">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-slate-500 font-medium">Total Investigated</label>
+                                <input type="number" id="inp-env-inv" class="w-full p-1.5 border rounded-lg bg-white font-black text-blue-600">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">No. Settled/Resolved</label>
+                                <input type="number" id="inp-env-set" class="w-full p-1.5 border rounded-lg bg-white font-bold text-emerald-600">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Notices Issued</label>
+                                <input type="number" id="inp-env-notice" class="w-full p-1.5 border rounded-lg bg-white font-medium">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">No. Prosecuted</label>
+                                <input type="number" id="inp-env-pros" class="w-full p-1.5 border rounded-lg bg-white font-bold text-rose-600">
+                            </div>
+                            <div>
+                                <label class="text-slate-500 font-medium">Fines Logged (Rs.)</label>
+                                <input type="number" id="inp-env-fines" class="w-full p-1.5 border rounded-lg bg-white font-black text-amber-600">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-emerald-50/40 border border-emerald-100 rounded-xl space-y-3">
+                        <p class="text-[10px] font-black text-emerald-800 uppercase tracking-wider"><i class="fa-solid fa-list-check mr-1 text-emerald-600"></i>Slide 24: 14 Complaint Categorization</p>
+                        <div id="portal-c14-container" class="grid grid-cols-2 gap-2">
+                        </div>
+                    </div>
+
+                </div>
+
+                <button onclick="commitPortalValues()" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2 text-xs">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Save & Live Update Grid</span>
+                </button>
+            </div>
+
+            <div class="xl:col-span-2 space-y-6 overflow-y-auto custom-scrollbar pr-1">
+                
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div>
+                            <h4 class="text-xs font-black text-slate-700 uppercase tracking-tight">Slide 23: Environmental Health Activities & Enforcement Log</h4>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">පරිසර සෞඛ්‍ය කටයුතු සහ මහජන පැමිණිලි පරීක්ෂණ | சுற்றுச்சூழல் சுகாதார நடவடிக்கைகள்</p>
+                        </div>
+                        <span id="lbl-context" class="text-[10px] bg-emerald-50 font-black px-2 py-0.5 rounded text-emerald-700 font-mono">---</span>
+                    </div>
+
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-left border-collapse text-center">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                <tr>
+                                    <th class="p-2.5 border-r">Complaints Rec.</th>
+                                    <th class="p-2.5 border-r">Detected by PHI</th>
+                                    <th class="p-2.5 border-r">Total Invest.</th>
+                                    <th class="p-2.5 border-r text-emerald-600">No. Settled</th>
+                                    <th class="p-2.5 border-r">Notices Issued</th>
+                                    <th class="p-2.5 border-r text-rose-600">Prosecuted</th>
+                                    <th class="p-2.5 bg-amber-50 text-amber-900 font-black">Fines Recovered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-bold text-slate-700 text-center">
+                                    <td id="td-env-rec" class="p-3 border-r text-sm font-black text-slate-900">0</td>
+                                    <td id="td-env-det" class="p-3 border-r">0</td>
+                                    <td id="td-env-inv" class="p-3 border-r text-blue-600">0</td>
+                                    <td id="td-env-set" class="p-3 border-r text-emerald-600">0</td>
+                                    <td id="td-env-notice" class="p-3 border-r">0</td>
+                                    <td id="td-env-pros" class="p-3 border-r text-rose-600">0</td>
+                                    <td id="td-env-fines" class="p-3 bg-amber-50/50 text-amber-700 font-black">LKR 0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-tight">Slide 24: Statutory 14 Public Grievances Classification Matrix</h4>
+                    <div class="overflow-x-auto border rounded-xl shadow-inner max-h-56 custom-scrollbar">
+                        <table class="w-full text-[11px] text-left border-collapse min-w-[600px]">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th class="p-2 border-r pl-3">Public Complaint Categorization Type (Slide 24)</th>
+                                    <th class="p-2 text-center w-[25%]">Active Counts Logged</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-c14-matrix" class="divide-y divide-slate-100 bg-white">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Complaint Breakdown (Count > 0 Only)</h5>
+                        <div class="h-44"><canvas id="chartLocalCategories"></canvas></div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Grievance Resolutions Action Rates (%)</h5>
+                        <div class="h-44 flex items-center justify-center"><canvas id="chartLocalActions"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Annual Public Complaints & Inspection Growth Trend View</h5>
+                    <div class="h-56"><canvas id="chartAnnualEnvTrend"></canvas></div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            cloudDb = firebase.database();
+            isCloudActive = true;
+            document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+        } catch (e) {
+            console.warn("Cloud infrastructure halted. Invoking dynamic localStorage layer.", e);
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const C14_LABELS = [
+            "PIG FARMS", "POULTRY FARMS", "OTHER ANIMAL FARMS", "CATTLE FARMS", "GOAT FARMS",
+            "PRAWN FARMS", "TOILET REPAIRS", "WELLS IMP", "WATS WATER", "VECTOR BREEDING SITE",
+            "HEALTH INSTITUTIONS", "VETERINARY INSTITUTIONS", "AIR POLLUTION", "OTHER / PUB. NUISANCE"
+        ];
+
+        const localBaselineData = Array.from({length: 12}, (_, idx) => {
+            let isApril = idx === 3;
+            return {
+                rec: idx===0 ? 2 : (idx===1 ? 0 : (idx===2 ? 0 : (idx===3 ? 1 : 0))), 
+                det: idx===0 ? 3 : (idx===1 ? 1 : (idx===2 ? 1 : (idx===3 ? 1 : 0))),
+                inv: idx===0 ? 5 : (idx===1 ? 1 : (idx===2 ? 1 : (idx===3 ? 2 : 0))),
+                set: idx===0 ? 4 : (idx===1 ? 1 : (idx===2 ? 1 : (idx===3 ? 1 : 0))),
+                notice: idx===0 ? 1 : 0,
+                pros: 0,
+                fines: 0,
+                split14: isApril ? [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] : (idx===0 ? [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] : Array(14).fill(0))
+            };
+        });
+
+        let currentYearData = [...localBaselineData];
+        let chartCatInstance = null;
+        let chartActInstance = null;
+        let chartAnnualInstance = null;
+
+        function buildPortalSkeletonLayout() {
+            let html = '';
+            C14_LABELS.forEach((label, idx) => {
+                html += `
+                <div>
+                    <label class="text-[9px] uppercase tracking-tight block text-slate-400 font-bold truncate" title="${label}">${label}</label>
+                    <input type="number" id="inp-c14-${idx}" class="w-full p-1 border rounded bg-white text-center font-bold text-xs text-slate-800">
+                </div>`;
+            });
+            document.getElementById('portal-c14-container').innerHTML = html;
+        }
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            document.getElementById('lbl-context').innerText = "LOAD...";
+
+            if (isCloudActive) {
+                cloudDb.ref(`environmental_v2/${year}`).once('value').then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) {
+                        currentYearData = data;
+                    } else {
+                        currentYearData = [...localBaselineData];
+                    }
+                    renderDataUI(monthIdx, year);
+                }).catch((err) => {
+                    console.error(err);
+                    loadLocalCacheStorage(year);
+                    renderDataUI(monthIdx, year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+                renderDataUI(monthIdx, year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let localStore = JSON.parse(localStorage.getItem(`phi_env_local_${year}`));
+            if (localStore) {
+                currentYearData = localStore;
+            } else {
+                currentYearData = [...localBaselineData];
+            }
+        }
+
+        function renderDataUI(monthIdx, year) {
+            const record = currentYearData[monthIdx] || { rec: 0, det: 0, inv: 0, set: 0, notice: 0, pros: 0, fines: 0, split14: Array(14).fill(0) };
+
+            document.getElementById('inp-env-rec').value = record.rec;
+            document.getElementById('inp-env-det').value = record.det;
+            document.getElementById('inp-env-inv').value = record.inv;
+            document.getElementById('inp-env-set').value = record.set;
+            document.getElementById('inp-env-notice').value = record.notice;
+            document.getElementById('inp-env-pros').value = record.pros;
+            document.getElementById('inp-env-fines').value = record.fines;
+
+            C14_LABELS.forEach((_, idx) => {
+                document.getElementById(`inp-c14-${idx}`).value = record.split14[idx] || 0;
+            });
+
+            document.getElementById('lbl-context').innerText = `${MONTH_NAMES[monthIdx].toUpperCase()} ${year}`;
+            document.getElementById('td-env-rec').innerText = record.rec;
+            document.getElementById('td-env-det').innerText = record.det;
+            document.getElementById('td-env-inv').innerText = record.inv;
+            document.getElementById('td-env-set').innerText = record.set;
+            document.getElementById('td-env-notice').innerText = record.notice;
+            document.getElementById('td-env-pros').innerText = record.pros;
+            document.getElementById('td-env-fines').innerText = "Rs. " + record.fines.toLocaleString();
+
+            let tableHtml = '';
+            C14_LABELS.forEach((label, idx) => {
+                tableHtml += `
+                <tr class="bg-white hover:bg-slate-50/50 font-medium">
+                    <td class="p-2 pl-3 text-slate-800 font-semibold border-r border-slate-100">${label}</td>
+                    <td class="p-2 text-center text-slate-900 font-bold bg-slate-50 text-xs">${record.split14[idx] || 0}</td>
+                </tr>`;
+            });
+            document.getElementById('tbody-c14-matrix').innerHTML = tableHtml;
+
+            updateEnvironmentalCharts(record, year);
+        }
+
+        function updateEnvironmentalCharts(record, year) {
+            let activeLabels = [];
+            let activeCounts = [];
+
+            C14_LABELS.forEach((label, idx) => {
+                let val = record.split14[idx] || 0;
+                if (val > 0) {
+                    activeLabels.push(label.length > 18 ? label.substring(0,16)+"..." : label);
+                    activeCounts.push(val);
+                }
+            });
+
+            const ctx1 = document.getElementById('chartLocalCategories').getContext('2d');
+            if(chartCatInstance) chartCatInstance.destroy();
+            chartCatInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: activeLabels.length > 0 ? activeLabels : ['No Active Complaints'],
+                    datasets: [{ data: activeCounts.length > 0 ? activeCounts : [0], backgroundColor: '#059669', borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+
+            const ctx2 = document.getElementById('chartLocalActions').getContext('2d');
+            if(chartActInstance) chartActInstance.destroy();
+            
+            let totalInquiries = record.inv;
+            let resolvedCount = record.set;
+            let remainingNoticed = record.notice;
+            let pendingAction = Math.max(0, totalInquiries - (resolvedCount + remainingNoticed));
+
+            chartActInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Settled Successfully', 'Notices Served', 'Pending Investigation'],
+                    datasets: [{ data: totalInquiries > 0 ? [resolvedCount, remainingNoticed, pendingAction] : [0, 0, 0], backgroundColor: ['#10b981', '#3b82f6', '#cbd5e1'], borderWidth: 1 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+            });
+
+            const ctx3 = document.getElementById('chartAnnualEnvTrend').getContext('2d');
+            if(chartAnnualInstance) chartAnnualInstance.destroy();
+
+            let receivedTimeline = currentYearData.map(m => m.rec);
+            let investigatedTimeline = currentYearData.map(m => m.inv);
+            let settledTimeline = currentYearData.map(m => m.set);
+
+            chartAnnualInstance = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: MONTH_NAMES.map(m => m.substring(0,3)),
+                    datasets: [
+                        { label: 'Complaints Received', data: receivedTimeline, borderColor: '#0f172a', tension: 0.15, fill: false },
+                        { label: 'Investigations Conducted', data: investigatedTimeline, borderColor: '#2563eb', tension: 0.15, fill: false },
+                        { label: 'Settled Cases', data: settledTimeline, borderColor: '#10b981', tension: 0.15, fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+            });
+        }
+
+        function commitPortalValues() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            const rec = parseInt(document.getElementById('inp-env-rec').value) || 0;
+            const det = parseInt(document.getElementById('inp-env-det').value) || 0;
+            const inv = parseInt(document.getElementById('inp-env-inv').value) || 0;
+            const set = parseInt(document.getElementById('inp-env-set').value) || 0;
+            const notice = parseInt(document.getElementById('inp-env-notice').value) || 0;
+            const pros = parseInt(document.getElementById('inp-env-pros').value) || 0;
+            const fines = parseInt(document.getElementById('inp-env-fines').value) || 0;
+
+            let c14Data = [];
+            let totalC14Sum = 0;
+            C14_LABELS.forEach((_, idx) => {
+                let val = parseInt(document.getElementById(`inp-c14-${idx}`).value) || 0;
+                c14Data.push(val);
+                totalC14Sum += val;
+            });
+
+            if(totalC14Sum > rec) {
+                alert(`⚠️ Validation Error: The combined total sum of all 14 categorization splits (${totalC14Sum}) cannot exceed total complaints received (${rec}) parameter.`);
+                return;
+            }
+            if(set + notice + pros > inv) {
+                alert("⚠️ Validation Error: Settled + Notices + Prosecutions cannot exceed total investigated ceiling.");
+                return;
+            }
+
+            currentYearData[monthIdx] = { rec: rec, det: det, inv: inv, set: set, notice: notice, pros: pros, fines: fines, split14: c14Data };
+
+            localStorage.setItem(`phi_env_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive) {
+                cloudDb.ref(`environmental_v2/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Complete: Public complaints committed live to online registry!`);
+                    onFilterChange();
+                }).catch((err) => {
+                    console.error(err);
+                    alert(`🛡️ Offline Mode Safe: Local node data saved.`);
+                    onFilterChange();
+                });
+            } else {
+                alert(`🛡️ Offline Mode Safe: Environment database written locally.`);
+                onFilterChange();
+            }
+        }
+
+        window.onload = function() {
+            buildPortalSkeletonLayout();
+
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            if(document.getElementById('sel-year')) document.getElementById('sel-year').value = targetYear.toString();
+            if(document.getElementById('sel-month')) document.getElementById('sel-month').value = previousMonthIdx.toString();
+
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>

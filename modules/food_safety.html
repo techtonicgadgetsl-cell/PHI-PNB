@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 03. Food Safety & Hygiene</title>
+    <!-- Tailwind CSS & Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-teal-600 p-2.5 rounded-xl text-white shadow-md hover:bg-teal-500 transition">
+                <i class="fa-solid fa-utensils text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">03. Food Safety & Statutory Hygiene Audits</h1>
+                <p class="text-xs text-slate-400">Establishment Registrations, H800 Grading Management & Action Tracking</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-teal-400 font-bold">
+            🔄 CONNECTING...
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-teal-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 UPDATED MODULE ORDER -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <div class="xl:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="border-b pb-2">
+                    <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-square-sliders text-teal-600"></i>
+                        <span>FOOD DATA PORTAL</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Select time scale to modify statutory food records</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Year</label>
+                        <select id="sel-year" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Month</label>
+                        <select id="sel-month" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1 text-xs">
+                    
+                    <div class="p-3 bg-slate-50 rounded-xl border space-y-3">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider"><i class="fa-solid fa-hotel mr-1 text-teal-600"></i>Slide 35: H800 Establishment Grid</p>
+                        <div id="portal-categories-container" class="space-y-4 divide-y divide-slate-200">
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-teal-50/40 border border-teal-100 rounded-xl space-y-2.5">
+                        <p class="text-[10px] font-black text-teal-800 uppercase tracking-wider"><i class="fa-solid fa-clipboard-check mr-1 text-teal-600"></i>Slide 36: Routine Actions & Audits</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="col-span-2"><label class="text-slate-500 font-medium">Inspections Completed</label><input type="number" id="inp-ins-done" class="w-full p-1.5 border rounded-lg bg-white font-black text-teal-700"></div>
+                            <div><label class="text-slate-500 font-medium">Notices Served</label><input type="number" id="inp-ins-notice" class="w-full p-1.5 border rounded-lg bg-white font-medium"></div>
+                            <div><label class="text-slate-500 font-medium">Prosecuted</label><input type="number" id="inp-ins-pros" class="w-full p-1.5 border rounded-lg bg-white font-bold text-rose-600"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-orange-50/40 border border-orange-100 rounded-xl space-y-2">
+                        <p class="text-[10px] font-black text-orange-800 uppercase tracking-wider"><i class="fa-solid fa-gavel mr-1 text-orange-600"></i>Slide 37 & 39: Raids & Sampling Audits</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-slate-500 font-medium">Samples Taken (M)</label><input type="number" id="inp-samp-m" class="w-full p-1.5 border rounded-lg bg-white font-bold text-orange-600"></div>
+                            <div><label class="text-slate-500 font-medium">Unsatisfactory Reports</label><input type="number" id="inp-samp-unsat" class="w-full p-1.5 border rounded-lg bg-white font-bold text-rose-600"></div>
+                            <div><label class="text-slate-500 font-medium">Food Raids Done</label><input type="number" id="inp-raid-done" class="w-full p-1.5 border rounded-lg bg-white font-bold text-slate-800"></div>
+                            <div><label class="text-slate-500 font-medium">Raid Fines Logged (Rs.)</label><input type="number" id="inp-raid-fines" class="w-full p-1.5 border rounded-lg bg-white font-black text-emerald-700"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <button onclick="commitPortalValues()" class="w-full py-2.5 bg-teal-700 hover:bg-teal-600 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2 text-xs">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Save & Live Update Grid</span>
+                </button>
+            </div>
+
+            <div class="xl:col-span-2 space-y-6 overflow-y-auto custom-scrollbar pr-1">
+                
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <h4 class="text-xs font-black text-slate-700 uppercase tracking-tight">Slide 35: Registered Food Handling Establishments & Grading Master Log</h4>
+                        <span id="lbl-context" class="text-[10px] bg-teal-50 font-black px-2 py-0.5 rounded text-teal-700 font-mono">---</span>
+                    </div>
+
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-[11px] text-left border-collapse min-w-[850px]">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b text-center">
+                                <tr>
+                                    <th class="p-2 border-r text-left">Premises Classification Type</th>
+                                    <th class="p-2 border-r bg-slate-100">Total Reg (A+B+C+D)</th>
+                                    <th class="p-2 border-r text-green-700">Grade A</th>
+                                    <th class="p-2 border-r text-emerald-500">Grade B</th>
+                                    <th class="p-2 border-r text-yellow-600">Grade C</th>
+                                    <th class="p-2 border-r text-rose-600">Grade D</th>
+                                    <th class="p-2 bg-indigo-50 text-indigo-900 font-black">Premises Reg/Complete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-food-establishments" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b text-center">
+                                <tr>
+                                    <th class="p-2 border-r">Inspections Did</th>
+                                    <th class="p-2 border-r">Notices Served</th>
+                                    <th class="p-2 border-r">Prosecutions Logged</th>
+                                    <th class="p-2 border-r">Samples Taken</th>
+                                    <th class="p-2 border-r text-rose-600">Unsatisfactory Samples</th>
+                                    <th class="p-2 border-r">Food Raids Done</th>
+                                    <th class="p-2 bg-emerald-50 text-emerald-900">Fines Recovered</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="text-center font-bold bg-white text-slate-700">
+                                    <td id="td-ins-done" class="p-2.5 border-r text-teal-600 text-sm font-black">0</td>
+                                    <td id="td-ins-notice" class="p-2.5 border-r">0</td>
+                                    <td id="td-ins-pros" class="p-2.5 border-r text-rose-600">0</td>
+                                    <td id="td-samp-m" class="p-2.5 border-r text-orange-600">0</td>
+                                    <td id="td-samp-unsat" class="p-2.5 border-r text-rose-600">0</td>
+                                    <td id="td-raid-done" class="p-2.5 border-r">0</td>
+                                    <td id="td-raid-fines" class="p-2.5 bg-emerald-50/50 text-emerald-700 font-black">LKR 0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Registered Establishments (Count > 0 Only)</h5>
+                        <div class="h-44"><canvas id="chartLocalEstablishments"></canvas></div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">H800 Total Grading Profile (Bar Chart)</h5>
+                        <div class="h-44"><canvas id="chartLocalGrading"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Annual Inspection Coverage Evolution Trend View</h5>
+                    <div class="h-56"><canvas id="chartAnnualFoodTrend"></canvas></div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            cloudDb = firebase.database();
+            isCloudActive = true;
+            document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+        } catch (e) {
+            console.warn("Firebase stream halt. Running offline database matrix safeguards.", e);
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const CATEGORIES = [
+            "Hotels & Resorts",
+            "Catering Establishments",
+            "Restaurants or Eating Houses",
+            "Ice-cream/Confectionery/Yoghurt/Desserts Cottage Industry",
+            "Tea/Coffee/Beverages Boutique",
+            "Bakeries",
+            "Canteen",
+            "Supermarkets Serving Ready to Eat Food",
+            "Food Stores",
+            "Manufacturing Premises",
+            "Others"
+        ];
+
+        const localBaselineData = Array.from({length: 12}, (_, idx) => {
+            let isActiveTimeline = idx <= 3;
+            return {
+                matrix: [
+                    [0, 0, 0, 0, 0, 0], 
+                    [0, 0, 0, 0, 0, 0], 
+                    [9, 0, 7, 2, 0, 4], 
+                    [0, 0, 0, 0, 0, 0], 
+                    [0, 0, 0, 0, 0, 0], 
+                    [4, 0, 1, 3, 0, 2], 
+                    [1, 0, 1, 0, 0, 1], 
+                    [0, 0, 0, 0, 0, 0], 
+                    [34, 2, 30, 2, 0, 15], 
+                    [8, 3, 4, 1, 0, 5], 
+                    [3, 0, 3, 0, 0, 2]  
+                ],
+                ins_done: idx===0 ? 23 : (idx===1 ? 27 : (idx===2 ? 19 : (idx===3 ? 22 : 0))), 
+                ins_notice: (idx===0 || idx===2) ? 1 : 0, 
+                ins_pros: 0,
+                samp_m: isActiveTimeline ? 1 : 0, 
+                samp_unsat: idx===2 ? 2 : (idx===3 ? 1 : 0), 
+                raid_done: idx===3 ? 1 : 0, 
+                raid_fines: idx===3 ? 15000 : 0 
+            };
+        });
+
+        let currentYearData = [...localBaselineData];
+        let chartEstInstance = null;
+        let chartGradingInstance = null;
+        let chartAnnualInstance = null;
+
+        function buildPortalSkeleton() {
+            let html = '';
+            CATEGORIES.forEach((cat, idx) => {
+                html += `
+                <div class="pt-2 ${idx > 0 ? 'border-t border-slate-100' : ''}">
+                    <p class="font-bold text-slate-700 mb-1.5 leading-tight">${cat}</p>
+                    <div class="grid grid-cols-6 gap-1.5">
+                        <div>
+                            <label class="text-[8px] block text-slate-400 font-bold">TOTAL REG</label>
+                            <input type="number" id="inp-mat-${idx}-0" class="w-full p-1 border rounded text-center font-bold bg-slate-100 text-xs" readonly>
+                        </div>
+                        <div>
+                            <label class="text-[8px] block text-green-600 font-bold">GRADE A</label>
+                            <input type="number" id="inp-mat-${idx}-1" oninput="calcRowTotal(${idx})" class="w-full p-1 border rounded text-center font-bold border-green-200 text-green-700 text-xs">
+                        </div>
+                        <div>
+                            <label class="text-[8px] block text-emerald-500 font-bold">GRADE B</label>
+                            <input type="number" id="inp-mat-${idx}-2" oninput="calcRowTotal(${idx})" class="w-full p-1 border rounded text-center font-bold border-emerald-200 text-emerald-600 text-xs">
+                        </div>
+                        <div>
+                            <label class="text-[8px] block text-amber-500 font-bold">GRADE C</label>
+                            <input type="number" id="inp-mat-${idx}-3" oninput="calcRowTotal(${idx})" class="w-full p-1 border rounded text-center font-bold border-amber-200 text-amber-600 text-xs">
+                        </div>
+                        <div>
+                            <label class="text-[8px] block text-rose-500 font-bold">GRADE D</label>
+                            <input type="number" id="inp-mat-${idx}-4" oninput="calcRowTotal(${idx})" class="w-full p-1 border rounded text-center font-bold border-rose-200 text-rose-600 text-xs">
+                        </div>
+                        <div>
+                            <label class="text-[8px] block text-indigo-600 font-bold truncate">REG/COMP</label>
+                            <input type="number" id="inp-mat-${idx}-5" class="w-full p-1 border rounded text-center font-bold border-indigo-200 text-indigo-700 bg-indigo-50/40 text-xs shadow-sm">
+                        </div>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('portal-categories-container').innerHTML = html;
+        }
+
+        function calcRowTotal(rowIdx) {
+            let a = parseInt(document.getElementById(`inp-mat-${rowIdx}-1`).value) || 0;
+            let b = parseInt(document.getElementById(`inp-mat-${rowIdx}-2`).value) || 0;
+            let c = parseInt(document.getElementById(`inp-mat-${rowIdx}-3`).value) || 0;
+            let d = parseInt(document.getElementById(`inp-mat-${rowIdx}-4`).value) || 0;
+            document.getElementById(`inp-mat-${rowIdx}-0`).value = a + b + c + d;
+        }
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            document.getElementById('lbl-context').innerText = "LOAD...";
+
+            if (isCloudActive) {
+                cloudDb.ref(`food_v4/${year}`).once('value').then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) {
+                        currentYearData = data;
+                    } else {
+                        currentYearData = [...localBaselineData];
+                    }
+                    renderDataUI(monthIdx, year);
+                }).catch((err) => {
+                    console.error(err);
+                    loadLocalCacheStorage(year);
+                    renderDataUI(monthIdx, year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+                renderDataUI(monthIdx, year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let localStore = JSON.parse(localStorage.getItem(`phi_food_local_${year}`));
+            if (localStore) {
+                currentYearData = localStore;
+            } else {
+                currentYearData = [...localBaselineData];
+            }
+        }
+
+        function renderDataUI(monthIdx, year) {
+            const record = currentYearData[monthIdx] || { matrix: Array.from({length: 11}, () => [0,0,0,0,0,0]), ins_done:0, ins_notice:0, ins_pros:0, samp_m:0, samp_unsat:0, raid_done:0, raid_fines:0 };
+
+            CATEGORIES.forEach((_, rIdx) => {
+                if(!record.matrix[rIdx] || record.matrix[rIdx].length < 6) {
+                    record.matrix[rIdx] = [0, 0, 0, 0, 0, 0];
+                }
+                document.getElementById(`inp-mat-${rIdx}-0`).value = record.matrix[rIdx][0];
+                document.getElementById(`inp-mat-${rIdx}-1`).value = record.matrix[rIdx][1];
+                document.getElementById(`inp-mat-${rIdx}-2`).value = record.matrix[rIdx][2];
+                document.getElementById(`inp-mat-${rIdx}-3`).value = record.matrix[rIdx][3];
+                document.getElementById(`inp-mat-${rIdx}-4`).value = record.matrix[rIdx][4];
+                document.getElementById(`inp-mat-${rIdx}-5`).value = record.matrix[rIdx][5];
+            });
+
+            document.getElementById('inp-ins-done').value = record.ins_done;
+            document.getElementById('inp-ins-notice').value = record.ins_notice;
+            document.getElementById('inp-ins-pros').value = record.ins_pros;
+            document.getElementById('inp-samp-m').value = record.samp_m;
+            document.getElementById('inp-samp-unsat').value = record.samp_unsat;
+            document.getElementById('inp-raid-done').value = record.raid_done;
+            document.getElementById('inp-raid-fines').value = record.raid_fines;
+
+            let tableHtml = '';
+            CATEGORIES.forEach((cat, rIdx) => {
+                tableHtml += `
+                <tr class="text-center bg-white font-medium hover:bg-slate-50/50">
+                    <td class="p-2 text-left font-semibold text-slate-800 border-r">${cat}</td>
+                    <td class="p-2 border-r bg-slate-50 font-bold">${record.matrix[rIdx][0]}</td>
+                    <td class="p-2 border-r text-green-700 font-bold">${record.matrix[rIdx][1]}</td>
+                    <td class="p-2 border-r text-emerald-500 font-bold">${record.matrix[rIdx][2]}</td>
+                    <td class="p-2 border-r text-yellow-600 font-bold">${record.matrix[rIdx][3]}</td>
+                    <td class="p-2 border-r text-rose-600 font-bold">${record.matrix[rIdx][4]}</td>
+                    <td class="p-2 bg-indigo-50/30 text-indigo-700 font-black text-xs">${record.matrix[rIdx][5]}</td>
+                </tr>`;
+            });
+            document.getElementById('tbody-food-establishments').innerHTML = tableHtml;
+
+            document.getElementById('lbl-context').innerText = `${MONTH_NAMES[monthIdx].toUpperCase()} ${year}`;
+            document.getElementById('td-ins-done').innerText = record.ins_done;
+            document.getElementById('td-ins-notice').innerText = record.ins_notice;
+            document.getElementById('td-ins-pros').innerText = record.ins_pros;
+            document.getElementById('td-samp-m').innerText = record.samp_m;
+            document.getElementById('td-samp-unsat').innerText = record.samp_unsat;
+            document.getElementById('td-raid-done').innerText = record.raid_done;
+            document.getElementById('td-raid-fines').innerText = "Rs. " + record.raid_fines.toLocaleString();
+
+            updateFoodCharts(record, year);
+        }
+
+        function updateFoodCharts(record, year) {
+            let filteredLabels = [];
+            let filteredTotals = [];
+
+            CATEGORIES.forEach((cat, rIdx) => {
+                let totalVal = record.matrix[rIdx][0];
+                if (totalVal > 0) {
+                    let displayLabel = cat.length > 25 ? cat.substring(0, 22) + "..." : cat;
+                    filteredLabels.push(displayLabel);
+                    filteredTotals.push(totalVal);
+                }
+            });
+
+            const ctx1 = document.getElementById('chartLocalEstablishments').getContext('2d');
+            if(chartEstInstance) chartEstInstance.destroy();
+            chartEstInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: filteredLabels.length > 0 ? filteredLabels : ['No Active Assets'],
+                    datasets: [{ data: filteredTotals.length > 0 ? filteredTotals : [0], backgroundColor: '#0d9488', borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+
+            let totalGradeA = 0, totalGradeB = 0, totalGradeC = 0, totalGradeD = 0;
+            CATEGORIES.forEach((_, rIdx) => {
+                totalGradeA += record.matrix[rIdx][1];
+                totalGradeB += record.matrix[rIdx][2];
+                totalGradeC += record.matrix[rIdx][3];
+                totalGradeD += record.matrix[rIdx][4];
+            });
+
+            const ctx2 = document.getElementById('chartLocalGrading').getContext('2d');
+            if(chartGradingInstance) chartGradingInstance.destroy();
+            chartGradingInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Grade A (Strong)', 'Grade B (Light)', 'Grade C (Yellow)', 'Grade D (Red)'],
+                    datasets: [{ data: [totalGradeA, totalGradeB, totalGradeC, totalGradeD], backgroundColor: ['#15803d', '#4ade80', '#eab308', '#ef4444'], borderRadius: 5 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+
+            const ctx3 = document.getElementById('chartAnnualFoodTrend').getContext('2d');
+            if(chartAnnualInstance) chartAnnualInstance.destroy();
+
+            let inspectionsTimeline = currentYearData.map(m => m.ins_done);
+            let raidsTimeline = currentYearData.map(m => m.raid_done);
+            let samplesTimeline = currentYearData.map(m => m.samp_m);
+
+            chartAnnualInstance = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: MONTH_NAMES.map(m => m.substring(0,3)),
+                    datasets: [
+                        { label: 'Inspections Completed', data: inspectionsTimeline, borderColor: '#0d9488', tension: 0.15, fill: false },
+                        { label: 'Food Raids Initiated', data: raidsTimeline, borderColor: '#0f172a', tension: 0.15, fill: false },
+                        { label: 'Formal Samples Taken', data: samplesTimeline, borderColor: '#f97316', tension: 0.15, fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+            });
+        }
+
+        function commitPortalValues() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            let matrixData = [];
+            CATEGORIES.forEach((_, rIdx) => {
+                let a = parseInt(document.getElementById(`inp-mat-${rIdx}-1`).value) || 0;
+                let b = parseInt(document.getElementById(`inp-mat-${rIdx}-2`).value) || 0;
+                let c = parseInt(document.getElementById(`inp-mat-${rIdx}-3`).value) || 0;
+                let d = parseInt(document.getElementById(`inp-mat-${rIdx}-4`).value) || 0;
+                let regComp = parseInt(document.getElementById(`inp-mat-${rIdx}-5`).value) || 0;
+                let tot = a + b + c + d;
+                matrixData.push([tot, a, b, c, d, regComp]);
+            });
+
+            const insDone = parseInt(document.getElementById('inp-ins-done').value) || 0;
+            const notice = parseInt(document.getElementById('inp-ins-notice').value) || 0;
+            const pros = parseInt(document.getElementById('inp-ins-pros').value) || 0;
+
+            if(notice + pros > insDone) {
+                alert("⚠️ Validation Error: Notices + Prosecutions cannot exceed total routine inspections.");
+                return;
+            }
+
+            currentYearData[monthIdx] = {
+                matrix: matrixData,
+                ins_done: insDone,
+                ins_notice: notice,
+                ins_pros: pros,
+                samp_m: parseInt(document.getElementById('inp-samp-m').value) || 0,
+                samp_unsat: parseInt(document.getElementById('inp-samp-unsat').value) || 0,
+                raid_done: parseInt(document.getElementById('inp-raid-done').value) || 0,
+                raid_fines: parseInt(document.getElementById('inp-raid-fines').value) || 0
+            };
+
+            localStorage.setItem(`phi_food_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive) {
+                cloudDb.ref(`food_v4/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Complete: Food safety matrix committed live to database!`);
+                    onFilterChange();
+                }).catch((err) => {
+                    console.error(err);
+                    alert(`🛡️ Offline Mode Safe: Local node updated successfully.`);
+                    onFilterChange();
+                });
+            } else {
+                alert(`🛡️ Offline Mode Safe: Workspace baseline matrices saved.`);
+                onFilterChange();
+            }
+        }
+
+        window.onload = function() {
+            buildPortalSkeleton();
+
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            if(document.getElementById('sel-year')) document.getElementById('sel-year').value = targetYear.toString();
+            if(document.getElementById('sel-month')) document.getElementById('sel-month').value = previousMonthIdx.toString();
+
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>

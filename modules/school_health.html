@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 07. School Health & SMI</title>
+    <!-- Tailwind CSS & Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <!-- TOP GLOBAL BAR -->
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md hover:bg-indigo-500 transition">
+                <i class="fa-solid fa-graduation-cap text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">07. School Health & School Medical Inspections (SMI)</h1>
+                <p class="text-xs text-slate-400">Dynamic Multi-Area School Registry, Monthly Immunization Logs (aTd/HPV) & Defect Audits</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-indigo-400 font-bold">
+            🔄 CONNECTING...
+        </div>
+    </header>
+
+    <!-- MAIN LAYOUT -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 UPDATED MODULE ORDER HERE -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- CONTENT PANEL SPLIT -->
+        <main class="flex-1 p-5 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-5">
+            
+            <!-- LEFT WORKSPACE COLUMN -->
+            <div class="xl:col-span-1 space-y-4 h-fit">
+                
+                <!-- 01. DYNAMIC REGISTRY PANEL -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="font-black text-slate-900 text-xs flex items-center space-x-1.5 uppercase tracking-wide">
+                        <i class="fa-solid fa-school-flag text-indigo-600"></i>
+                        <span>Register Area Schools (Persistent)</span>
+                    </h3>
+                    <div class="flex space-x-2">
+                        <input type="text" id="inp-new-school" placeholder="Enter school name..." class="flex-1 p-2 border rounded-lg bg-slate-50 font-medium text-xs">
+                        <button onclick="registerNewSchool()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Add
+                        </button>
+                    </div>
+                    <div id="registry-list-badge" class="flex flex-wrap gap-1.5 pt-1 max-h-24 overflow-y-auto custom-scrollbar">
+                        <!-- Badges loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- 02. MONTHLY DATA ENTRY ENGINE PORTAL -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="border-b pb-1.5">
+                        <h3 class="font-black text-slate-900 text-xs flex items-center space-x-1.5 uppercase tracking-wide">
+                            <i class="fa-solid fa-square-sliders text-indigo-600"></i>
+                            <span>SMI & Vaccination Entry Panel</span>
+                        </h3>
+                    </div>
+
+                    <!-- TIMELINE CONTROLS -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[9px] uppercase font-black text-slate-400 block mb-0.5">Target Year</label>
+                            <select id="sel-year" onchange="onFilterChange()" class="w-full p-1.5 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                                <option value="2025">2025</option><option value="2026">2026</option>
+                                <option value="2027">2027</option><option value="2028">2028</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[9px] uppercase font-black text-slate-400 block mb-0.5">Target Month</label>
+                            <select id="sel-month" onchange="onFilterChange()" class="w-full p-1.5 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                                <option value="0">January</option><option value="1">February</option>
+                                <option value="2">March</option><option value="3">April</option>
+                                <option value="4">May</option><option value="5">June</option>
+                                <option value="6">July</option><option value="7">August</option>
+                                <option value="8">September</option><option value="9">October</option>
+                                <option value="10">November</option><option value="11">December</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- CHOOSE ACTIVE REGISTERED SCHOOL DROPDOWN SLOT -->
+                    <div>
+                        <label class="text-[9px] uppercase font-black text-slate-400 block mb-0.5">Select Target School</label>
+                        <select id="sel-target-school" onchange="onActiveSchoolChange()" class="w-full p-2 border rounded-lg bg-indigo-50/50 font-black text-xs text-indigo-950">
+                            <!-- Options filled dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- SECTIONS FIELD FORM -->
+                    <div class="space-y-3 pt-1 max-h-[42vh] overflow-y-auto custom-scrollbar pr-1 text-xs">
+                        
+                        <!-- SLIDE 26: SMI STATUS MODIFIED -->
+                        <div class="p-2.5 bg-slate-50 rounded-lg border">
+                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1.5">Slide 26: SMI Status</p>
+                            <div>
+                                <label class="text-[11px] font-medium block mb-0.5">SMI Preparation Status</label>
+                                <select id="inp-smi-status" class="w-full p-1.5 border rounded bg-white font-bold text-slate-700">
+                                    <option value="Not Complete yet">Not Complete yet</option>
+                                    <option value="Complete">Complete</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- SLIDE 27, 28: aTd MONTHLY FIELDS -->
+                        <div class="p-2.5 bg-blue-50/40 border border-blue-100 rounded-lg grid grid-cols-2 gap-2">
+                            <p class="col-span-2 text-[9px] font-black text-blue-800 uppercase tracking-wider">Slide 27, 28: aTd Grade 07 Metrics</p>
+                            <div><label class="font-medium block text-slate-600">Grade 7 Total</label><input type="number" id="inp-atd-students" class="w-full p-1 border rounded bg-white font-bold"></div>
+                            <div><label class="font-medium block text-blue-600">aTd Given (Gr. 7)</label><input type="number" id="inp-atd-given" class="w-full p-1 border rounded bg-white font-bold"></div>
+                            <div class="col-span-2"><label class="font-medium block text-slate-500">aTd Given (Other Grades)</label><input type="number" id="inp-atd-other" class="w-full p-1 border rounded bg-white"></div>
+                        </div>
+
+                        <!-- SLIDE 29, 30: HPV MONTHLY FIELDS -->
+                        <div class="p-2.5 bg-purple-50/40 border border-purple-100 rounded-lg grid grid-cols-2 gap-2">
+                            <p class="col-span-2 text-[9px] font-black text-purple-800 uppercase tracking-wider">Slide 29, 30: HPV Grade 06 Female Metrics</p>
+                            <div class="col-span-2"><label class="font-medium block text-slate-600">Grade 6 Female Total</label><input type="number" id="inp-hpv-students" class="w-full p-1 border rounded bg-white font-bold"></div>
+                            <div><label class="font-medium block text-purple-600">HPV Dose 1 Given</label><input type="number" id="inp-hpv-d1" class="w-full p-1 border rounded bg-white font-bold"></div>
+                            <div><label class="font-medium block text-purple-600">HPV Dose 2 Given</label><input type="number" id="inp-hpv-d2" class="w-full p-1 border rounded bg-white font-bold"></div>
+                        </div>
+
+                        <!-- SLIDE 31: HEALTH PROMOTION PROGRAMMES -->
+                        <div class="p-2.5 bg-amber-50/40 border border-amber-100 rounded-lg grid grid-cols-2 gap-2">
+                            <p class="col-span-2 text-[9px] font-black text-amber-800 uppercase tracking-wider">Slide 31: Health Promotion Programmes</p>
+                            <div><label class="font-medium block">Reproductive Health</label><input type="number" id="inp-hp-repro" class="w-full p-1 border rounded bg-white"></div>
+                            <div><label class="font-medium block">Life Skills Prog.</label><input type="number" id="inp-hp-skills" class="w-full p-1 border rounded bg-white"></div>
+                            <div><label class="font-medium block">Communicable/NCD</label><input type="number" id="inp-hp-ncd" class="w-full p-1 border rounded bg-white"></div>
+                            <div><label class="font-medium block">Nutrition Prog.</label><input type="number" id="inp-hp-nutr" class="w-full p-1 border rounded bg-white"></div>
+                        </div>
+
+                        <!-- SLIDE 32, 33: DEFECTS AND MEDICAL CORRECTIONS TRACKING -->
+                        <div class="p-2.5 bg-rose-50/40 border border-rose-100 rounded-lg grid grid-cols-2 gap-2">
+                            <p class="col-span-2 text-[9px] font-black text-rose-800 uppercase tracking-wider">Slide 32, 33: Defects & Corrections Log</p>
+                            <div><label class="font-medium block text-rose-600">Heart Defects Found</label><input type="number" id="inp-def-heart" class="w-full p-1 border rounded bg-white font-medium"></div>
+                            <div><label class="font-medium block text-emerald-600">Heart Corrected</label><input type="number" id="inp-corr-heart" class="w-full p-1 border rounded bg-white font-medium"></div>
+                            <div><label class="font-medium block text-rose-600">Visual Defects Found</label><input type="number" id="inp-def-vis" class="w-full p-1 border rounded bg-white font-medium"></div>
+                            <div><label class="font-medium block text-emerald-600">Visual Corrected</label><input type="number" id="inp-corr-vis" class="w-full p-1 border rounded bg-white font-medium"></div>
+                            <div><label class="font-medium block text-rose-600">Hearing Defects Found</label><input type="number" id="inp-def-hear" class="w-full p-1 border rounded bg-white font-medium"></div>
+                            <div><label class="font-medium block text-emerald-600">Hearing Corrected</label><input type="number" id="inp-corr-hear" class="w-full p-1 border rounded bg-white font-medium"></div>
+                            <div class="col-span-2"><label class="font-medium block text-rose-600">Dental Defects Found</label><input type="number" id="inp-def-dent" class="w-full p-1 border rounded bg-white font-medium"></div>
+                            <div class="col-span-2"><label class="font-medium block text-emerald-600">Dental Corrected</label><input type="number" id="inp-corr-dent" class="w-full p-1 border rounded bg-white font-medium"></div>
+                        </div>
+
+                    </div>
+
+                    <button onclick="commitPortalValues()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2 text-xs">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> <span>Commit & Synchronize Displays</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT WORKSPACE COLUMN -->
+            <div class="xl:col-span-2 space-y-5 overflow-y-auto custom-scrollbar pr-1 pb-12">
+                
+                <!-- BOARD 01: SMI SUMMARY INDEX TABLE -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-1.5">
+                        <h4 class="text-xs font-black text-slate-700 uppercase tracking-tight">Slide 26, 32, 33: School Health SMI Summary & Major Defects Log (Ordered)</h4>
+                        <span id="lbl-context" class="text-[10px] bg-indigo-50 font-black px-2 py-0.5 rounded text-indigo-700 font-mono">---</span>
+                    </div>
+                    <div class="overflow-x-auto border rounded-lg shadow-inner">
+                        <table class="w-full text-[11px] text-left border-collapse min-w-[800px] text-center">
+                            <thead class="bg-slate-50 text-slate-700 font-bold border-b">
+                                <tr>
+                                    <th class="p-2 border-r text-left pl-3" rowspan="2">Registered School Name</th>
+                                    <th class="p-2 border-r" rowspan="2">SMI Preparation Status (Complete / Not)</th>
+                                    <th class="p-2 border-r text-red-700 bg-red-50/40" colspan="2">1. Heart Defects</th>
+                                    <th class="p-2 border-r text-rose-700 bg-rose-50/40" colspan="2">2. Visual Defects</th>
+                                    <th class="p-2 text-amber-700 bg-amber-50/40" colspan="2">3. Hearing Defects</th>
+                                </tr>
+                                <tr class="bg-slate-100/60 text-[10px] text-slate-500 font-medium">
+                                    <th class="p-1 border-r text-red-600">Found</th><th class="p-1 border-r text-emerald-600">Corrected</th>
+                                    <th class="p-1 border-r text-rose-600">Found</th><th class="p-1 border-r text-emerald-600">Corrected</th>
+                                    <th class="p-1 border-r text-amber-600">Found</th><th class="p-1 text-emerald-600">Corrected</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-smi-matrix" class="divide-y divide-slate-100 bg-white font-bold text-slate-700">
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- BOARD 02: HISTORICAL VACCINATION TRACKER TABLE (FIXED ALIGNMENT) -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-tight">Division Cumulative Immunization Coverage Timeline (Monthly Tracker)</h4>
+                    <div class="overflow-x-auto border rounded-lg shadow-inner max-h-56 custom-scrollbar">
+                        <table class="w-full text-[11px] text-center border-collapse min-w-[650px]">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th class="p-2 border-r text-left pl-3">Month</th>
+                                    <th class="p-2 border-r">Total Grade 7s</th>
+                                    <th class="p-2 border-r text-blue-600">aTd Given (Yr Total)</th>
+                                    <th class="p-2 border-r text-blue-700">aTd Coverage %</th>
+                                    <th class="p-2 border-r">Total Grade 6Fs</th>
+                                    <th class="p-2 border-r text-purple-600">HPV Dose 1 Given</th>
+                                    <th class="p-2 text-purple-700">HPV D1 Coverage %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-vaccination-timeline" class="divide-y divide-slate-100 bg-white font-semibold text-slate-700">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VISUAL GRAPH BLOCKS CHASSIS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- IMMUNIZATION COVERAGE GRAPH -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Active School Immunization Coverage Rates (%)</h5>
+                        <div class="h-44 flex items-center justify-center"><canvas id="chartLocalVaxRates"></canvas></div>
+                    </div>
+                    <!-- DEFECTS AND CORRECTIONS BAR CHART -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">3 Major SMI Defect Discoveries vs Medical Corrections</h5>
+                        <div class="h-44"><canvas id="chartLocalDefects"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- ANNUAL HEALTH PROMOTION TOPICS VS COUNT BAR CHART -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                    <h5 class="text-[11px] font-black text-indigo-950 uppercase tracking-wider mb-3"><i class="fa-solid fa-chart-bar mr-1"></i>Slide 31: Annual Health Promotion Programmes Distribution (Topics vs Counts)</h5>
+                    <div class="h-48"><canvas id="chartAnnualHealthProg"></canvas></div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ☁️ GOOGLE FIREBASE CLOUD CORE STABILIZER CDN -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            cloudDb = firebase.database();
+            isCloudActive = true;
+            document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+        } catch (e) {
+            console.warn("Firebase execution halted. Falling back to secure localStorage mode.", e);
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        let registeredSchools = ["Amunupura Kanishta Vidyalaya", "Kirimetiya Tamil Vidyalaya", "Menikdiwela Central", "Poththapitiya Primary Collage"];
+
+        const generateCleanSchoolObject = () => ({
+            smi_status: "Not Complete yet", atd_students: 0, atd_given: 0, atd_other: 0, hpv_students: 0, hpv_d1: 0, hpv_d2: 0, hp_repro: 0, hp_skills: 0, hp_ncd: 0, hp_nutr: 0, def_vis: 0, corr_vis: 0, def_hear: 0, corr_hear: 0, def_heart: 0, corr_heart: 0, def_dent: 0, corr_dent: 0
+        });
+
+        let currentYearData = Array.from({length: 12}, () => ({}));
+
+        registeredSchools.forEach(school => {
+            currentYearData[0][school] = generateCleanSchoolObject();
+            currentYearData[1][school] = generateCleanSchoolObject();
+            currentYearData[2][school] = generateCleanSchoolObject();
+            currentYearData[3][school] = generateCleanSchoolObject(); 
+
+            if(school === "Menikdiwela Central") {
+                currentYearData[3][school] = { smi_status: "Complete", atd_students: 60, atd_given: 55, atd_other: 5, hpv_students: 45, hpv_d1: 42, hpv_d2: 40, hp_repro: 1, hp_skills: 1, hp_ncd: 1, hp_nutr: 1, def_vis: 14, corr_vis: 10, def_hear: 2, corr_hear: 1, def_heart: 1, corr_heart: 1, def_dent: 35, corr_dent: 12 };
+            } else if (school === "Poththapitiya Primary Collage") {
+                currentYearData[3][school] = { smi_status: "Complete", atd_students: 0, atd_given: 0, atd_other: 0, hpv_students: 0, hpv_d1: 0, hpv_d2: 0, hp_repro: 0, hp_skills: 0, hp_ncd: 1, hp_nutr: 1, def_vis: 4, corr_vis: 2, def_hear: 0, corr_hear: 0, def_heart: 0, corr_heart: 0, def_dent: 18, corr_dent: 5 };
+            } else if (school === "Amunupura Kanishta Vidyalaya") {
+                currentYearData[3][school] = { smi_status: "Not Complete yet", atd_students: 32, atd_given: 28, atd_other: 0, hpv_students: 18, hpv_d1: 15, hpv_d2: 0, hp_repro: 1, hp_skills: 0, hp_ncd: 0, hp_nutr: 0, def_vis: 0, corr_vis: 0, def_hear: 0, corr_hear: 0, def_heart: 0, corr_heart: 0, def_dent: 0, corr_dent: 0 };
+            } else {
+                currentYearData[3][school] = generateCleanSchoolObject();
+            }
+        });
+
+        let chartVaxInstance = null;
+        let chartDefectInstance = null;
+        let chartAnnualHPInstance = null;
+
+        function registerNewSchool() {
+            const input = document.getElementById('inp-new-school');
+            const schoolName = input.value.trim();
+            if(!schoolName) return;
+            
+            if(registeredSchools.includes(schoolName)) {
+                alert("⚠️ School name already registered.");
+                return;
+            }
+            registeredSchools.push(schoolName);
+            localStorage.setItem('phi_registered_schools_registry_v3', JSON.stringify(registeredSchools));
+            if(isCloudActive) cloudDb.ref('registered_schools_registry_v3').set(registeredSchools);
+
+            input.value = '';
+            renderRegistryBadges();
+            populateSchoolSelectOptions();
+            onFilterChange();
+        }
+
+        function deleteSchool(name) {
+            if(confirm(`Remove "${name}" from registry?`)) {
+                registeredSchools = registeredSchools.filter(s => s !== name);
+                localStorage.setItem('phi_registered_schools_registry_v3', JSON.stringify(registeredSchools));
+                if(isCloudActive) cloudDb.ref('registered_schools_registry_v3').set(registeredSchools);
+                renderRegistryBadges();
+                populateSchoolSelectOptions();
+                onFilterChange();
+            }
+        }
+
+        function renderRegistryBadges() {
+            let html = '';
+            registeredSchools.forEach(s => {
+                html += `
+                <span class="inline-flex items-center text-[10px] font-black bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md gap-1">
+                    <span>${s}</span>
+                    <i onclick="deleteSchool('${s}')" class="fa-solid fa-circle-xmark hover:text-red-500 cursor-pointer text-[11px] ml-0.5"></i>
+                </span>`;
+            });
+            document.getElementById('registry-list-badge').innerHTML = html || '<p class="text-[11px] text-slate-400 font-medium italic">No schools registered.</p>';
+        }
+
+        function populateSchoolSelectOptions() {
+            const select = document.getElementById('sel-target-school');
+            let currentSelection = select.value;
+            let html = '';
+            registeredSchools.forEach(s => {
+                html += `<option value="${s}">${s}</option>`;
+            });
+            select.innerHTML = html;
+            if(registeredSchools.includes(currentSelection)) select.value = currentSelection;
+        }
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            if (isCloudActive) {
+                cloudDb.ref('registered_schools_registry_v3').once('value').then((baseSnapshot) => {
+                    let baseData = baseSnapshot.val();
+                    if(baseData) registeredSchools = baseData;
+                    renderRegistryBadges();
+                    populateSchoolSelectOptions();
+
+                    return cloudDb.ref(`school_health_v3/${year}`).once('value');
+                }).then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) {
+                        currentYearData = data;
+                    } else {
+                        currentYearData = Array.from({length: 12}, () => ({}));
+                        registeredSchools.forEach(s => { currentYearData[monthIdx][s] = generateCleanSchoolObject(); });
+                    }
+                    onActiveSchoolChange();
+                }).catch((err) => {
+                    console.error(err);
+                    loadLocalCacheStorage(year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let baseStore = JSON.parse(localStorage.getItem('phi_registered_schools_registry_v3'));
+            if(baseStore) registeredSchools = baseStore;
+            renderRegistryBadges();
+            populateSchoolSelectOptions();
+
+            let localStore = JSON.parse(localStorage.getItem(`phi_school_local_${year}`));
+            if (localStore) {
+                currentYearData = localStore;
+            }
+            onActiveSchoolChange();
+        }
+
+        function onActiveSchoolChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+            const activeSchool = document.getElementById('sel-target-school').value;
+
+            if(!activeSchool) return;
+
+            if(!currentYearData[monthIdx]) currentYearData[monthIdx] = {};
+            if(!currentYearData[monthIdx][activeSchool]) {
+                currentYearData[monthIdx][activeSchool] = generateCleanSchoolObject();
+            }
+
+            const schoolData = currentYearData[monthIdx][activeSchool];
+
+            document.getElementById('inp-smi-status').value = schoolData.smi_status;
+            document.getElementById('inp-atd-students').value = schoolData.atd_students;
+            document.getElementById('inp-atd-given').value = schoolData.atd_given;
+            document.getElementById('inp-atd-other').value = schoolData.atd_other;
+            document.getElementById('inp-hpv-students').value = schoolData.hpv_students;
+            document.getElementById('inp-hpv-d1').value = schoolData.hpv_d1;
+            document.getElementById('inp-hpv-d2').value = schoolData.hpv_d2;
+            document.getElementById('inp-hp-repro').value = schoolData.hp_repro;
+            document.getElementById('inp-hp-skills').value = schoolData.hp_skills;
+            document.getElementById('inp-hp-ncd').value = schoolData.hp_ncd;
+            document.getElementById('inp-hp-nutr').value = schoolData.hp_nutr;
+            
+            document.getElementById('inp-def-heart').value = schoolData.def_heart || 0;
+            document.getElementById('inp-corr-heart').value = schoolData.corr_heart || 0;
+            document.getElementById('inp-def-vis').value = schoolData.def_vis || 0;
+            document.getElementById('inp-corr-vis').value = schoolData.corr_vis || 0;
+            document.getElementById('inp-def-hear').value = schoolData.def_hear || 0;
+            document.getElementById('inp-corr-hear').value = schoolData.corr_hear || 0;
+            document.getElementById('inp-def-dent').value = schoolData.def_dent || 0;
+            document.getElementById('inp-corr-dent').value = schoolData.corr_dent || 0;
+
+            renderMasterSchoolsDataGridTable(year, monthIdx);
+            renderVaccinationTimelineTable();
+        }
+
+        function renderMasterSchoolsDataGridTable(year, monthIdx) {
+            let tbodyHtml = '';
+            let totalHeartDef = 0, totalHeartCorr = 0;
+            let totalVisDef = 0, totalVisCorr = 0;
+            let totalHearDef = 0, totalHearCorr = 0;
+
+            registeredSchools.forEach(school => {
+                let rec = (currentYearData[monthIdx] && currentYearData[monthIdx][school]) ? currentYearData[monthIdx][school] : generateCleanSchoolObject();
+                let statusColor = rec.smi_status === "Complete" ? "text-emerald-600 bg-emerald-50/50 px-2 py-0.5 rounded" : "text-amber-600 bg-amber-50/50 px-2 py-0.5 rounded";
+
+                tbodyHtml += `
+                <tr class="bg-white text-slate-700 hover:bg-slate-50/50">
+                    <td class="p-2.5 text-left pl-3 border-r border-slate-100 font-bold text-slate-900">${school}</td>
+                    <td class="p-2.5 border-r font-black"><span class="${statusColor}">${rec.smi_status}</span></td>
+                    <td class="p-2.5 border-r text-red-600 bg-red-50/10">${rec.def_heart || 0}</td>
+                    <td class="p-2.5 border-r text-emerald-600 bg-red-50/10">${rec.corr_heart || 0}</td>
+                    <td class="p-2.5 border-r text-rose-600 bg-rose-50/10">${rec.def_vis || 0}</td>
+                    <td class="p-2.5 border-r text-emerald-600 bg-rose-50/10">${rec.corr_vis || 0}</td>
+                    <td class="p-2.5 border-r text-amber-600 bg-amber-50/10">${rec.def_hear || 0}</td>
+                    <td class="p-2.5 text-emerald-600 bg-amber-50/10">${rec.corr_hear || 0}</td>
+                </tr>`;
+
+                totalHeartDef += (rec.def_heart || 0); totalHeartCorr += (rec.corr_heart || 0);
+                totalVisDef += (rec.def_vis || 0); totalVisCorr += (rec.corr_vis || 0);
+                totalHearDef += (rec.def_hear || 0); totalHearCorr += (rec.corr_hear || 0);
+            });
+
+            document.getElementById('tbody-smi-matrix').innerHTML = tbodyHtml;
+            updateVisualGraphsCharts(totalHeartDef, totalHeartCorr, totalVisDef, totalVisCorr, totalHearDef, totalHearCorr, year, monthIdx);
+        }
+
+        function renderVaccinationTimelineTable() {
+            let timelineHtml = '';
+            let cumulativeAtdGiven = 0, cumulativeAtdStudents = 0;
+            let cumulativeHpvD1Given = 0, cumulativeHpvStudents = 0;
+
+            MONTH_NAMES.forEach((monthLabel, mIdx) => {
+                let mTotalAtdStudents = 0, mTotalAtdGiven = 0;
+                let mTotalHpvStudents = 0, mTotalHpvD1 = 0;
+
+                if (currentYearData[mIdx]) {
+                    registeredSchools.forEach(school => {
+                        if(currentYearData[mIdx][school]) {
+                            mTotalAtdStudents += currentYearData[mIdx][school].atd_students || 0;
+                            mTotalAtdGiven += currentYearData[mIdx][school].atd_given || 0;
+                            mTotalHpvStudents += currentYearData[mIdx][school].hpv_students || 0;
+                            mTotalHpvD1 += currentYearData[mIdx][school].hpv_d1 || 0;
+                        }
+                    });
+                }
+
+                cumulativeAtdGiven += mTotalAtdGiven;
+                cumulativeAtdStudents += mTotalAtdStudents;
+                cumulativeHpvD1Given += mTotalHpvD1;
+                cumulativeHpvStudents += mTotalHpvStudents;
+
+                let atdPct = mTotalAtdStudents > 0 ? Math.round((mTotalAtdGiven / mTotalAtdStudents) * 100) : 0;
+                let hpvPct = mTotalHpvStudents > 0 ? Math.round((mTotalHpvD1 / mTotalHpvStudents) * 100) : 0;
+
+                timelineHtml += `
+                <tr class="bg-white font-semibold text-center hover:bg-slate-50/40 text-xs text-slate-800">
+                    <td class="p-2 text-left pl-3 font-bold border-r text-slate-900 bg-slate-50/50">${monthLabel}</td>
+                    <td class="p-2 border-r text-slate-400 font-medium">${mTotalAtdStudents}</td>
+                    <td class="p-2 border-r text-blue-600 font-bold">${mTotalAtdGiven} <span class="text-[9px] text-slate-400 font-normal">(Cum: ${cumulativeAtdGiven})</span></td>
+                    <td class="p-2 border-r text-blue-700 text-sm font-black bg-blue-50/20">${atdPct}%</td>
+                    <td class="p-2 border-r text-slate-400 font-medium">${mTotalHpvStudents}</td>
+                    <td class="p-2 border-r text-purple-600 font-bold">${mTotalHpvD1} <span class="text-[9px] text-slate-400 font-normal">(Cum: ${cumulativeHpvD1Given})</span></td>
+                    <td class="p-2 text-purple-700 text-sm font-black bg-purple-50/20">${hpvPct}%</td>
+                </tr>`;
+            });
+
+            document.getElementById('tbody-vaccination-timeline').innerHTML = timelineHtml;
+        }
+
+        function updateVisualGraphsCharts(htDef, htCorr, vDef, vCorr, hDef, hCorr, year, monthIdx) {
+            const ctx1 = document.getElementById('chartLocalVaxRates').getContext('2d');
+            if(chartVaxInstance) chartVaxInstance.destroy();
+
+            let totAtdStud = 0, totAtdGiv = 0, totHpvStud = 0, totHpvD1Giv = 0;
+            if (currentYearData[monthIdx]) {
+                registeredSchools.forEach(s => {
+                    if(currentYearData[monthIdx][s]) {
+                        totAtdStud += currentYearData[monthIdx][s].atd_students || 0; totAtdGiv += currentYearData[monthIdx][s].atd_given || 0;
+                        totHpvStud += currentYearData[monthIdx][s].hpv_students || 0; totHpvD1Giv += currentYearData[monthIdx][s].hpv_d1 || 0;
+                    }
+                });
+            }
+
+            let netAtdRate = totAtdStud > 0 ? Math.round((totAtdGiv / totAtdStud) * 100) : 0;
+            let netHpvRate = totHpvStud > 0 ? Math.round((totHpvD1Giv / totHpvStud) * 100) : 0;
+
+            chartVaxInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['aTd Grade 7 Coverage (%)', 'HPV Grade 6 F-Coverage (%)'],
+                    datasets: [{ data: [netAtdRate, netHpvRate], backgroundColor: ['#2563eb', '#7c3aed'], borderWidth: 1 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+            });
+
+            const ctx2 = document.getElementById('chartLocalDefects').getContext('2d');
+            if(chartDefectInstance) chartDefectInstance.destroy();
+
+            chartDefectInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Heart Problems', 'Visual Defects', 'Hearing Defects'],
+                    datasets: [
+                        { label: 'Defects Discovered', data: [htDef, vDef, hDef], backgroundColor: '#f43f5e', borderRadius: 4 },
+                        { label: 'Successfully Corrected', data: [htCorr, vCorr, hCorr], backgroundColor: '#10b981', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+            });
+
+            const ctx3 = document.getElementById('chartAnnualHealthProg').getContext('2d');
+            if(chartAnnualHPInstance) chartAnnualHPInstance.destroy();
+
+            let annRepro = 0, annSkills = 0, annNcd = 0, annNutr = 0;
+            currentYearData.forEach(mRecord => {
+                registeredSchools.forEach(school => {
+                    if(mRecord && mRecord[school]) {
+                        annRepro += (mRecord[school].hp_repro || 0);
+                        annSkills += (mRecord[school].hp_skills || 0);
+                        annNcd += (mRecord[school].hp_ncd || 0);
+                        annNutr += (mRecord[school].hp_nutr || 0);
+                    }
+                });
+            });
+
+            chartAnnualHPInstance = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['Reproductive Health', 'Life Skills', 'Diseases & NCDs', 'Nutrition Programs'],
+                    datasets: [{ data: [annRepro, annSkills, annNcd, annNutr], backgroundColor: ['#f59e0b', '#06b6d4', '#ec4899', '#10b981'], borderRadius: 5, barThickness: 45 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function commitPortalValues() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+            const activeSchool = document.getElementById('sel-target-school').value;
+
+            if(!activeSchool) {
+                alert("⚠️ Error: Please register and select a school first.");
+                return;
+            }
+
+            const atdGiv = parseInt(document.getElementById('inp-atd-given').value) || 0;
+            const atdStud = parseInt(document.getElementById('inp-atd-students').value) || 0;
+            const hpvD1 = parseInt(document.getElementById('inp-hpv-d1').value) || 0;
+            const hpvStud = parseInt(document.getElementById('inp-hpv-students').value) || 0;
+            
+            const heartDef = parseInt(document.getElementById('inp-def-heart').value) || 0;
+            const heartCorr = parseInt(document.getElementById('inp-corr-heart').value) || 0;
+            const visDef = parseInt(document.getElementById('inp-def-vis').value) || 0;
+            const visCorr = parseInt(document.getElementById('inp-corr-vis').value) || 0;
+            const hearDef = parseInt(document.getElementById('inp-def-hear').value) || 0;
+            const hearCorr = parseInt(document.getElementById('inp-corr-hear').value) || 0;
+
+            if(visCorr > visDef || hearCorr > hearDef || heartCorr > heartDef) {
+                alert("⚠️ Validation Deficit: Corrected defect components cannot logically exceed diagnosed defect discoveries.");
+                return;
+            }
+            if(atdGiv > atdStud || hpvD1 > hpvStud) {
+                alert("⚠️ Validation Deficit: Injections administered cannot exceed the target student batch volume.");
+                return;
+            }
+
+            currentYearData[monthIdx][activeSchool] = {
+                smi_status: document.getElementById('inp-smi-status').value,
+                atd_students: atdStud, atd_given: atdGiv,
+                atd_other: parseInt(document.getElementById('inp-atd-other').value) || 0,
+                hpv_students: hpvStud, hpv_d1: hpvD1,
+                hpv_d2: parseInt(document.getElementById('inp-hpv-d2').value) || 0,
+                hp_repro: parseInt(document.getElementById('inp-hp-repro').value) || 0,
+                hp_skills: parseInt(document.getElementById('inp-hp-skills').value) || 0,
+                hp_ncd: parseInt(document.getElementById('inp-hp-ncd').value) || 0,
+                hp_nutr: parseInt(document.getElementById('inp-hp-nutr').value) || 0,
+                def_heart: heartDef, corr_heart: heartCorr,
+                def_vis: visDef,  corr_vis: visCorr,
+                def_hear: hearDef, corr_hear: hearCorr,
+                def_dent: parseInt(document.getElementById('inp-def-dent').value) || 0,
+                corr_dent: parseInt(document.getElementById('inp-corr-dent').value) || 0
+            };
+
+            localStorage.setItem(`phi_school_local_${year}`, JSON.stringify(currentYearData));
+
+            if(isCloudActive) {
+                cloudDb.ref(`school_health_v3/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Complete!`);
+                    onActiveSchoolChange();
+                }).catch((err) => {
+                    console.error(err);
+                    alert(`🛡️ Offline Mode Safe: Local node data compiled successfully.`);
+                    onActiveSchoolChange();
+                });
+            } else {
+                alert(`🛡️ Offline Mode Safe: Data committed locally.`);
+                onActiveSchoolChange();
+            }
+        }
+
+        window.onload = function() {
+            renderRegistryBadges();
+            populateSchoolSelectOptions();
+
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            if(document.getElementById('sel-year')) document.getElementById('sel-year').value = targetYear.toString();
+            if(document.getElementById('sel-month')) document.getElementById('sel-month').value = previousMonthIdx.toString();
+
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>

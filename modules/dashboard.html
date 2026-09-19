@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 00. Dashboard Overview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md">
+                <i class="fa-solid fa-chart-pie text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">PHI Command Center Dashboard</h1>
+                <p class="text-xs text-slate-400">Poththapitiya Public Health Division Master Overview & Jurisdictional GIS Map</p>
+            </div>
+        </div>
+        <div class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-indigo-400 font-bold">
+            ☁️ CLOUD COMMAND CENTER ACTIVE
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 ORDER ADJUSTED ACCORDING TO REQUEST -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+            <div class="p-3 bg-slate-900/40 border-t border-slate-900 text-center">
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">MOH Cloud Core v2.6</p>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 lg:grid-cols-5 gap-6">
+            
+            <div class="lg:col-span-2 space-y-4 flex flex-col justify-start">
+                
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="border-b pb-2">
+                        <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2 text-indigo-950">
+                            <i class="fa-solid fa-address-card text-indigo-600"></i>
+                            <span>DIVISIONAL PROFILE SUMMARY</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Statutory administrative demographics mapping</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3 text-xs">
+                        
+                        <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm"><i class="fa-solid fa-users"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-400">Total Area Population</p>
+                                    <p class="text-sm font-black text-slate-800 mt-0.5">10,673 Citizens</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] bg-indigo-50 font-bold px-2 py-0.5 rounded text-indigo-600 font-mono">SLIDE 02</span>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm"><i class="fa-solid fa-chart-area"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-400">Total Jurisdictional Area</p>
+                                    <p class="text-sm font-black text-slate-800 mt-0.5">14.3 Sq. Kilometers</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] bg-blue-50 font-bold px-2 py-0.5 rounded text-blue-600 font-mono">STATUTORY</span>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm"><i class="fa-solid fa-map-pin"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-400">Grama Niladhari Divisions</p>
+                                    <p class="text-sm font-black text-slate-800 mt-0.5">14 Dedicated GN Sectors</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] bg-emerald-50 font-bold px-2 py-0.5 rounded text-emerald-600 font-mono">SLIDE 14</span>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-sm"><i class="fa-solid fa-person-breastfeeding"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-400">Public Health Midwife (PHM) Areas</p>
+                                    <p class="text-sm font-black text-slate-800 mt-0.5">04 Dedicated Midwife Areas</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] bg-rose-50 font-bold px-2 py-0.5 rounded text-rose-600 font-mono">HEALTH UNIT</span>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm"><i class="fa-solid fa-school"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-400">Registered Institutional Schools</p>
+                                    <p class="text-sm font-black text-slate-800 mt-0.5">04 Active Schools Logged</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] bg-purple-50 font-bold px-2 py-0.5 rounded text-purple-600 font-mono">SLIDE 26</span>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm"><i class="fa-solid fa-industry"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-400">Factories & Work Places Base</p>
+                                    <p class="text-sm font-black text-slate-800 mt-0.5">08 Small-Scale Entities</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] bg-amber-50 font-bold px-2 py-0.5 rounded text-amber-600 font-mono">OCCUPATIONAL</span>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-sm"><i class="fa-solid fa-bowl-food"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-400">Food Handling Establishments</p>
+                                    <p class="text-sm font-black text-slate-800 mt-0.5">57 Audited Premises Registered</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] bg-teal-50 font-bold px-2 py-0.5 rounded text-teal-700 font-mono">SLIDE 35</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="p-4 bg-indigo-900 text-indigo-100 rounded-2xl shadow-md space-y-1.5 border border-indigo-950 flex-1 flex flex-col justify-center">
+                    <h4 class="font-black text-xs uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-cloud-sun text-indigo-400"></i> Cloud Stream Sync Online</h4>
+                    <p class="text-[11px] text-indigo-200 leading-relaxed font-medium">All granular monthly operational data logs, immunization timelines, and statutory enforcement registries are securely managed directly inside their independent module subsections. Use the navigation sidebar matrix link components to update registries.</p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full">
+                <div class="flex justify-between items-center border-b pb-2 mb-3">
+                    <div>
+                        <h4 class="text-xs font-black text-slate-900 uppercase tracking-tight flex items-center gap-1.5">
+                            <i class="fa-solid fa-map-location-dot text-indigo-600"></i>
+                            <span>POTHTHAPITIYA DIVISIONAL JURISDICTIONAL GIS MAP LAYER</span>
+                        </h4>
+                        <p class="text-[10px] text-slate-400 font-medium mt-0.5">කොට්ඨාස පරිපාලන සහ සෞඛ්‍ය සේවා සිතියම් පද්ධතිය</p>
+                    </div>
+                    <span class="text-[9px] bg-indigo-900 text-white font-bold px-2.5 py-1 rounded font-mono shadow-sm">MASTER JURISDICTION VISUAL</span>
+                </div>
+
+                <div class="flex-1 w-full border border-slate-100 rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center relative p-1 group">
+                    <img src="area_map.png" alt="Poththapitiya Public Health Division Boundaries and Administrative Sector GIS Map Overlay" class="w-full h-full object-contain rounded-lg shadow-sm transition-all duration-300 group-hover:scale-[1.005]" onerror="this.style.display='none'; document.getElementById('dashboard-map-fallback').classList.remove('hidden');">
+
+                    <div id="dashboard-map-fallback" class="hidden w-full h-full flex flex-col items-center justify-center text-center p-8 space-y-3">
+                        <div class="w-16 h-12 rounded-2xl bg-indigo-50 text-indigo-600 text-3xl flex items-center justify-center shadow-inner animate-pulse">
+                            <i class="fa-solid fa-earth-asia"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <h5 class="font-black text-slate-800 text-sm uppercase tracking-wide">Jurisdictional Map Component Node Active</h5>
+                            <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">To view your full-screen divisional map layout, simply extract the **සිතියම** image from your presentation Slide 2 or 21, save it as <span class="font-mono bg-slate-100 px-1 rounded text-slate-700 font-bold border">area_map.png</span> and drop it into this code directory!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        console.log("Cloud Dashboard Core Synchronized successfully.");
+    </script>
+</body>
+</html>

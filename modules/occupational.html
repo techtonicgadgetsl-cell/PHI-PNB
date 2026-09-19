@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 04. Occupational Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-amber-600 p-2.5 rounded-xl text-white shadow-md hover:bg-amber-500 transition">
+                <i class="fa-solid fa-user-shield text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">04. Occupational Health & Safety</h1>
+                <p class="text-xs text-slate-400">Factories & Work Places Sanitation, Risk Deficit Monitoring & Legal Resolutions</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-amber-400 font-bold">
+            🔄 CONNECTING...
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-amber-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 UPDATED MODULE ORDER -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <div class="xl:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="border-b pb-2">
+                    <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-square-sliders text-amber-600"></i>
+                        <span>OCCUPATIONAL PORTAL</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Modify points 1 to 7 across all industrial scales</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Year</label>
+                        <select id="sel-year" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Month</label>
+                        <select id="sel-month" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="0">January</option><option value="1">February</option>
+                            <option value="2">March</option><option value="3">April</option>
+                            <option value="4">May</option><option value="5">June</option>
+                            <option value="6">July</option><option value="7">August</option>
+                            <option value="8">September</option><option value="9">October</option>
+                            <option value="10">November</option><option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="p-3 bg-amber-50/50 border border-amber-200 rounded-xl space-y-2 text-xs">
+                    <p class="text-[10px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1">
+                        <i class="fa-solid fa-industry"></i> 1. Factories Base Registry (Persistent)
+                    </p>
+                    <div class="grid grid-cols-5 gap-1 pt-1">
+                        <div><label class="text-[9px] text-slate-400 font-bold block text-center">Col 1</label><input type="number" id="inp-base-1" class="w-full p-1 border rounded bg-slate-50 text-center font-black text-slate-800"></div>
+                        <div><label class="text-[9px] text-slate-400 font-bold block text-center">Col 2</label><input type="number" id="inp-base-2" class="w-full p-1 border rounded bg-slate-50 text-center font-black text-slate-800"></div>
+                        <div><label class="text-[9px] text-slate-400 font-bold block text-center">Col 3</label><input type="number" id="inp-base-3" class="w-full p-1 border rounded bg-slate-50 text-center font-black text-slate-800"></div>
+                        <div><label class="text-[9px] text-slate-400 font-bold block text-center">Col 4</label><input type="number" id="inp-base-4" class="w-full p-1 border rounded bg-slate-50 text-center font-black text-slate-800"></div>
+                        <div><label class="text-[9px] text-slate-400 font-bold block text-center">Col 5</label><input type="number" id="inp-base-5" class="w-full p-1 border rounded bg-slate-50 text-center font-black text-slate-800"></div>
+                    </div>
+                    <button onclick="commitBaseFactoriesRegistry()" class="w-full mt-1.5 py-1 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded text-[10px] transition shadow-sm">
+                        <i class="fa-solid fa-floppy-disk"></i> Update Persistent Factories Registry
+                    </button>
+                </div>
+
+                <div class="space-y-4 max-h-[45vh] overflow-y-auto custom-scrollbar pr-1 text-xs">
+                    <div id="portal-scales-container" class="space-y-4 divide-y divide-slate-100">
+                    </div>
+                </div>
+
+                <button onclick="commitPortalValues()" class="w-full py-2.5 bg-amber-700 hover:bg-amber-600 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2 text-xs">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Save & Live Update Matrix</span>
+                </button>
+            </div>
+
+            <div class="xl:col-span-2 space-y-5 overflow-y-auto custom-scrollbar pr-1">
+                
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                    <h4 class="text-xs font-black text-slate-900 uppercase tracking-tight flex items-center gap-1">
+                        <i class="fa-solid fa-building-shield text-amber-600"></i> 1. Number of Factories / Work Places Divisional Registry (Persistent)
+                    </h4>
+                    <div class="overflow-x-auto border rounded-lg shadow-inner">
+                        <table class="w-full text-[11px] text-center border-collapse min-w-[700px]">
+                            <thead class="bg-slate-50 text-slate-500 font-bold border-b text-[10px]">
+                                <tr>
+                                    <th class="p-1.5 border-r text-rose-700 bg-rose-50/20">Column 1: Large scale</th>
+                                    <th class="p-1.5 border-r text-blue-700 bg-blue-50/20">Column 2: Medium scale</th>
+                                    <th class="p-1.5 border-r text-emerald-700 bg-emerald-50/20">Column 3: Small scale</th>
+                                    <th class="p-1.5 border-r text-orange-700 bg-orange-50/20">Column 4: Informal sector</th>
+                                    <th class="p-1.5 text-purple-700 bg-purple-50/20">Column 5: Government sector</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-black text-slate-800 text-sm">
+                                    <td id="td-base-1" class="p-2 border-r bg-rose-50/5 text-rose-900">0</td>
+                                    <td id="td-base-2" class="p-2 border-r bg-blue-50/5 text-blue-900">0</td>
+                                    <td id="td-base-3" class="p-2 border-r bg-emerald-50/5 text-emerald-900">0</td>
+                                    <td id="td-base-4" class="p-2 border-r bg-orange-50/5 text-orange-900">0</td>
+                                    <td id="td-base-5" class="p-2 bg-purple-50/5 text-purple-900">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div>
+                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-tight">(D) Occupational Health - Routine Performance Grid</h4>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">කර්මාන්ත ශාලා / රැකියා ස්ථාන මාසික කාර්ය සාධනය</p>
+                        </div>
+                        <span id="lbl-context" class="text-[10px] bg-amber-50 font-black px-2 py-0.5 rounded text-amber-700 font-mono">---</span>
+                    </div>
+
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-[10px] text-center border-collapse min-w-[800px]">
+                            <thead class="bg-slate-100 text-slate-700 font-bold border-b text-center">
+                                <tr class="bg-slate-50 text-[11px]">
+                                    <th class="p-2 border-r border-b text-left w-[40%]" rowspan="2">Statutory Indicators Log (Points 2 - 7)</th>
+                                    <th class="p-2 border-r border-b">1</th>
+                                    <th class="p-2 border-r border-b">2</th>
+                                    <th class="p-2 border-r border-b">3</th>
+                                    <th class="p-2 border-r border-b">4</th>
+                                    <th class="p-2 border-b">5</th>
+                                </tr>
+                                <tr class="bg-slate-100 text-[9px] text-slate-500 font-medium leading-tight">
+                                    <th class="p-1 border-r border-b">Large scale</th>
+                                    <th class="p-1 border-r border-b">Medium scale</th>
+                                    <th class="p-1 border-r border-b">Small scale</th>
+                                    <th class="p-1 border-r border-b">Informal sector</th>
+                                    <th class="p-1 border-b">Government sector</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 bg-white font-bold text-slate-700">
+                                <tr id="row-2">
+                                    <td class="p-2 text-left font-semibold text-slate-900 border-r bg-slate-50/30">2. Number Inspected</td>
+                                    <td id="td-m-2-1" class="p-2 border-r text-blue-600">0</td><td id="td-m-2-2" class="p-2 border-r text-blue-600">0</td>
+                                    <td id="td-m-2-3" class="p-2 border-r text-blue-600">0</td><td id="td-m-2-4" class="p-2 border-r text-blue-600">0</td>
+                                    <td id="td-m-2-5" class="p-2 text-blue-600">0</td>
+                                </tr>
+                                <tr id="row-3">
+                                    <td class="p-2 text-left font-medium text-slate-700 border-r">3. Work places with health Issues</td>
+                                    <td id="td-m-3-1" class="p-2 border-r text-rose-500">0</td><td id="td-m-3-2" class="p-2 border-r text-rose-500">0</td>
+                                    <td id="td-m-3-3" class="p-2 border-r text-rose-500">0</td><td id="td-m-3-4" class="p-2 border-r text-rose-500">0</td>
+                                    <td id="td-m-3-5" class="p-2 text-rose-500">0</td>
+                                </tr>
+                                <tr id="row-4">
+                                    <td class="p-2 text-left font-medium text-slate-700 border-r">4. Work places health Issues referred</td>
+                                    <td id="td-m-4-1" class="p-2 border-r">0</td><td id="td-m-4-2" class="p-2 border-r">0</td>
+                                    <td id="td-m-4-3" class="p-2 border-r">0</td><td id="td-m-4-4" class="p-2 border-r">0</td>
+                                    <td id="td-m-4-5" class="p-2">0</td>
+                                </tr>
+                                <tr id="row-5">
+                                    <td class="p-2 text-left font-medium text-slate-700 border-r">5. Work places health Issues corrected</td>
+                                    <td id="td-m-5-1" class="p-2 border-r text-emerald-600">0</td><td id="td-m-5-2" class="p-2 border-r text-emerald-600">0</td>
+                                    <td id="td-m-5-3" class="p-2 border-r text-emerald-600">0</td><td id="td-m-5-4" class="p-2 border-r text-emerald-600">0</td>
+                                    <td id="td-m-5-5" class="p-2 text-emerald-600">0</td>
+                                </tr>
+                                <tr id="row-6">
+                                    <td class="p-2 text-left font-medium text-slate-700 border-r">6. Complaints- work place operations</td>
+                                    <td id="td-m-6-1" class="p-2 border-r text-orange-500">0</td><td id="td-m-6-2" class="p-2 border-r text-orange-500">0</td>
+                                    <td id="td-m-6-3" class="p-2 border-r text-orange-500">0</td><td id="td-m-6-4" class="p-2 border-r text-orange-500">0</td>
+                                    <td id="td-m-6-5" class="p-2 text-orange-500">0</td>
+                                </tr>
+                                <tr id="row-7">
+                                    <td class="p-2 text-left font-medium text-slate-700 border-r">7. Complaints successfully resolved</td>
+                                    <td id="td-m-7-1" class="p-2 border-r text-teal-600">0</td><td id="td-m-7-2" class="p-2 border-r text-teal-600">0</td>
+                                    <td id="td-m-7-3" class="p-2 border-r text-teal-600">0</td><td id="td-m-7-4" class="p-2 border-r text-teal-600">0</td>
+                                    <td id="td-m-7-5" class="p-2 text-teal-600">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Inspections Matrix vs Identified Deficit Issues</h5>
+                        <div class="h-44"><canvas id="chartLocalInspections"></canvas></div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Operations Complaints Resolution Rate (%)</h5>
+                        <div class="h-44 flex items-center justify-center"><canvas id="chartLocalComplaints"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Annual Occupational Inspection Audit progression View</h5>
+                    <div class="h-56"><canvas id="chartAnnualOccTrend"></canvas></div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            cloudDb = firebase.database();
+            isCloudActive = true;
+            document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+        } catch (e) {
+            console.warn("Cloud connection drops. Reverting to safe fallback localStorage mode.", e);
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const SCALES_LABELS = ["Large Scale", "Medium Scale", "Small Scale", "Informal Sector", "Gov Sector"];
+
+        let globalBaseFactoriesRegistry = [0, 0, 8, 0, 0];
+
+        const localBaselineData = Array.from({length: 12}, (_, idx) => {
+            let isApril = idx === 3;
+            return {
+                matrix: [
+                    [0, 0, isApril ? 1 : 0, 0, 0],
+                    [0, 0, isApril ? 1 : 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, isApril ? 1 : 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0]
+                ]
+            };
+        });
+
+        let currentYearData = [...localBaselineData];
+        let chartInsInstance = null;
+        let chartCompInstance = null;
+        let chartAnnualInstance = null;
+
+        function buildPortalWorkspaceLayout() {
+            let html = '';
+            SCALES_LABELS.forEach((label, idx) => {
+                let colNum = idx + 1;
+                html += `
+                <div class="pt-2.5 ${idx > 0 ? 'border-t border-slate-100' : ''}">
+                    <p class="font-black text-slate-800 mb-1">Column ${colNum}: ${label}</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="col-span-2">
+                            <label class="text-[9px] font-bold text-blue-500">2. NUMBER INSPECTED</label>
+                            <input type="number" id="inp-m-1-${colNum}" class="w-full p-1 border rounded bg-white font-black text-center text-xs border-blue-200 text-blue-600">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-rose-500">3. HEALTH ISSUES</label>
+                            <input type="number" id="inp-m-2-${colNum}" class="w-full p-1 border rounded bg-white font-bold text-center text-xs border-rose-100 text-rose-500">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400">4. REFERRED</label>
+                            <input type="number" id="inp-m-3-${colNum}" class="w-full p-1 border rounded bg-white font-medium text-center text-xs">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-emerald-600">5. CORRECTED</label>
+                            <input type="number" id="inp-m-4-${colNum}" class="w-full p-1 border rounded bg-white font-bold text-center text-xs border-emerald-100 text-emerald-600">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-orange-500">6. COMPLAINTS</label>
+                            <input type="number" id="inp-m-5-${colNum}" class="w-full p-1 border rounded bg-white font-bold text-center text-xs border-orange-100 text-orange-500">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[9px] font-bold text-teal-600">7. COMPLAINTS RESOLVED</label>
+                            <input type="number" id="inp-m-6-${colNum}" class="w-full p-1.5 border rounded bg-white font-black text-center text-xs border-teal-200 text-teal-700">
+                        </div>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('portal-scales-container').innerHTML = html;
+        }
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            document.getElementById('lbl-context').innerText = "LOAD...";
+
+            if (isCloudActive) {
+                cloudDb.ref('occupational_base_registry').once('value').then((baseSnapshot) => {
+                    let baseData = baseSnapshot.val();
+                    if(baseData) globalBaseFactoriesRegistry = baseData;
+
+                    return cloudDb.ref(`occupational_v4/${year}`).once('value');
+                }).then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) {
+                        currentYearData = data;
+                    } else {
+                        currentYearData = [...localBaselineData];
+                    }
+                    renderDataUI(monthIdx, year);
+                }).catch((err) => {
+                    console.error("Cloud synchronization timeout fallback.", err);
+                    loadLocalCacheStorage(year);
+                    renderDataUI(monthIdx, year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+                renderDataUI(monthIdx, year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let baseStore = JSON.parse(localStorage.getItem('phi_occupational_base_registry'));
+            if(baseStore) globalBaseFactoriesRegistry = baseStore;
+
+            let localStore = JSON.parse(localStorage.getItem(`phi_occupational_local_${year}`));
+            if (localStore) {
+                currentYearData = localStore;
+            } else {
+                currentYearData = [...localBaselineData];
+            }
+        }
+
+        function renderDataUI(monthIdx, year) {
+            const record = currentYearData[monthIdx] || { matrix: Array.from({length: 6}, () => [0,0,0,0,0]) };
+
+            globalBaseFactoriesRegistry.forEach((val, i) => {
+                document.getElementById(`inp-base-${i+1}`).value = val;
+                document.getElementById(`td-base-${i+1}`).innerText = val;
+            });
+
+            SCALES_LABELS.forEach((_, sIdx) => {
+                let colNum = sIdx + 1;
+                for(let r=1; r<=6; r++) {
+                    document.getElementById(`inp-m-${r}-${colNum}`).value = record.matrix[r-1][sIdx];
+                }
+            });
+
+            document.getElementById('lbl-context').innerText = `${MONTH_NAMES[monthIdx].toUpperCase()} ${year}`;
+            
+            SCALES_LABELS.forEach((_, sIdx) => {
+                let colNum = sIdx + 1;
+                for(let r=2; r<=7; r++) {
+                    document.getElementById(`td-m-${r}-${colNum}`).innerText = record.matrix[r-2][sIdx];
+                }
+            });
+
+            updateOccupationalCharts(record);
+        }
+
+        function commitBaseFactoriesRegistry() {
+            let baseData = [];
+            for(let i=1; i<=5; i++) {
+                baseData.push(parseInt(document.getElementById(`inp-base-${i}`).value) || 0);
+            }
+            globalBaseFactoriesRegistry = baseData;
+
+            localStorage.setItem('phi_occupational_base_registry', JSON.stringify(globalBaseFactoriesRegistry));
+
+            if(isCloudActive) {
+                cloudDb.ref('occupational_base_registry').set(globalBaseFactoriesRegistry).then(() => {
+                    alert("🚀 Cloud Base Registry Updated successfully!");
+                    onFilterChange();
+                });
+            } else {
+                alert("🛡️ Saved base factories registry inside Local Device Matrix configuration.");
+                onFilterChange();
+            }
+        }
+
+        function updateOccupationalCharts(record) {
+            const ctx1 = document.getElementById('chartLocalInspections').getContext('2d');
+            if(chartInsInstance) chartInsInstance.destroy();
+            chartInsInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Large Scale', 'Medium Scale', 'Small Scale', 'Informal', 'Government'],
+                    datasets: [
+                        { label: 'Number Inspected', data: record.matrix[0], backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'Deficit Issues Found', data: record.matrix[1], backgroundColor: '#f43f5e', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min:0, beginAtZero: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+            });
+
+            const ctx2 = document.getElementById('chartLocalComplaints').getContext('2d');
+            if(chartCompInstance) chartCompInstance.destroy();
+
+            let totalComplaints = record.matrix[4].reduce((a, b) => a + b, 0);
+            let totalResolved = record.matrix[5].reduce((a, b) => a + b, 0);
+            let pendingComplaints = Math.max(0, totalComplaints - totalResolved);
+
+            chartCompInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Resolved Successfully', 'Pending Evaluation'],
+                    datasets: [{
+                        data: totalComplaints > 0 ? [totalResolved, pendingComplaints] : [0, 0],
+                        backgroundColor: ['#0d9488', '#cbd5e1'],
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+            });
+
+            const ctx3 = document.getElementById('chartAnnualOccTrend').getContext('2d');
+            if(chartAnnualInstance) chartAnnualInstance.destroy();
+
+            let lineTimelineData = currentYearData.map(m => m.matrix[0].reduce((sum, val) => sum + val, 0));
+
+            chartAnnualInstance = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: MONTH_NAMES.map(m => m.substring(0,3)),
+                    datasets: [{ label: 'Cumulative Divisional Inspections Logged', data: lineTimelineData, borderColor: '#b45309', backgroundColor: 'rgba(180, 83, 9, 0.05)', tension: 0.15, fill: true, borderWidth: 3 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function commitPortalValues() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            let matrixData = Array.from({length: 6}, () => []);
+
+            SCALES_LABELS.forEach((_, sIdx) => {
+                let colNum = sIdx + 1;
+                for(let r=1; r<=6; r++) {
+                    matrixData[r-1].push(parseInt(document.getElementById(`inp-m-${r}-${colNum}`).value) || 0);
+                }
+            });
+
+            for(let c=0; c<5; c++) {
+                if(matrixData[0][c] > globalBaseFactoriesRegistry[c]) {
+                    alert(`⚠️ Validation Error in Column ${c+1}: Inspected count cannot exceed persistent factories baseline registry (${globalBaseFactoriesRegistry[c]}).`);
+                    return;
+                }
+                if(matrixData[3][c] > matrixData[1][c]) {
+                    alert(`⚠️ Validation Error in Column ${c+1}: Corrected health issues cannot exceed identified issues.`);
+                    return;
+                }
+                if(matrixData[5][c] > matrixData[4][c]) {
+                    alert(`⚠️ Validation Error in Column ${c+1}: Resolved complaints cannot exceed registered operational complaints.`);
+                    return;
+                }
+            }
+
+            currentYearData[monthIdx] = { matrix: matrixData };
+
+            localStorage.setItem(`phi_occupational_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive) {
+                cloudDb.ref(`occupational_v4/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Complete: Performance metrics saved for ${MONTH_NAMES[monthIdx]} ${year}!`);
+                    onFilterChange();
+                }).catch((err) => {
+                    console.error(err);
+                    alert(`🛡️ Offline Mode Safe: Local storage updated successfully.`);
+                    onFilterChange();
+                });
+            } else {
+                alert(`🛡️ Offline Mode Safe: Performance metrics committed locally.`);
+                onFilterChange();
+            }
+        }
+
+        window.onload = function() {
+            buildPortalWorkspaceLayout();
+
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            if(document.getElementById('sel-year')) document.getElementById('sel-year').value = targetYear.toString();
+            if(document.getElementById('sel-month')) document.getElementById('sel-month').value = previousMonthIdx.toString();
+
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>

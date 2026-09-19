@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - Trade License & BRC Inspection</title>
+    <!-- Tailwind CSS & Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <!-- TOP GLOBAL BAR -->
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md hover:bg-indigo-500 transition">
+                <i class="fa-solid fa-briefcase text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">Trade License and Business Registration Inspection</h1>
+                <p class="text-xs text-slate-400">Statutory Trade Licensing Audits, BRC Verifications & Compliance Monitoring Matrix</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-indigo-400 font-bold">
+            🔄 CONNECTING...
+        </div>
+    </header>
+
+    <!-- MAIN INTERFACE LAYOUT -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR NAVIGATION MENU -->
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 ACTIVE MODULE 09 -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-indigo-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- CONTENT PANEL SPLIT -->
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <!-- LEFT WORKSPACE: DATA ENTRY PORTAL -->
+            <div class="xl:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="border-b pb-2">
+                    <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-square-sliders text-indigo-600"></i>
+                        <span>TRADE & BRC ENTRY PORTAL</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Input monthly trade licensing and business registration metrics</p>
+                </div>
+
+                <!-- TIME CONTEXT CONTROLS -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Year</label>
+                        <select id="sel-year" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Month</label>
+                        <select id="sel-month" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1 text-xs">
+                    
+                    <!-- MODULE 1: TRADE LICENSE ENTRY -->
+                    <div class="p-3 bg-blue-50/40 border border-blue-100 rounded-xl space-y-2">
+                        <p class="text-[10px] font-black text-blue-800 uppercase tracking-wider flex items-center justify-between">
+                            <span><i class="fa-solid fa-certificate mr-1"></i>01. Trade License Metrics</span>
+                            <span class="text-[9px] bg-blue-100 px-1.5 py-0.2 rounded font-mono">LICENSING</span>
+                        </p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-slate-500">Total Rec. Current Month</label><input type="number" id="inp-tl-rec" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                            <div><label class="text-slate-500">Remaining Prev. Month</label><input type="number" id="inp-tl-rem" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                            <div class="col-span-2"><label class="text-slate-500">Number of Licenses Checked</label><input type="number" id="inp-tl-chk" class="w-full p-1.5 border rounded-lg bg-white font-black text-slate-800"></div>
+                            <div><label class="text-slate-500">Recommended</label><input type="number" id="inp-tl-rec-ok" class="w-full p-1.5 border rounded-lg bg-white font-bold text-emerald-600"></div>
+                            <div><label class="text-slate-500">Not Recommended</label><input type="number" id="inp-tl-rec-no" class="w-full p-1.5 border rounded-lg bg-white font-bold text-rose-600"></div>
+                        </div>
+                    </div>
+
+                    <!-- MODULE 2: BUSINESS REGISTRATION ENTRY -->
+                    <div class="p-3 bg-purple-50/40 border border-purple-100 rounded-xl space-y-2">
+                        <p class="text-[10px] font-black text-purple-800 uppercase tracking-wider flex items-center justify-between">
+                            <span><i class="fa-solid fa-building mr-1"></i>02. Business Registration Metrics</span>
+                            <span class="text-[9px] bg-purple-100 px-1.5 py-0.2 rounded font-mono">BRC</span>
+                        </p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-slate-500">Total Rec. Current Month</label><input type="number" id="inp-brc-rec" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                            <div><label class="text-slate-500">Remaining Prev. Month</label><input type="number" id="inp-brc-rem" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                            <div class="col-span-2"><label class="text-slate-500">Number of BRC Checked</label><input type="number" id="inp-brc-chk" class="w-full p-1.5 border rounded-lg bg-white font-black text-slate-800"></div>
+                            <div><label class="text-slate-500">Recommended</label><input type="number" id="inp-brc-rec-ok" class="w-full p-1.5 border rounded-lg bg-white font-bold text-emerald-600"></div>
+                            <div><label class="text-slate-500">Not Recommended</label><input type="number" id="inp-brc-rec-no" class="w-full p-1.5 border rounded-lg bg-white font-bold text-rose-600"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- COMMIT PORTAL -->
+                <button onclick="commitPortalValues()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2 text-xs">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Commit & Live Synchronize Displays</span>
+                </button>
+            </div>
+
+            <!-- RIGHT COLUMN: MASTER TABLES & CHARTS -->
+            <div class="xl:col-span-2 space-y-6 overflow-y-auto custom-scrollbar pr-1 pb-12">
+                
+                <!-- TABLE 01: TRADE LICENSE MASTER GRID -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-1.5">
+                        <h4 class="text-xs font-black text-blue-900 uppercase tracking-tight"><i class="fa-solid fa-certificate mr-1"></i>Trade License Inspection Log</h4>
+                        <span id="lbl-tl-context" class="text-[10px] bg-blue-50 text-blue-700 font-bold font-mono px-2 py-0.5 rounded">JANUARY 2026</span>
+                    </div>
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-center border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                <tr>
+                                    <th class="p-2 border-r text-left pl-3">Month</th>
+                                    <th class="p-2 border-r">Total Received Current Month</th>
+                                    <th class="p-2 border-r">Remaining amount from previous month</th>
+                                    <th class="p-2 border-r bg-blue-50/50 text-blue-900 font-black">Total</th>
+                                    <th class="p-2 border-r">Number of licenses checked</th>
+                                    <th class="p-2 border-r text-emerald-600">Recommended</th>
+                                    <th class="p-2 text-rose-600">Not Recommended</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-bold text-slate-700 text-center">
+                                    <td id="td-tl-month" class="p-2.5 text-left pl-3 font-black bg-slate-50 border-r">January</td>
+                                    <td id="td-tl-rec" class="p-2.5 border-r">0</td>
+                                    <td id="td-tl-rem" class="p-2.5 border-r">0</td>
+                                    <td id="td-tl-tot" class="p-2.5 border-r bg-blue-50/30 text-blue-900 font-black text-sm">0</td>
+                                    <td id="td-tl-chk" class="p-2.5 border-r font-black text-slate-900">0</td>
+                                    <td id="td-tl-ok" class="p-2.5 border-r text-emerald-600">0</td>
+                                    <td id="td-tl-no" class="p-2.5 text-rose-600">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TABLE 02: BUSINESS REGISTRATION MASTER GRID -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-1.5">
+                        <h4 class="text-xs font-black text-purple-900 uppercase tracking-tight"><i class="fa-solid fa-building mr-1"></i>Business Registration Inspection Log</h4>
+                        <span id="lbl-brc-context" class="text-[10px] bg-purple-50 text-purple-700 font-bold font-mono px-2 py-0.5 rounded">JANUARY 2026</span>
+                    </div>
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-center border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                <tr>
+                                    <th class="p-2 border-r text-left pl-3">Month</th>
+                                    <th class="p-2 border-r">Total Received Current Month</th>
+                                    <th class="p-2 border-r">Remaining amount from previous month</th>
+                                    <th class="p-2 border-r bg-purple-50/50 text-purple-900 font-black">Total</th>
+                                    <th class="p-2 border-r">Number of BRC checked</th>
+                                    <th class="p-2 border-r text-emerald-600">Recommended</th>
+                                    <th class="p-2 text-rose-600">Not Recommended</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-bold text-slate-700 text-center">
+                                    <td id="td-brc-month" class="p-2.5 text-left pl-3 font-black bg-slate-50 border-r">January</td>
+                                    <td id="td-brc-rec" class="p-2.5 border-r">0</td>
+                                    <td id="td-brc-rem" class="p-2.5 border-r">0</td>
+                                    <td id="td-brc-tot" class="p-2.5 border-r bg-purple-50/30 text-purple-900 font-black text-sm">0</td>
+                                    <td id="td-brc-chk" class="p-2.5 border-r font-black text-slate-900">0</td>
+                                    <td id="td-brc-ok" class="p-2.5 border-r text-emerald-600">0</td>
+                                    <td id="td-brc-no" class="p-2.5 text-rose-600">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- LIVE CHARTS PANELS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Recommendation Outcome Distribution</h5>
+                        <div class="h-44"><canvas id="chartOutcome"></canvas></div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Trade License Inspection Clearance Rate (%)</h5>
+                        <div class="h-44 flex items-center justify-center"><canvas id="chartClearance"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- ANNUAL TREND LINE GRAPH -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Annual Inspection Volume Progression Trends (Full Year View)</h5>
+                    <div class="h-56"><canvas id="chartAnnualTrend"></canvas></div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ☁ Firebase CDNS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const generateCleanRecord = () => ({
+            tl_rec: 0, tl_rem: 0, tl_chk: 0, tl_ok: 0, tl_no: 0,
+            brc_rec: 0, brc_rem: 0, brc_chk: 0, brc_ok: 0, brc_no: 0
+        });
+
+        let currentYearData = Array.from({length: 12}, () => generateCleanRecord());
+
+        let chartOutcomeInstance = null;
+        let chartClearanceInstance = null;
+        let chartAnnualInstance = null;
+
+        // 🛡️ Safe Fail-Safe Engine Loader
+        try {
+            if (typeof firebase !== 'undefined' && firebase.apps) {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                cloudDb = firebase.database();
+                isCloudActive = true;
+                document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+                document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+            }
+        } catch (e) {
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            if (isCloudActive && cloudDb) {
+                cloudDb.ref(`trade_brc_v1/${year}`).once('value').then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) { currentYearData = data; }
+                    renderDataUI(monthIdx, year);
+                }).catch((err) => {
+                    loadLocalCacheStorage(year);
+                    renderDataUI(monthIdx, year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+                renderDataUI(monthIdx, year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let localStore = JSON.parse(localStorage.getItem(`phi_trade_brc_local_${year}`));
+            if (localStore) { 
+                currentYearData = localStore; 
+            } else { 
+                currentYearData = Array.from({length: 12}, () => generateCleanRecord()); 
+            }
+        }
+
+        function renderDataUI(monthIdx, year) {
+            const rec = currentYearData[monthIdx] || generateCleanRecord();
+
+            // Load values to Entry Inputs
+            document.getElementById('inp-tl-rec').value = rec.tl_rec || 0;
+            document.getElementById('inp-tl-rem').value = rec.tl_rem || 0;
+            document.getElementById('inp-tl-chk').value = rec.tl_chk || 0;
+            document.getElementById('inp-tl-rec-ok').value = rec.tl_ok || 0;
+            document.getElementById('inp-tl-rec-no').value = rec.tl_no || 0;
+
+            document.getElementById('inp-brc-rec').value = rec.brc_rec || 0;
+            document.getElementById('inp-brc-rem').value = rec.brc_rem || 0;
+            document.getElementById('inp-brc-chk').value = rec.brc_chk || 0;
+            document.getElementById('inp-brc-rec-ok').value = rec.brc_ok || 0;
+            document.getElementById('inp-brc-rec-no').value = rec.brc_no || 0;
+
+            // Calculations
+            const tlTotal = (parseInt(rec.tl_rec) || 0) + (parseInt(rec.tl_rem) || 0);
+            const brcTotal = (parseInt(rec.brc_rec) || 0) + (parseInt(rec.brc_rem) || 0);
+
+            // Context Labels
+            const contextText = `${MONTH_NAMES[monthIdx].toUpperCase()} ${year}`;
+            document.getElementById('lbl-tl-context').innerText = contextText;
+            document.getElementById('lbl-brc-context').innerText = contextText;
+
+            // Render Trade License Table
+            document.getElementById('td-tl-month').innerText = MONTH_NAMES[monthIdx];
+            document.getElementById('td-tl-rec').innerText = rec.tl_rec || 0;
+            document.getElementById('td-tl-rem').innerText = rec.tl_rem || 0;
+            document.getElementById('td-tl-tot').innerText = tlTotal;
+            document.getElementById('td-tl-chk').innerText = rec.tl_chk || 0;
+            document.getElementById('td-tl-ok').innerText = rec.tl_ok || 0;
+            document.getElementById('td-tl-no').innerText = rec.tl_no || 0;
+
+            // Render BRC Table
+            document.getElementById('td-brc-month').innerText = MONTH_NAMES[monthIdx];
+            document.getElementById('td-brc-rec').innerText = rec.brc_rec || 0;
+            document.getElementById('td-brc-rem').innerText = rec.brc_rem || 0;
+            document.getElementById('td-brc-tot').innerText = brcTotal;
+            document.getElementById('td-brc-chk').innerText = rec.brc_chk || 0;
+            document.getElementById('td-brc-ok').innerText = rec.brc_ok || 0;
+            document.getElementById('td-brc-no').innerText = rec.brc_no || 0;
+
+            updateAnalyticsCharts(rec, tlTotal, year);
+        }
+
+        function commitPortalValues() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            const tl_rec = parseInt(document.getElementById('inp-tl-rec').value) || 0;
+            const tl_rem = parseInt(document.getElementById('inp-tl-rem').value) || 0;
+            const tl_chk = parseInt(document.getElementById('inp-tl-chk').value) || 0;
+            const tl_ok = parseInt(document.getElementById('inp-tl-rec-ok').value) || 0;
+            const tl_no = parseInt(document.getElementById('inp-tl-rec-no').value) || 0;
+
+            const brc_rec = parseInt(document.getElementById('inp-brc-rec').value) || 0;
+            const brc_rem = parseInt(document.getElementById('inp-brc-rem').value) || 0;
+            const brc_chk = parseInt(document.getElementById('inp-brc-chk').value) || 0;
+            const brc_ok = parseInt(document.getElementById('inp-brc-rec-ok').value) || 0;
+            const brc_no = parseInt(document.getElementById('inp-brc-rec-no').value) || 0;
+
+            if ((tl_ok + tl_no) > tl_chk || (brc_ok + brc_no) > brc_chk) {
+                alert("⚠️ Validation Error: Recommended plus Not Recommended counts cannot logically exceed total inspected/checked units.");
+                return;
+            }
+
+            currentYearData[monthIdx] = {
+                tl_rec, tl_rem, tl_chk, tl_ok, tl_no,
+                brc_rec, brc_rem, brc_chk, brc_ok, brc_no
+            };
+
+            localStorage.setItem(`phi_trade_brc_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive && cloudDb) {
+                cloudDb.ref(`trade_brc_v1/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Complete! Trade License & BRC Inspection data updated.`);
+                    onFilterChange();
+                }).catch((err) => {
+                    onFilterChange();
+                });
+            } else {
+                alert(`🛡️ Offline Mode Safe: Saved locally.`);
+                onFilterChange();
+            }
+        }
+
+        function updateAnalyticsCharts(rec, tlTotal, year) {
+            // Chart 1: Outcome Distribution
+            const ctx1 = document.getElementById('chartOutcome').getContext('2d');
+            if(chartOutcomeInstance) chartOutcomeInstance.destroy();
+            chartOutcomeInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['TL Recommended', 'TL Rejected', 'BRC Recommended', 'BRC Rejected'],
+                    datasets: [{ data: [rec.tl_ok || 0, rec.tl_no || 0, rec.brc_ok || 0, rec.brc_no || 0], backgroundColor: ['#10b981', '#f43f5e', '#3b82f6', '#f59e0b'], borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+
+            // Chart 2: Clearance Rate
+            const ctx2 = document.getElementById('chartClearance').getContext('2d');
+            if(chartClearanceInstance) chartClearanceInstance.destroy();
+            let checked = rec.tl_chk || 0;
+            let pending = Math.max(0, tlTotal - checked);
+
+            chartClearanceInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Licenses Checked', 'Pending Workload'],
+                    datasets: [{ data: tlTotal > 0 ? [checked, pending] : [0,0], backgroundColor: ['#2563eb', '#cbd5e1'], borderWidth: 1 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+            });
+
+            // Chart 3: Annual Progression Trend
+            const ctx3 = document.getElementById('chartAnnualTrend').getContext('2d');
+            if(chartAnnualInstance) chartAnnualInstance.destroy();
+
+            chartAnnualInstance = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: MONTH_NAMES.map(m => m.substring(0,3)),
+                    datasets: [
+                        { label: 'Trade Licenses Checked', data: currentYearData.map(m => m.tl_chk || 0), borderColor: '#2563eb', tension: 0.15, fill: false },
+                        { label: 'BRC Inspected', data: currentYearData.map(m => m.brc_chk || 0), borderColor: '#8b5cf6', tension: 0.15, fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+            });
+        }
+
+        // 🎯 AUTO-SELECT PREVIOUS MONTH ENGINE
+        window.onload = function() {
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            document.getElementById('sel-year').value = targetYear.toString();
+            document.getElementById('sel-month').value = previousMonthIdx.toString();
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>

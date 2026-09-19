@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - Secure Gateway Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 font-sans flex items-center justify-center h-screen overflow-hidden relative">
+
+    <div class="absolute w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl -top-20 -left-20"></div>
+    <div class="absolute w-96 h-96 bg-purple-600/10 rounded-full blur-3xl -bottom-20 -right-20"></div>
+
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 space-y-6 relative z-10 m-4">
+        
+        <div class="text-center space-y-2">
+            <div class="w-14 h-14 bg-indigo-600 text-white rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-600/30 text-2xl">
+                <i class="fa-solid fa-shield-halved animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-slate-100 uppercase tracking-wider">COMMAND CENTER GATEWAY</h1>
+                <p class="text-xs text-slate-400 font-medium mt-0.5">Authorized Public Health Personnel Access Portal Only</p>
+            </div>
+        </div>
+
+        <hr class="border-slate-800">
+
+        <div class="space-y-4 text-xs">
+            <div class="space-y-1.5">
+                <label class="text-[10px] uppercase font-black text-slate-400 block tracking-wide">Secure Username (Email)</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-user text-sm"></i></span>
+                    <input type="email" id="inp-auth-user" placeholder="Enter secure identity email..." class="w-full p-3 pl-10 border border-slate-800 bg-slate-950 text-slate-200 font-bold rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition">
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-[10px] uppercase font-black text-slate-400 block tracking-wide">Secure Password Token</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500"><i class="fa-solid fa-lock text-sm"></i></span>
+                    <input type="password" id="inp-auth-pass" placeholder="••••••••••••" class="w-full p-3 pl-10 border border-slate-800 bg-slate-950 text-slate-200 font-black rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition tracking-widest">
+                </div>
+            </div>
+
+            <button onclick="handleGatewayAuthenticationTransit()" class="w-full py-3 mt-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black shadow-lg shadow-indigo-600/20 transition flex items-center justify-center space-x-2 text-xs uppercase tracking-wider">
+                <i class="fa-solid fa-right-to-bracket text-sm"></i> <span>Authenticate Secure Transit</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <script>
+        // ☁️ FIREBASE MASTER STRUCTURE SECURE CONFIG MATRIX (MATCHES YOUR ACTIVE REPOSITORIES)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        function handleGatewayAuthenticationTransit() {
+            const userEmail = document.getElementById('inp-auth-user').value.trim();
+            const userPass = document.getElementById('inp-auth-pass').value;
+
+            if(!userEmail || !userPass) {
+                alert("⚠️ Access Blocked: Please complete both secure user credentials identity parameter slots.");
+                return;
+            }
+
+            // ☁️ SECURE CLOUD AUTH TRANSACTION PASS PIPE TERMINAL
+            firebase.auth().signInWithEmailAndPassword(userEmail, userPass).then((userCredential) => {
+                // Successful verification token lifecycle matching rules -> transit directly to main dashboard layer
+                alert("🚀 Identity Authenticated! Welcome to PHI Command Center Management Workspace.");
+                window.location.href = "dashboard.html";
+            }).catch((error) => {
+                console.error("Authentication Matrix Deficit Trace:", error);
+                alert(`❌ Access Denied: Secure token runtime mismatch. Verification failure rule logged.`);
+            });
+        }
+    </script>
+</body>
+</html>

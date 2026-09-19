@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 10. Special Program Log</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <!-- TOP GLOBAL BAR -->
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-purple-600 p-2.5 rounded-xl text-white shadow-md hover:bg-purple-500 transition">
+                <i class="fa-solid fa-star text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">10. Special Field Programmes & Activity Log</h1>
+                <p class="text-xs text-slate-400">Custom Field Dairy, Miscellaneous Raid Summaries & Photo Evidence Logging</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-purple-400 font-bold">
+            📍 SPECIAL OPERATIONS LOG
+        </div>
+    </header>
+
+    <!-- MAIN INTERFACE LAYOUT -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR NAVIGATION MENU -->
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <!-- 🎯 ACTIVE MODULE 10 -->
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-purple-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- CONTENT PANEL SPLIT -->
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <!-- LEFT WORKSPACE: SPECIAL ACTIVITY ENTRY PORTAL -->
+            <div class="xl:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="border-b pb-2">
+                    <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-pen-to-square text-purple-600"></i>
+                        <span>ACTIVITY LOG PORTAL</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Type custom fields entries and upload field evidence</p>
+                </div>
+
+                <!-- TIME CONTEXT CONTROLS -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Year</label>
+                        <select id="sel-year" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Month</label>
+                        <select id="sel-month" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="0">January</option><option value="1">February</option>
+                            <option value="2">March</option><option value="3">April</option>
+                            <option value="4">May</option><option value="5">June</option>
+                            <option value="6">July</option><option value="7">August</option>
+                            <option value="8">September</option><option value="9">October</option>
+                            <option value="10">November</option><option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- TEXT DESCRIPTION ENTRY -->
+                <div class="space-y-2 text-xs">
+                    <label class="text-[11px] uppercase font-black text-slate-500 block">Description of Special Work / Raid Done</label>
+                    <textarea id="inp-special-text" rows="4" placeholder="Type specific activity description here (e.g., Special Dengue Shramadana Campaign at Poththapitiya Temple with 45 participants...)" class="w-full p-3 border rounded-xl bg-slate-50 font-medium text-slate-800 text-xs focus:bg-white focus:ring-1 focus:ring-purple-500 outline-none transition"></textarea>
+                </div>
+
+                <!-- DYNAMIC PHOTO SLOTS 4 ATTACHMENTS PORTAL CELLS -->
+                <div class="p-3 bg-purple-50/40 border border-purple-100 rounded-xl space-y-3">
+                    <p class="text-[10px] font-black text-purple-800 uppercase tracking-wider"><i class="fa-solid fa-images mr-1"></i>Attach Activity Field Evidence (Max 4 Slots)</p>
+                    <div class="grid grid-cols-2 gap-2 text-[11px]">
+                        <div>
+                            <label class="block font-semibold text-slate-500 mb-0.5">Evidence Slot 1</label>
+                            <input type="file" id="file-slot-0" onchange="previewImageSlot(0)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-500 mb-0.5">Evidence Slot 2</label>
+                            <input type="file" id="file-slot-1" onchange="previewImageSlot(1)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-500 mb-0.5">Evidence Slot 3</label>
+                            <input type="file" id="file-slot-2" onchange="previewImageSlot(2)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-500 mb-0.5">Evidence Slot 4</label>
+                            <input type="file" id="file-slot-3" onchange="previewImageSlot(3)" class="w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="commitSpecialActivityLog()" class="w-full py-2.5 bg-purple-700 hover:bg-purple-600 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2 text-xs">
+                    <i class="fa-solid fa-circle-plus"></i> <span>Log Special Activity Entry</span>
+                </button>
+            </div>
+
+            <!-- RIGHT COLUMN: LARGE BULLET LIST SHOWCASE & IMAGE PREVIEW EVIDENCE GRIDS -->
+            <div class="xl:col-span-2 space-y-5 overflow-y-auto custom-scrollbar pr-1 pb-12">
+                
+                <!-- SUMMARY CONTAINER: LARGE BULLET POINTS LIST DISPLAY -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <div>
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-tight">Divisional Field Dairy Summary Log</h4>
+                            <h2 id="lbl-context" class="text-base font-black text-purple-950 mt-0.5">---</h2>
+                        </div>
+                        <button onclick="clearCurrentMonthLogs()" class="px-2.5 py-1 text-slate-400 border border-slate-200 hover:text-red-500 hover:border-red-200 rounded text-[10px] font-bold transition">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Clear Month Logs
+                        </button>
+                    </div>
+
+                    <!-- THE TARGET LARGE BULLET LIST -->
+                    <div class="p-2">
+                        <ul id="bullet-list-display-container" class="space-y-4 list-none">
+                            <!-- Large text entries injected here via script layout -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ATTACHED PHOTO PREVIEW DISPLAY CANVAS SLOTS (4 SLOTS GRID) -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-camera-retro mr-1"></i>Logged Activity Photo Evidence Previews Grid</h5>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <!-- SLOT 1 -->
+                        <div class="border rounded-xl aspect-square bg-slate-50 flex flex-col items-center justify-center text-center p-1 overflow-hidden relative group">
+                            <img id="prev-img-0" class="w-full h-full object-cover hidden">
+                            <div id="prev-icon-0" class="text-slate-300 flex flex-col items-center"><i class="fa-solid fa-image text-2xl mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Slot 1 Empty</span></div>
+                        </div>
+                        <!-- SLOT 2 -->
+                        <div class="border rounded-xl aspect-square bg-slate-50 flex flex-col items-center justify-center text-center p-1 overflow-hidden relative group">
+                            <img id="prev-img-1" class="w-full h-full object-cover hidden">
+                            <div id="prev-icon-1" class="text-slate-300 flex flex-col items-center"><i class="fa-solid fa-image text-2xl mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Slot 2 Empty</span></div>
+                        </div>
+                        <!-- SLOT 3 -->
+                        <div class="border rounded-xl aspect-square bg-slate-50 flex flex-col items-center justify-center text-center p-1 overflow-hidden relative group">
+                            <img id="prev-img-2" class="w-full h-full object-cover hidden">
+                            <div id="prev-icon-2" class="text-slate-300 flex flex-col items-center"><i class="fa-solid fa-image text-2xl mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Slot 3 Empty</span></div>
+                        </div>
+                        <!-- SLOT 4 -->
+                        <div class="border rounded-xl aspect-square bg-slate-50 flex flex-col items-center justify-center text-center p-1 overflow-hidden relative group">
+                            <img id="prev-img-3" class="w-full h-full object-cover hidden">
+                            <div id="prev-icon-3" class="text-slate-300 flex flex-col items-center"><i class="fa-solid fa-image text-2xl mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Slot 4 Empty</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ☁️ GOOGLE FIREBASE CORE INTERACTION CDN -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            cloudDb = firebase.database();
+            isCloudActive = true;
+            document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+        } catch (e) {
+            console.warn("Cloud interface halted. Reverting back to local terminal workspace.", e);
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const localBaselineData = Array.from({length: 12}, (_, idx) => {
+            return idx === 3 ? {
+                activities: ["Conducted Special Integrated Dengue Source Elimination Campaign around Poththapitiya GN market circle area with community participation."],
+                images: ["", "", "", ""]
+            } : { activities: [], images: ["", "", "", ""] };
+        });
+
+        let currentYearData = [...localBaselineData];
+        let currentUploadedImages = ["", "", "", ""];
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            document.getElementById('lbl-context').innerText = "LOAD...";
+
+            if (isCloudActive) {
+                cloudDb.ref(`special_diary_v2/${year}`).once('value').then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) {
+                        currentYearData = data;
+                    } else {
+                        currentYearData = [...localBaselineData];
+                    }
+                    renderDataUI(monthIdx, year);
+                }).catch((err) => {
+                    console.error(err);
+                    loadLocalCacheStorage(year);
+                    renderDataUI(monthIdx, year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+                renderDataUI(monthIdx, year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let localStore = JSON.parse(localStorage.getItem(`phi_special_diary_local_${year}`));
+            if (localStore) {
+                currentYearData = localStore;
+            } else {
+                currentYearData = [...localBaselineData];
+            }
+        }
+
+        function renderDataUI(monthIdx, year) {
+            const monthRecord = currentYearData[monthIdx] || { activities: [], images: ["", "", "", ""] };
+            currentUploadedImages = [...monthRecord.images];
+
+            document.getElementById('lbl-context').innerText = `${MONTH_NAMES[monthIdx].toUpperCase()} ${year} SPECIAL FIELD DAIRY`;
+
+            let bulletHtml = '';
+            if(monthRecord.activities.length === 0) {
+                bulletHtml = `
+                <div class="text-center py-8 text-slate-300">
+                    <i class="fa-solid fa-calendar-minus text-3xl mb-1"></i>
+                    <p class="text-xs font-semibold uppercase tracking-wider">No unique field activities logged for this month scale.</p>
+                </div>`;
+            } else {
+                monthRecord.activities.forEach((activity, idx) => {
+                    bulletHtml += `
+                    <li class="flex items-start space-x-3 group bg-slate-50/40 p-3 rounded-xl border border-transparent hover:border-purple-100 hover:bg-purple-50/10 transition">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs mt-0.5">${idx+1}</span>
+                        <div class="flex-1">
+                            <p class="text-sm sm:text-base font-bold text-slate-800 tracking-wide leading-relaxed">${activity}</p>
+                        </div>
+                        <i onclick="removeSingleLog(${idx})" class="fa-solid fa-trash text-slate-300 hover:text-red-500 cursor-pointer text-xs pt-1.5 opacity-0 group-hover:opacity-100 transition"></i>
+                    </li>`;
+                });
+            }
+            document.getElementById('bullet-list-display-container').innerHTML = bulletHtml;
+
+            for(let i=0; i<4; i++) {
+                let imgElement = document.getElementById(`prev-img-${i}`);
+                let iconElement = document.getElementById(`prev-icon-${i}`);
+                let savedSrc = monthRecord.images[i];
+
+                if(savedSrc && savedSrc !== "") {
+                    imgElement.src = savedSrc;
+                    imgElement.classList.remove('hidden');
+                    iconElement.classList.add('hidden');
+                } else {
+                    imgElement.src = "";
+                    imgElement.classList.add('hidden');
+                    iconElement.classList.remove('hidden');
+                }
+                document.getElementById(`file-slot-${i}`).value = "";
+            }
+        }
+
+        function previewImageSlot(slotIdx) {
+            const fileInput = document.getElementById(`file-slot-${slotIdx}`);
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let base64String = e.target.result;
+                currentUploadedImages[slotIdx] = base64String;
+
+                let imgElement = document.getElementById(`prev-img-${slotIdx}`);
+                let iconElement = document.getElementById(`prev-icon-${slotIdx}`);
+                imgElement.src = base64String;
+                imgElement.classList.remove('hidden');
+                iconElement.classList.add('hidden');
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function commitSpecialActivityLog() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+            const textInput = document.getElementById('inp-special-text');
+            const newLogText = textInput.value.trim();
+
+            if(!newLogText && currentUploadedImages.every(img => img === "")) {
+                alert("⚠️ Error: Please type an activity description or upload at least one image file node.");
+                return;
+            }
+
+            if(newLogText !== "") {
+                currentYearData[monthIdx].activities.push(newLogText);
+            }
+            
+            currentYearData[monthIdx].images = [...currentUploadedImages];
+
+            localStorage.setItem(`phi_special_diary_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive) {
+                cloudDb.ref(`special_diary_v2/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Complete: Special operational campaign entries logged live!`);
+                    textInput.value = '';
+                    onFilterChange();
+                }).catch((err) => {
+                    console.error(err);
+                    alert(`🛡️ Offline Mode Safe: Data written to local cache.`);
+                    textInput.value = '';
+                    onFilterChange();
+                });
+            } else {
+                alert(`🛡️ Offline Mode Safe: Special log entries written locally.`);
+                textInput.value = '';
+                onFilterChange();
+            }
+        }
+
+        function removeSingleLog(idx) {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+            
+            currentYearData[monthIdx].activities.splice(idx, 1);
+            localStorage.setItem(`phi_special_diary_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive) {
+                cloudDb.ref(`special_diary_v2/${year}`).set(currentYearData).then(() => {
+                    onFilterChange();
+                });
+            } else {
+                onFilterChange();
+            }
+        }
+
+        function clearCurrentMonthLogs() {
+            if(confirm("Are you absolutely sure you want to wipe out all logged text and image entries for this month?")) {
+                const year = document.getElementById('sel-year').value;
+                const monthIdx = parseInt(document.getElementById('sel-month').value);
+                
+                currentYearData[monthIdx] = { activities: [], images: ["", "", "", ""] };
+                localStorage.setItem(`phi_special_diary_local_${year}`, JSON.stringify(currentYearData));
+
+                if (isCloudActive) {
+                    cloudDb.ref(`special_diary_v2/${year}`).set(currentYearData).then(() => {
+                        onFilterChange();
+                    });
+                } else {
+                    onFilterChange();
+                }
+            }
+        }
+
+        window.onload = function() {
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            if(document.getElementById('sel-year')) document.getElementById('sel-year').value = targetYear.toString();
+            if(document.getElementById('sel-month')) document.getElementById('sel-month').value = previousMonthIdx.toString();
+
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>

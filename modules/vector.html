@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 06. Vector & Zoonotic Control</title>
+    <!-- Tailwind CSS & Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <!-- TOP GLOBAL BAR -->
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-emerald-600 p-2.5 rounded-xl text-white shadow-md hover:bg-emerald-500 transition">
+                <i class="fa-solid fa-mosquito text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">06. Vector & Zoonotic Disease Control Unit</h1>
+                <p class="text-xs text-slate-400">Dengue SKS Field Sweeps, Leptospirosis Prophylaxis & Rabies Dynamic Population Coverage</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-emerald-400 font-bold">
+            🔄 CONNECTING...
+        </div>
+    </header>
+
+    <!-- MAIN INTERFACE LAYOUT -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR NAVIGATION MENU -->
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-emerald-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 UPDATED MODULE ORDER -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- CONTENT PANEL SPLIT -->
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <!-- LEFT WORKSPACE: DATA ENTRY PORTAL -->
+            <div class="xl:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="border-b pb-2">
+                    <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-square-sliders text-emerald-600"></i>
+                        <span>VECTOR DATA PORTAL</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Vary data rows chronologically across independent vectors</p>
+                </div>
+
+                <!-- TIME CONTEXT CONTROLS -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Year</label>
+                        <select id="sel-year" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Month</label>
+                        <select id="sel-month" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1 text-xs">
+                    
+                    <!-- MODULE 1: DENGUE ACTIVITY PORTAL -->
+                    <div class="p-3 bg-red-50/40 border border-red-100 rounded-xl space-y-2">
+                        <p class="text-[10px] font-black text-red-800 uppercase tracking-wider flex items-center justify-between">
+                            <span><i class="fa-solid fa-bug mr-1"></i>01. Dengue Control Activity</span>
+                            <span class="text-[9px] bg-red-100 px-1.5 py-0.2 rounded font-mono">SLIDES 13,14,15</span>
+                        </p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-slate-500">Home Visits Done</label><input type="number" id="inp-den-visit" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                            <div><label class="text-slate-500">Shramadana Done</label><input type="number" id="inp-den-shram" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                            <div><label class="text-slate-500">Notices Issued</label><input type="number" id="inp-den-notice" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                            <div><label class="text-slate-500">Prosecutions</label><input type="number" id="inp-den-pros" class="w-full p-1.5 border rounded-lg bg-white font-bold text-red-600"></div>
+                            <div><label class="text-slate-500">Premises Inspected</label><input type="number" id="inp-den-insp" class="w-full p-1.5 border rounded-lg bg-white font-black text-slate-800"></div>
+                            <div><label class="text-slate-500">Breeding Wet Places</label><input type="number" id="inp-den-wet" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                        </div>
+                    </div>
+
+                    <!-- MODULE 2: LEPTOSPIROSIS ACTIVITY PORTAL -->
+                    <div class="p-3 bg-amber-50/40 border border-amber-100 rounded-xl space-y-2">
+                        <p class="text-[10px] font-black text-amber-800 uppercase tracking-wider flex items-center justify-between">
+                            <span><i class="fa-solid fa-vial mr-1"></i>02. Leptospirosis Control</span>
+                            <span class="text-[9px] bg-amber-100 px-1.5 py-0.2 rounded font-mono">SLIDE 18</span>
+                        </p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="col-span-2"><label class="text-slate-500">Doxycycline Caps Distributed</label><input type="number" id="inp-lep-doxy" class="w-full p-1.5 border rounded-lg bg-white font-black text-amber-700"></div>
+                            <div><label class="text-slate-500">H.E. Programmes</label><input type="number" id="inp-lep-he" class="w-full p-1.5 border rounded-lg bg-white font-medium"></div>
+                            <div><label class="text-slate-500">Kanna Meetings</label><input type="number" id="inp-lep-kanna" class="w-full p-1.5 border rounded-lg bg-white font-medium"></div>
+                        </div>
+                    </div>
+
+                    <!-- MODULE 3: RABIES ACTIVITY PORTAL -->
+                    <div class="p-3 bg-indigo-50/40 border border-indigo-100 rounded-xl space-y-2">
+                        <p class="text-[10px] font-black text-indigo-800 uppercase tracking-wider flex items-center justify-between">
+                            <span><i class="fa-solid fa-dog mr-1"></i>03. Rabies Control Activity</span>
+                            <span class="text-[9px] bg-indigo-100 px-1.5 py-0.2 rounded font-mono">SLIDES 20,21</span>
+                        </p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="col-span-2">
+                                <label class="text-slate-600 font-bold">Area Population Base</label>
+                                <input type="number" id="inp-rab-pop" class="w-full p-1.5 border rounded-lg bg-slate-50 font-black text-indigo-700 text-sm">
+                            </div>
+                            <div><label class="text-slate-500">Planned Centers</label><input type="number" id="inp-rab-cent" class="w-full p-1.5 border rounded-lg bg-white font-medium"></div>
+                            <div><label class="text-slate-500">Vaccination Days</label><input type="number" id="inp-rab-days" class="w-full p-1.5 border rounded-lg bg-white font-medium"></div>
+                            <div><label class="text-slate-500">Dogs Vaccinated</label><input type="number" id="inp-rab-dog" class="w-full p-1.5 border rounded-lg bg-white font-black text-emerald-600"></div>
+                            <div><label class="text-slate-500">Stray Dogs Vacc.</label><input type="number" id="inp-rab-stray" class="w-full p-1.5 border rounded-lg bg-white font-bold"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- COMMIT PORTAL -->
+                <button onclick="commitPortalValues()" class="w-full py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2 text-xs">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Save & Live Synchronize Grid</span>
+                </button>
+            </div>
+
+            <!-- RIGHT COLUMN: MASTER VIEWS -->
+            <div class="xl:col-span-2 space-y-6 overflow-y-auto custom-scrollbar pr-1 pb-12">
+                
+                <!-- TABLE 01: DENGUE ACTIVITY MASTER GRID -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-1.5">
+                        <h4 class="text-xs font-black text-red-800 uppercase tracking-tight"><i class="fa-solid fa-bug mr-1"></i>01. Dengue / Mosquito Borne Disease Control Activity</h4>
+                        <span class="text-[9px] bg-red-50 text-red-700 font-bold font-mono px-2 py-0.5 rounded">SLIDES 13, 14, 15</span>
+                    </div>
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-center border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                <tr>
+                                    <th class="p-2 border-r text-left pl-3">Context</th>
+                                    <th class="p-2 border-r">Home Visit</th>
+                                    <th class="p-2 border-r">Shramadana</th>
+                                    <th class="p-2 border-r">Notices Issued</th>
+                                    <th class="p-2 border-r text-red-600">Prosecutions</th>
+                                    <th class="p-2 border-r">Premises Inspected</th>
+                                    <th class="p-2 text-red-500">Breeding Wet Sites</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-bold text-slate-700 text-center">
+                                    <td id="td-ctx-den" class="p-2.5 text-left pl-3 font-black bg-slate-50 border-r">---</td>
+                                    <td id="td-den-visit" class="p-2.5 border-r">0</td>
+                                    <td id="td-den-shram" class="p-2.5 border-r">0</td>
+                                    <td id="td-den-notice" class="p-2.5 border-r">0</td>
+                                    <td id="td-den-pros" class="p-2.5 border-r text-red-600">0</td>
+                                    <td id="td-den-insp" class="p-2.5 border-r text-slate-900 font-black">0</td>
+                                    <td id="td-den-wet" class="p-2.5 text-red-500">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TABLE 02: LEPTOSPIROSIS ACTIVITY MASTER GRID -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-1.5">
+                        <h4 class="text-xs font-black text-amber-800 uppercase tracking-tight"><i class="fa-solid fa-vial mr-1"></i>02. Leptospirosis Control Activity</h4>
+                        <span class="text-[9px] bg-amber-50 text-amber-700 font-bold font-mono px-2 py-0.5 rounded">SLIDE 18</span>
+                    </div>
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-center border-collapse">
+                            <thead class="bg-slate-50 text-slate-600 font-bold border-b">
+                                <tr>
+                                    <th class="p-2 border-r text-left pl-3">Context</th>
+                                    <th class="p-2 border-r text-amber-700">Doxycycline distributed</th>
+                                    <th class="p-2 border-r">H.E. Programmes Conducted</th>
+                                    <th class="p-2 border-r">No of Participants</th>
+                                    <th class="p-2">Kanna Meetings</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-bold text-slate-700 text-center">
+                                    <td id="td-ctx-lep" class="p-2.5 text-left pl-3 font-black bg-slate-50 border-r">---</td>
+                                    <td id="td-lep-doxy" class="p-2.5 border-r text-amber-700 text-sm font-black">0</td>
+                                    <td id="td-lep-he" class="p-2.5 border-r">0</td>
+                                    <td class="p-2.5 border-r text-slate-400 font-normal">As Logged</td>
+                                    <td id="td-lep-kanna" class="p-2.5">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TABLE 03: RABIES ACTIVITY MASTER GRID -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-1.5">
+                        <h4 class="text-xs font-black text-indigo-800 uppercase tracking-tight"><i class="fa-solid fa-dog mr-1"></i>03. Rabies Control Activity & Coverage Matrix</h4>
+                        <span class="text-[9px] bg-indigo-50 text-indigo-700 font-bold font-mono px-2 py-0.5 rounded">SLIDES 20, 21</span>
+                    </div>
+                    <div class="overflow-x-auto border rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead class="bg-slate-50 text-slate-700 font-bold border-b text-center">
+                                <tr>
+                                    <th class="p-2 border-r text-left pl-3">Population Base</th>
+                                    <th class="p-2 border-r">Planned Centers</th>
+                                    <th class="p-2 border-r">Days Done</th>
+                                    <th class="p-2 border-r bg-indigo-50/50 text-indigo-900 font-black">Target Dogs (Pop/8)</th>
+                                    <th class="p-2 border-r">Dogs Vaccinated</th>
+                                    <th class="p-2 border-r">Stray Dogs Vacc.</th>
+                                    <th class="p-2 bg-emerald-50 text-emerald-900 font-black text-center">Vacc. Coverage (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-bold text-slate-700 text-center">
+                                    <td id="td-rab-pop" class="p-2.5 pl-3 border-r text-left text-slate-900 font-black bg-slate-50/50">POP: 0</td>
+                                    <td id="td-rab-cent" class="p-2.5 border-r">0</td>
+                                    <td id="td-rab-days" class="p-2.5 border-r">0</td>
+                                    <td id="td-rab-target" class="p-2.5 border-r bg-indigo-50/30 text-indigo-800 font-black text-sm">0</td>
+                                    <td id="td-rab-dog" class="p-2.5 border-r text-emerald-600">0</td>
+                                    <td id="td-rab-stray" class="p-2.5 border-r">0</td>
+                                    <td id="td-rab-pct" class="p-2.5 bg-emerald-50/50 text-emerald-700 font-black text-sm">0%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- LIVE CHARTS PANELS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Dengue Statutory Field Actions Profile</h5>
+                        <div class="h-44"><canvas id="chartLocalDengue"></canvas></div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+                        <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Rabies Eradication Coverage vs Formula Target (%)</h5>
+                        <div class="h-44 flex items-center justify-center"><canvas id="chartLocalRabies"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- FULL YEAR Progress LINE GRAPH -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <h5 class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-3">Annual Zoonotic Prophylaxis Progression Trends (Full Year View)</h5>
+                    <div class="h-56"><canvas id="chartAnnualVectorTrend"></canvas></div>
+                </div>
+
+                <!-- DENGUE CASE MAP LAYER -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div>
+                            <h4 class="text-xs font-black text-red-900 uppercase tracking-tight"><i class="fa-solid fa-map-location-dot mr-1"></i>CONFORMED DENGUE CASE LOCATIONS (PREVIOUS & CURRENT MONTH)</h4>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">පෙර සහ වත්මන් මාසවල තහවුරු වූ ඩෙංගු රෝගීන් වාර්තා වූ ස්ථාන සිතියම</p>
+                        </div>
+                        <span class="text-[9px] bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded font-mono">DENGUE GEO-VISUAL</span>
+                    </div>
+                    <div class="w-full border rounded-xl overflow-hidden shadow-inner bg-slate-100 flex items-center justify-center relative p-2 group transition">
+                        <img src="dengue_case.png" alt="Dengue Map Layout" class="w-full h-auto rounded-lg max-h-[450px] object-contain transition group-hover:scale-[1.01]" onerror="this.style.display='none'; document.getElementById('dengue-map-placeholder').style.display='flex';">
+                        <div id="dengue-map-placeholder" class="hidden w-full h-64 flex-col items-center justify-center text-center p-6 space-y-2">
+                            <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-600 text-xl animate-pulse"><i class="fa-solid fa-earth-asia"></i></div>
+                            <h6 class="font-bold text-slate-700 text-xs uppercase">Dengue Case Map Component Ready</h6>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RABIES MAP LAYER -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div>
+                            <h4 class="text-xs font-black text-indigo-950 uppercase tracking-tight"><i class="fa-solid fa-map-location-dot mr-1"></i>Slide 21: Rabies Vaccination Centers Density Map Viewer</h4>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">ජලභීතිකා මර්දන එන්නත්කරණ මධ්‍යස්ථාන සහ ඩෙන්සිටි බෆර් සිතියම</p>
+                        </div>
+                        <span class="text-[9px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded font-mono">SLIDE 21 GEO-VISUAL</span>
+                    </div>
+                    <div class="w-full border rounded-xl overflow-hidden shadow-inner bg-slate-100 flex items-center justify-center relative p-2 group transition">
+                        <img src="rabies_map.png" alt="Map Layout" class="w-full h-auto rounded-lg max-h-[450px] object-contain transition group-hover:scale-[1.01]" onerror="this.style.display='none'; document.getElementById('map-placeholder').style.display='flex';">
+                        <div id="map-placeholder" class="hidden w-full h-64 flex-col items-center justify-center text-center p-6 space-y-2">
+                            <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 text-xl animate-pulse"><i class="fa-solid fa-earth-asia"></i></div>
+                            <h6 class="font-bold text-slate-700 text-xs uppercase">Slide 21 Map Overlay Component Ready</h6>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ☁ Firebase CDNS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        try {
+            if (typeof firebase !== 'undefined' && firebase.apps) {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                cloudDb = firebase.database();
+                isCloudActive = true;
+                document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+                document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+            }
+        } catch (e) {
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const localBaselineData = Array.from({length: 12}, (_, idx) => {
+            return {
+                d_visit: idx===0 ? 134 : (idx===1 ? 128 : (idx===2 ? 108 : (idx===3 ? 98 : 0))), 
+                d_shram: 0, d_notice: idx===0 ? 3 : 1, d_pros: 0,
+                d_insp: idx===0 ? 385 : (idx===1 ? 368 : (idx===2 ? 419 : (idx===3 ? 354 : 0))), 
+                d_wet: idx===0 ? 72 : (idx===1 ? 42 : (idx===2 ? 42 : (idx===3 ? 54 : 0))), 
+                l_doxy: idx===2 ? 100 : (idx===3 ? 50 : 0), l_he: idx===3 ? 1 : 0, l_kanna: idx===3 ? 2 : 0, 
+                r_pop: 10673, r_cent: idx===1 ? 5 : (idx===3 ? 3 : 0), r_days: idx===1 ? 1 : (idx===3 ? 2 : 0), 
+                r_dog: idx===1 ? 809 : (idx===3 ? 340 : 0), r_stray: idx===1 ? 84 : (idx===3 ? 52 : 0) 
+            };
+        });
+
+        let currentYearData = [...localBaselineData];
+        let chartDenInstance = null;
+        let chartRabInstance = null;
+        let chartAnnualInstance = null;
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            if (isCloudActive && cloudDb) {
+                cloudDb.ref(`vector_v2/${year}`).once('value').then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) { currentYearData = data; }
+                    renderDataUI(monthIdx, year);
+                }).catch((err) => {
+                    loadLocalCacheStorage(year);
+                    renderDataUI(monthIdx, year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+                renderDataUI(monthIdx, year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let localStore = JSON.parse(localStorage.getItem(`phi_vector_local_${year}`));
+            if (localStore) { currentYearData = localStore; } else { currentYearData = [...localBaselineData]; }
+        }
+
+        function renderDataUI(monthIdx, year) {
+            const record = currentYearData[monthIdx] || { d_visit: 0, d_shram: 0, d_notice: 0, d_pros: 0, d_insp: 0, d_wet: 0, l_doxy: 0, l_he: 0, l_kanna: 0, r_pop: 10673, r_cent: 0, r_days: 0, r_dog: 0, r_stray: 0 };
+
+            document.getElementById('inp-den-visit').value = record.d_visit;
+            document.getElementById('inp-den-shram').value = record.d_shram;
+            document.getElementById('inp-den-notice').value = record.d_notice;
+            document.getElementById('inp-den-pros').value = record.d_pros;
+            document.getElementById('inp-den-insp').value = record.d_insp;
+            document.getElementById('inp-den-wet').value = record.d_wet;
+
+            document.getElementById('inp-lep-doxy').value = record.l_doxy;
+            document.getElementById('inp-lep-he').value = record.l_he;
+            document.getElementById('inp-lep-kanna').value = record.l_kanna;
+
+            document.getElementById('inp-rab-pop').value = record.r_pop;
+            document.getElementById('inp-rab-cent').value = record.r_cent;
+            document.getElementById('inp-rab-days').value = record.r_days;
+            document.getElementById('inp-rab-dog').value = record.r_dog;
+            document.getElementById('inp-rab-stray').value = record.r_stray;
+
+            const targetDogs = Math.round(record.r_pop / 8);
+            const contextString = `${MONTH_NAMES[monthIdx].substring(0,3).toUpperCase()} ${year}`;
+            
+            document.getElementById('td-ctx-den').innerText = contextString;
+            document.getElementById('td-den-visit').innerText = record.d_visit;
+            document.getElementById('td-den-shram').innerText = record.d_shram;
+            document.getElementById('td-den-notice').innerText = record.d_notice;
+            document.getElementById('td-den-pros').innerText = record.d_pros;
+            document.getElementById('td-den-insp').innerText = record.d_insp;
+            document.getElementById('td-den-wet').innerText = record.d_wet;
+
+            document.getElementById('td-ctx-lep').innerText = contextString;
+            document.getElementById('td-lep-doxy').innerText = record.l_doxy;
+            document.getElementById('td-lep-he').innerText = record.l_he;
+            document.getElementById('td-lep-kanna').innerText = record.l_kanna;
+
+            document.getElementById('td-rab-pop').innerText = `POP: ${record.r_pop.toLocaleString()}`;
+            document.getElementById('td-rab-cent').innerText = record.r_cent;
+            document.getElementById('td-rab-days').innerText = record.r_days;
+            document.getElementById('td-rab-target').innerText = targetDogs;
+            document.getElementById('td-rab-dog').innerText = record.r_dog;
+            document.getElementById('td-rab-stray').innerText = record.r_stray;
+
+            let totalInjected = record.r_dog + record.r_stray;
+            let coveragePct = targetDogs > 0 ? Math.min(100, Math.round((totalInjected / targetDogs) * 100)) : 0;
+            document.getElementById('td-rab-pct').innerText = coveragePct + "%";
+
+            updateVectorCharts(record, targetDogs, year);
+        }
+
+        function commitPortalValues() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            const d_visit = parseInt(document.getElementById('inp-den-visit').value) || 0;
+            const d_insp = parseInt(document.getElementById('inp-den-insp').value) || 0;
+            const d_wet = parseInt(document.getElementById('inp-den-wet').value) || 0;
+            const d_notice = parseInt(document.getElementById('inp-den-notice').value) || 0;
+            const d_pros = parseInt(document.getElementById('inp-den-pros').value) || 0;
+
+            if (d_visit > d_insp) { alert("⚠️ Validation Error: Home visits cannot exceed inspected premises."); return; }
+
+            currentYearData[monthIdx] = {
+                d_visit: d_visit, d_shram: parseInt(document.getElementById('inp-den-shram').value) || 0, d_notice: d_notice, d_pros: d_pros, d_insp: d_insp, d_wet: d_wet,
+                l_doxy: parseInt(document.getElementById('inp-lep-doxy').value) || 0, l_he: parseInt(document.getElementById('inp-lep-he').value) || 0, l_kanna: parseInt(document.getElementById('inp-lep-kanna').value) || 0,
+                r_pop: parseInt(document.getElementById('inp-rab-pop').value) || 0, r_cent: parseInt(document.getElementById('inp-rab-cent').value) || 0, r_days: parseInt(document.getElementById('inp-rab-days').value) || 0, r_dog: parseInt(document.getElementById('inp-rab-dog').value) || 0, r_stray: parseInt(document.getElementById('inp-rab-stray').value) || 0
+            };
+
+            localStorage.setItem(`phi_vector_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive && cloudDb) {
+                cloudDb.ref(`vector_v2/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Complete!`);
+                    onFilterChange();
+                }).catch((err) => {
+                    onFilterChange();
+                });
+            } else {
+                alert(`🛡️ Offline Mode Safe: Saved locally.`);
+                onFilterChange();
+            }
+        }
+
+        function updateVectorCharts(record, targetDogs, year) {
+            const ctx1 = document.getElementById('chartLocalDengue').getContext('2d');
+            if(chartDenInstance) chartDenInstance.destroy();
+            chartDenInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Visits Done', 'Inspected', 'Wet Sites', 'Notices'],
+                    datasets: [{ data: [record.d_visit, record.d_insp, record.d_wet, record.d_notice], backgroundColor: ['#06b6d4', '#0d9488', '#f43f5e', '#f59e0b'], borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+
+            const ctx2 = document.getElementById('chartLocalRabies').getContext('2d');
+            if(chartRabInstance) chartRabInstance.destroy();
+            let totalVax = record.r_dog + record.r_stray;
+            let netDeficit = Math.max(0, targetDogs - totalVax);
+
+            chartRabInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Vaccinated Dogs', 'Target Gap Deficit'],
+                    datasets: [{ data: targetDogs > 0 ? [totalVax, netDeficit] : [0,0], backgroundColor: ['#10b981', '#cbd5e1'], borderWidth: 1 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+            });
+
+            const ctx3 = document.getElementById('chartAnnualVectorTrend').getContext('2d');
+            if(chartAnnualInstance) chartAnnualInstance.destroy();
+
+            chartAnnualInstance = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: MONTH_NAMES.map(m => m.substring(0,3)),
+                    datasets: [
+                        { label: 'Dengue Visits', data: currentYearData.map(m => m.d_visit), borderColor: '#06b6d4', tension: 0.15, fill: false },
+                        { label: 'Doxycycline Distributed', data: currentYearData.map(m => m.l_doxy), borderColor: '#f59e0b', tension: 0.15, fill: false },
+                        { label: 'Rabies Vaccinations', data: currentYearData.map(m => m.r_dog + m.r_stray), borderColor: '#10b981', tension: 0.15, fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, beginAtZero: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+            });
+        }
+
+        window.onload = function() {
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            document.getElementById('sel-year').value = targetYear.toString();
+            document.getElementById('sel-month').value = previousMonthIdx.toString();
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>

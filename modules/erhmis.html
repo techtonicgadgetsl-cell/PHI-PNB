@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Command Center - 01. eRhmis Reports</title>
+    <!-- Tailwind CSS & Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <!-- TOP GLOBAL BAR -->
+    <header class="bg-slate-900 text-white shadow-xl px-6 py-4 flex justify-between items-center z-40 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <a href="dashboard.html" class="bg-orange-600 p-2.5 rounded-xl text-white shadow-md hover:bg-orange-500 transition">
+                <i class="fa-solid fa-file-invoice text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-wide text-slate-100 uppercase">01. eRhmis Report & Returns</h1>
+                <p class="text-xs text-slate-400">Universal Multi-Area Digital Reporting Workflow & Dynamic Target Manager</p>
+            </div>
+        </div>
+        <div id="cloud-status-badge" class="text-xs font-mono bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-orange-400 font-bold">
+            🔄 CONNECTING...
+        </div>
+    </header>
+
+    <!-- MAIN LAYOUT -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="w-72 bg-slate-950 text-slate-300 flex-shrink-0 border-r border-slate-800 flex flex-col justify-between">
+            <div class="overflow-y-auto custom-scrollbar p-3 space-y-1">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-black px-3 py-2">System Modules</p>
+                <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chart-pie w-4 text-center"></i> <span>00. Dashboard Overview</span>
+                </a>
+                <a href="erhmis.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold bg-orange-600 text-white transition shadow-md">
+                    <i class="fa-solid fa-file-invoice w-4 text-center"></i> <span>01. eRhmis Report & Returns</span>
+                </a>
+                <a href="disease.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-virus-covid w-4 text-center"></i> <span>02. Communicable Diseases</span>
+                </a>
+                <a href="food_safety.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-utensils w-4 text-center"></i> <span>03. Food Safety & Hygiene</span>
+                </a>
+                <a href="occupational.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-user-shield w-4 text-center"></i> <span>04. Occupational Health</span>
+                </a>
+                <a href="environmental.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-leaf w-4 text-center"></i> <span>05. Environmental Pollution</span>
+                </a>
+                <a href="vector.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-mosquito w-4 text-center"></i> <span>06. Vector Control</span>
+                </a>
+                <a href="school_health.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-graduation-cap w-4 text-center"></i> <span>07. School Health & SMI</span>
+                </a>
+                <a href="education.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-chalkboard-user w-4 text-center"></i> <span>08. Health Education Program</span>
+                </a>
+                <!-- 🎯 UPDATED MODULE ORDER HERE -->
+                <a href="trade_inspection.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-briefcase w-4 text-center"></i> <span>09. TRC & BRC Approval</span>
+                </a>
+                <a href="special.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold hover:bg-slate-900 hover:text-white transition text-slate-400">
+                    <i class="fa-solid fa-star w-4 text-center"></i> <span>10. Special Program Log</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- CONTENT AREA -->
+        <main class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
+            <!-- LEFT COLUMN: INTEGRATED DATA ENTRY PORTAL -->
+            <div class="xl:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 h-fit">
+                <div class="border-b pb-2">
+                    <h3 class="font-black text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-square-sliders text-orange-500"></i>
+                        <span>DATA ENTRY PORTAL</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Adaptable to any area! Set total schools and input returns.</p>
+                </div>
+
+                <!-- TIME CONTEXT SELECTORS -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Year</label>
+                        <select id="sel-year" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-black text-slate-400 block mb-1">Target Month</label>
+                        <select id="sel-month" onchange="onFilterChange()" class="w-full p-2 border rounded-lg bg-slate-50 font-bold text-xs text-slate-700">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- INPUT FIELDS FORM -->
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="font-bold text-slate-500 block mb-1">Number of Schools Total (Area Specific Target)</label>
+                        <input type="number" id="inp-schools" oninput="updateTargetLabels()" class="w-full p-2 border rounded-lg bg-slate-50 text-slate-800 font-black text-sm">
+                    </div>
+                    
+                    <div class="p-3 bg-orange-50/50 border border-orange-100 rounded-xl space-y-3">
+                        <p class="text-[10px] font-black text-orange-700 uppercase tracking-wider">Monthly Metric Entry</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block mb-1 text-slate-500 font-medium">H1014 Return</label>
+                                <input type="number" id="inp-h1014-m" class="w-full p-2 border rounded-lg bg-white font-bold text-orange-600">
+                                <span id="tgt-lbl-h1014" class="text-[9px] text-slate-400 font-mono block mt-0.5">Target: Max 0</span>
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-slate-500 font-medium">H631 P2 Return</label>
+                                <input type="number" id="inp-h631-m" min="0" max="1" class="w-full p-2 border rounded-lg bg-white font-bold text-slate-700">
+                                <span class="text-[9px] text-emerald-600 font-mono block mt-0.5">Target: Fixed 1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-blue-50/50 border border-blue-100 rounded-xl space-y-3">
+                        <p class="text-[10px] font-black text-blue-700 uppercase tracking-wider">Yearly Metric Entry</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block mb-1 text-slate-500 font-medium">H1015A Complete</label>
+                                <input type="number" id="inp-h1015a-y" class="w-full p-2 border rounded-lg bg-white font-bold text-blue-600">
+                                <span id="tgt-lbl-h1015a" class="text-[9px] text-slate-400 font-mono block mt-0.5">Target: Max 0</span>
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-slate-500 font-medium">H1247 Complete</label>
+                                <input type="number" id="inp-h1247-y" class="w-full p-2 border rounded-lg bg-white font-bold text-blue-600">
+                                <span id="tgt-lbl-h1247" class="text-[9px] text-slate-400 font-mono block mt-0.5">Target: Max 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="commitPortalValues()" class="w-full py-2.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl font-bold shadow transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> <span>Save & Sync Display</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: AUTOMATED LIVE DISPLAY VISUALS -->
+            <div class="xl:col-span-2 space-y-6">
+                <!-- DATA TABLE CARD -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 id="lbl-table-title" class="text-xs font-black text-slate-700 uppercase tracking-tight">Data Grid Summary</h3>
+                        <span class="text-[10px] bg-slate-100 font-bold px-2 py-0.5 rounded text-slate-500 font-mono">DYNAMIC VALIDATION SCALE</span>
+                    </div>
+                    <div class="overflow-x-auto border border-slate-100 rounded-xl shadow-inner">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead class="bg-slate-50 font-bold text-slate-600 uppercase border-b">
+                                <tr>
+                                    <th class="p-3 border-r">Target Context</th>
+                                    <th class="p-3 border-r text-center">Schools Registered</th>
+                                    <th class="p-3 border-r text-center">H1014 Sub/Tgt</th>
+                                    <th class="p-3 border-r text-center">H631 P2 Status</th>
+                                    <th class="p-3 border-r text-center">H1015A Sub/Tgt</th>
+                                    <th class="p-3 text-center">H1247 Sub/Tgt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white font-bold text-slate-700 text-center text-xs">
+                                    <td id="td-context" class="p-3 border-r text-left text-slate-900 font-black">---</td>
+                                    <td id="td-schools" class="p-3 border-r text-sm text-slate-800 font-black">0</td>
+                                    <td id="td-h1014-m" class="p-3 border-r text-orange-600">0 / 0</td>
+                                    <td id="td-h631-m" class="p-3 border-r">0 / 1</td>
+                                    <td id="td-h1015a-y" class="p-3 border-r text-blue-600">0 / 0</td>
+                                    <td id="td-h1247-y" class="p-3 text-blue-600">0 / 0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CHART VIEW CARD -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-4">Submission Rates vs Dynamic Regional Target (%)</h4>
+                    <div class="h-56"><canvas id="localChartReturns"></canvas></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ☁️ GOOGLE FIREBASE CORE INTEGRATION SCRIPTS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbaDrXNoam9yEXXt-Q4oM_NieWsVH0AiM",
+            authDomain: "phi-command-center.firebaseapp.com",
+            projectId: "phi-command-center",
+            storageBucket: "phi-command-center.firebasestorage.app",
+            messagingSenderId: "20519691267",
+            appId: "1:20519691267:web:c4018461a5d92d58919a36",
+            databaseURL: "https://phi-command-center-default-rtdb.firebaseio.com"
+        };
+
+        let isCloudActive = false;
+        let cloudDb = null;
+
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            cloudDb = firebase.database();
+            isCloudActive = true;
+            document.getElementById('cloud-status-badge').innerText = "☁️ CLOUD ACTIVE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-400 font-bold";
+        } catch (e) {
+            console.warn("Firebase execution halted. Falling back to secure localStorage mode.", e);
+            isCloudActive = false;
+            document.getElementById('cloud-status-badge').innerText = "🛡️ OFFLINE SAFE MODE";
+            document.getElementById('cloud-status-badge').className = "text-xs font-mono bg-amber-950 px-3 py-1.5 rounded-lg border border-amber-700 text-amber-400 font-bold";
+        }
+
+        const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        const localBaselineData = [
+            { schools: 4, h1014_m: 4, h631_m: 1, h1015a_y: 4, h1247_y: 4 },
+            { schools: 4, h1014_m: 4, h631_m: 1, h1015a_y: 4, h1247_y: 4 },
+            { schools: 4, h1014_m: 4, h631_m: 1, h1015a_y: 4, h1247_y: 0 },
+            { schools: 4, h1014_m: 4, h631_m: 1, h1015a_y: 4, h1247_y: 4 },
+            { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 },
+            { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 },
+            { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 },
+            { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 },
+            { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 },
+            { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 },
+            { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 },
+            { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 }
+        ];
+
+        let currentYearData = [...localBaselineData];
+        let activeChartInstance = null;
+
+        function updateTargetLabels() {
+            const currentSchools = parseInt(document.getElementById('inp-schools').value) || 0;
+            document.getElementById('tgt-lbl-h1014').innerText = `Target: Max ${currentSchools}`;
+            document.getElementById('tgt-lbl-h1015a').innerText = `Target: Max ${currentSchools}`;
+            document.getElementById('tgt-lbl-h1247').innerText = `Target: Max ${currentSchools}`;
+        }
+
+        function onFilterChange() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            if (isCloudActive) {
+                cloudDb.ref(`erhmis_v3/${year}`).once('value').then((snapshot) => {
+                    let data = snapshot.val();
+                    if (data) {
+                        currentYearData = data;
+                    } else {
+                        currentYearData = [...localBaselineData];
+                    }
+                    renderDataUI(monthIdx, year);
+                }).catch((err) => {
+                    console.error("Cloud connection issue, using offline cached values", err);
+                    loadLocalCacheStorage(year);
+                    renderDataUI(monthIdx, year);
+                });
+            } else {
+                loadLocalCacheStorage(year);
+                renderDataUI(monthIdx, year);
+            }
+        }
+
+        function loadLocalCacheStorage(year) {
+            let localStore = JSON.parse(localStorage.getItem(`phi_erhmis_local_${year}`));
+            if (localStore) {
+                currentYearData = localStore;
+            } else {
+                currentYearData = [...localBaselineData];
+            }
+        }
+
+        function renderDataUI(monthIdx, year) {
+            const record = currentYearData[monthIdx] || { schools: 4, h1014_m: 0, h631_m: 0, h1015a_y: 0, h1247_y: 0 };
+
+            document.getElementById('inp-schools').value = record.schools;
+            document.getElementById('inp-h1014-m').value = record.h1014_m;
+            document.getElementById('inp-h631-m').value = record.h631_m;
+            document.getElementById('inp-h1015a-y').value = record.h1015a_y;
+            document.getElementById('inp-h1247-y').value = record.h1247_y;
+
+            updateTargetLabels();
+
+            document.getElementById('lbl-table-title').innerText = `Data Grid Summary: ${MONTH_NAMES[monthIdx]} ${year}`;
+            document.getElementById('td-context').innerText = `${MONTH_NAMES[monthIdx].substring(0,3).toUpperCase()} ${year}`;
+            document.getElementById('td-schools').innerText = record.schools;
+            document.getElementById('td-h1014-m').innerText = `${record.h1014_m} / ${record.schools}`;
+            document.getElementById('td-h631-m').innerText = `${record.h631_m} / 1`;
+            document.getElementById('td-h1015a-y').innerText = `${record.h1015a_y} / ${record.schools}`;
+            document.getElementById('td-h1247-y').innerText = `${record.h1247_y} / ${record.schools}`;
+
+            updateVisualChart(record);
+        }
+
+        function updateVisualChart(record) {
+            const ctx = document.getElementById('localChartReturns').getContext('2d');
+            if(activeChartInstance) activeChartInstance.destroy();
+
+            const schoolsTgt = record.schools > 0 ? record.schools : 1;
+            const pctH1014 = Math.min(100, Math.round((record.h1014_m / schoolsTgt) * 100));
+            const pctH631 = Math.min(100, Math.round((record.h631_m / 1) * 100));
+            const pctH1015a = Math.min(100, Math.round((record.h1015a_y / schoolsTgt) * 100));
+            const pctH1247 = Math.min(100, Math.round((record.h1247_y / schoolsTgt) * 100));
+
+            activeChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['H1014 Coverage (%)', 'H631 P2 Rate (%)', 'H1015A Rate (%)', 'H1247 Rate (%)'],
+                    datasets: [{
+                        data: [pctH1014, pctH631, pctH1015a, pctH1247],
+                        backgroundColor: ['#f97316', '#10b981', '#3b82f6', '#6366f1'],
+                        borderRadius: 6
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { y: { min: 0, max: 100, title: { display: true, text: 'Percentage Completion' } } },
+                    plugins: { legend: { display: false } } 
+                }
+            });
+        }
+
+        function commitPortalValues() {
+            const year = document.getElementById('sel-year').value;
+            const monthIdx = parseInt(document.getElementById('sel-month').value);
+
+            const schoolsCount = parseInt(document.getElementById('inp-schools').value) || 0;
+            const h1014 = parseInt(document.getElementById('inp-h1014-m').value) || 0;
+            const h631 = parseInt(document.getElementById('inp-h631-m').value) || 0;
+            const h1015a = parseInt(document.getElementById('inp-h1015a-y').value) || 0;
+            const h1247 = parseInt(document.getElementById('inp-h1247-y').value) || 0;
+
+            if(h1014 > schoolsCount || h1015a > schoolsCount || h1247 > schoolsCount) {
+                alert(`⚠️ Error: Returns cannot exceed total registered schools in region (${schoolsCount}).`);
+                return;
+            }
+
+            currentYearData[monthIdx] = {
+                schools: schoolsCount, h1014_m: h1014, h631_m: h631, h1015a_y: h1015a, h1247_y: h1247
+            };
+
+            localStorage.setItem(`phi_erhmis_local_${year}`, JSON.stringify(currentYearData));
+
+            if (isCloudActive) {
+                cloudDb.ref(`erhmis_v3/${year}`).set(currentYearData).then(() => {
+                    alert(`🚀 Cloud Sync Complete! Committed live to online database.`);
+                    onFilterChange();
+                }).catch((err) => {
+                    console.error(err);
+                    alert(`🛡️ Saved to Local Storage (Offline mode active).`);
+                    onFilterChange();
+                });
+            } else {
+                alert(`🛡️ Saved securely to Offline Storage Local Matrix!`);
+                onFilterChange();
+            }
+        }
+
+        // 📍 Dynamic Previous Month Selector Engine Sync
+        window.onload = function() {
+            const currentSystemDate = new Date();
+            let previousMonthIdx = currentSystemDate.getMonth() - 1;
+            let targetYear = currentSystemDate.getFullYear();
+
+            if (previousMonthIdx < 0) {
+                previousMonthIdx = 11;
+                targetYear = targetYear - 1;
+            }
+
+            if(document.getElementById('sel-year')) document.getElementById('sel-year').value = targetYear.toString();
+            if(document.getElementById('sel-month')) document.getElementById('sel-month').value = previousMonthIdx.toString();
+
+            onFilterChange();
+        };
+    </script>
+</body>
+</html>
