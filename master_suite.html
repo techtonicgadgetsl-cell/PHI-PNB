@@ -26,7 +26,7 @@
 </head>
 <body class="bg-slate-950 font-sans text-slate-200 flex h-screen overflow-hidden antialiased select-none">
 
-    <!-- ==================== 1. වම් පස මෙනු තීරුව (SIDEBAR) ==================== -->
+    <!-- ==================== 1. SIDEBAR ==================== -->
     <aside class="w-72 bg-slate-900/95 border-r border-slate-800/90 flex flex-col justify-between flex-shrink-0 z-30">
         
         <div class="p-4 space-y-5 overflow-y-auto custom-scrollbar">
@@ -61,7 +61,7 @@
             <!-- Navigation Links -->
             <div class="space-y-4 text-xs font-semibold">
                 <div>
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-2">ප්‍රධාන පාලන මැදිරිය</p>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-2">Main Control Panel</p>
                     <div class="space-y-1">
                         <button onclick="navigateSuite('hub')" id="nav-hub" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-white bg-purple-600 shadow-md shadow-purple-600/20 font-bold transition">
                             <i class="fa-solid fa-layer-group w-4 text-center"></i>
@@ -115,7 +115,7 @@
 
                 <!-- Field Tools -->
                 <div>
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-2">ක්ෂේත්‍ර මෙවලම් (Tools)</p>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-2">Field Tools</p>
                     <div class="space-y-1">
                         <button onclick="loadLocalModule('modules/SMI_BMI/index.html', 'SMI Pro - WHO Growth & Z-Score Calculator')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
                             <i class="fa-solid fa-weight-scale w-4 text-center text-cyan-400"></i>
@@ -151,7 +151,7 @@
         </div>
     </aside>
 
-    <!-- ==================== 2. ප්‍රධාන වැඩබිම (MAIN WORKSPACE) ==================== -->
+    <!-- ==================== 2. MAIN WORKSPACE ==================== -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950 relative">
         
         <!-- TOP APP BAR -->
@@ -160,7 +160,7 @@
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
-                <input type="text" id="suite-search" placeholder="පාසල්, හෝටල්, පැමිණිලි හෝ GN වසම සොයන්න..." class="w-full pl-9 pr-4 py-2 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition">
+                <input type="text" id="suite-search" placeholder="Search registry, cases, schools..." class="w-full pl-9 pr-4 py-2 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition">
             </div>
 
             <div class="flex items-center space-x-3">
@@ -175,7 +175,7 @@
         <!-- VIEW CONTAINER A: EXECUTIVE LAUNCHPAD HOME -->
         <div id="container-hub" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
             
-            <!-- STATS KPI COUNTER ROW -->
+            <!-- STATS KPI ROW -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="p-4 rounded-2xl glass-card flex items-center justify-between">
                     <div class="space-y-1">
@@ -195,7 +195,7 @@
                         <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">eRHMIS Returns</p>
                         <h4 class="text-xl font-black text-white">4 / 4 Schools</h4>
                         <span class="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-check"></i> H1014 & H631 Done
+                            <i class="fa-solid fa-circle-check"></i> Complete
                         </span>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
@@ -221,7 +221,7 @@
                         <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Public Inquiries</p>
                         <h4 class="text-xl font-black text-white">100% Settled</h4>
                         <span class="text-[10px] font-bold text-purple-400 flex items-center gap-1">
-                            <i class="fa-solid fa-scale-balanced"></i> 14 Grievance Types
+                            <i class="fa-solid fa-scale-balanced"></i> Settled
                         </span>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
@@ -230,14 +230,13 @@
                 </div>
             </div>
 
-            <!-- ANALYTICS & QUICK TRIGGERS ROW -->
+            <!-- ANALYTICS ROW -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Large Curve Analytics -->
                 <div class="lg:col-span-2 p-5 rounded-2xl glass-card space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-800/80 pb-3">
                         <div>
-                            <h3 class="text-sm font-black text-white tracking-wide uppercase">Annual Surveillance & Field Actions Velocity</h3>
-                            <p class="text-[11px] text-slate-400 mt-0.5">Epidemiological Notifications vs Routine Field Inspections</p>
+                            <h3 class="text-sm font-black text-white tracking-wide uppercase">Surveillance Velocity</h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Epidemiological Notifications vs Routine Inspections</p>
                         </div>
                         <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-purple-400 font-bold">2026 AUDIT CYCLE</span>
                     </div>
@@ -246,11 +245,10 @@
                     </div>
                 </div>
 
-                <!-- Fast Field Actions -->
                 <div class="p-5 rounded-2xl glass-card flex flex-col justify-between space-y-4">
                     <div class="space-y-3">
                         <div class="flex justify-between items-center border-b border-slate-800/80 pb-2">
-                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-200">ඉක්මන් ලොග් සටහන් (Shortcuts)</h4>
+                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-200">Shortcuts</h4>
                             <span class="text-[10px] text-purple-400 font-bold">READY</span>
                         </div>
                         <div class="space-y-2 text-xs">
@@ -281,7 +279,7 @@
                     </div>
 
                     <div class="p-3 bg-purple-950/30 rounded-xl border border-purple-900/40 text-[11px] text-purple-300">
-                        <i class="fa-solid fa-folder-tree mr-1 text-purple-400"></i> සියලුම sub-systems එකම repository එකෙන් direct load වේ.
+                        <i class="fa-solid fa-folder-tree mr-1 text-purple-400"></i> Direct relative paths active.
                     </div>
                 </div>
             </div>
@@ -289,8 +287,8 @@
             <!-- ONE-CLICK MASTER LAUNCHPAD -->
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">ප්‍රධාන ක්ෂේත්‍ර මෙවලම් (Field Utilities)</h3>
-                    <span class="text-[10px] text-slate-500 font-mono">1-CLICK INSTANT ACCESS</span>
+                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Integrated Field Utilities</h3>
+                    <span class="text-[10px] text-slate-500 font-mono">1-CLICK ACCESS</span>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -316,7 +314,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-white group-hover:text-amber-300 transition">Advance Programme</h4>
-                            <p class="text-[11px] text-slate-400 mt-0.5">මාසික රාජකාරි සැලැස්ම (Field duty itinerary planner)</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Field duty itinerary planner</p>
                         </div>
                     </div>
 
@@ -329,7 +327,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-white group-hover:text-emerald-300 transition">H411 Return Portal</h4>
-                            <p class="text-[11px] text-slate-400 mt-0.5">H411 ලේඛන සහ වාර්තා ජනනය කිරීමේ පද්ධතිය</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">H411 return records</p>
                         </div>
                     </div>
 
@@ -341,8 +339,8 @@
                             <span class="text-[10px] font-bold text-pink-400 group-hover:translate-x-0.5 transition flex items-center gap-1">OPEN <i class="fa-solid fa-arrow-right"></i></span>
                         </div>
                         <div>
-                            <h4 class="text-sm font-bold text-white group-hover:text-pink-300 transition">විශේෂ ක්ෂේත්‍ර දිනපොත</h4>
-                            <p class="text-[11px] text-slate-400 mt-0.5">Special raid records & 4-slot ඡායාරූප සාක්ෂි ලොගය</p>
+                            <h4 class="text-sm font-bold text-white group-hover:text-pink-300 transition">Special Field Diary</h4>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Special raid records & 4-slot photo evidence</p>
                         </div>
                     </div>
                 </div>
@@ -350,9 +348,8 @@
 
         </div>
 
-        <!-- VIEW CONTAINER B: FULL SCREEN FIXED IFRAME CONTAINER -->
+        <!-- VIEW CONTAINER B: FULL VIEWPORT EXTENSION VIEWER -->
         <div id="container-app-viewer" class="hidden absolute inset-0 z-30 bg-slate-950 flex flex-col w-full h-full">
-            <!-- App Bar Controls -->
             <div class="h-12 bg-slate-900 border-b border-slate-800 px-4 flex justify-between items-center flex-shrink-0">
                 <div class="flex items-center space-x-3">
                     <button onclick="navigateSuite('hub')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-purple-900/50 text-slate-300 hover:text-white text-xs font-bold flex items-center gap-2 transition border border-slate-700">
@@ -367,13 +364,13 @@
                     </button>
                 </div>
             </div>
-            <!-- Dynamic Embedded Full-Height Frame -->
+            <!-- Frame Container with Full Screen Dimensions -->
             <iframe id="app-viewport-frame" src="" class="w-full flex-1 border-0 bg-slate-950" style="height: calc(100% - 48px);"></iframe>
         </div>
 
     </main>
 
-    <!-- ROUTING & ANALYTICS CONTROLLER SCRIPT -->
+    <!-- ROUTING & AUTO SIDEBAR-STRIPPER CONTROLLER -->
     <script>
         function navigateSuite(targetView) {
             const hubContainer = document.getElementById('container-hub');
@@ -387,7 +384,7 @@
             }
         }
 
-        // Direct local relative path loader (Full viewport display)
+        // Direct local module loader with auto-strip internal sidebar
         function loadLocalModule(relativePath, moduleTitle) {
             const hubContainer = document.getElementById('container-hub');
             const viewerContainer = document.getElementById('container-app-viewer');
@@ -399,6 +396,32 @@
 
             title.innerText = moduleTitle.toUpperCase();
             frame.src = relativePath;
+
+            // Internal duplicate sidebar-annu hide madalu onload listener
+            frame.onload = function() {
+                try {
+                    const innerDoc = frame.contentDocument || frame.contentWindow.document;
+                    if (innerDoc) {
+                        // Injection of custom style to remove sub-navbars cleanly[cite: 14]
+                        const customStyle = innerDoc.createElement('style');
+                        customStyle.innerHTML = `
+                            aside, nav, .sidebar, #sidebar, [class*="w-64"], [class*="w-72"] {
+                                display: none !important;
+                            }
+                            main, .main-content, #main-content, body {
+                                width: 100% !important;
+                                max-width: 100% !important;
+                                margin-left: 0 !important;
+                                padding-left: 1rem !important;
+                                padding-right: 1rem !important;
+                            }
+                        `;
+                        innerDoc.head.appendChild(customStyle);
+                    }
+                } catch (e) {
+                    console.warn("Iframe styling notice:", e);
+                }
+            };
         }
 
         function reloadActiveFrame() {
@@ -406,7 +429,7 @@
             if (frame.src) frame.src = frame.src;
         }
 
-        // Initialize Velocity Chart
+        // Initialize Velocity Analytics Chart
         window.onload = function() {
             const ctx = document.getElementById('mainVelocityChart').getContext('2d');
             new Chart(ctx, {
@@ -415,7 +438,7 @@
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     datasets: [
                         {
-                            label: 'Surveillance & Disease Alerts',
+                            label: 'Surveillance Alerts',
                             data: [3, 2, 2, 0, 1, 0, 1, 2, 1, 0, 0, 1],
                             borderColor: '#a855f7',
                             backgroundColor: 'rgba(168, 85, 247, 0.12)',
@@ -424,7 +447,7 @@
                             borderWidth: 2
                         },
                         {
-                            label: 'Field Inspections & Actions',
+                            label: 'Field Inspections',
                             data: [23, 27, 19, 22, 18, 25, 20, 24, 21, 19, 22, 26],
                             borderColor: '#10b981',
                             backgroundColor: 'transparent',
