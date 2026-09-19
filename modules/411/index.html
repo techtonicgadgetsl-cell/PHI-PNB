@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Health 411 - Communicable Disease Report System</title>
+    
+    <!-- Google Gen AI Official Browser SDK -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.run/@google/genai"
+        }
+      }
+    </script>
+
+    <!-- Firebase Compatibility SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        
+        /* 📱 FIXED MOBILE LOCK ISSUE IN BODY */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f172a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .dashboard-container {
+            display: flex;
+            width: 100vw;
+            min-height: 100vh;
+        }
+
+        .preview-panel {
+            width: 50%;
+            height: 100vh;
+            background-color: #1e293b;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            border-right: 3px solid #0f172a;
+        }
+
+        .preview-scale-wrapper {
+            transform: scale(0.55);
+            transform-origin: top center;
+            margin-bottom: -190px;
+        }
+
+        .page-container {
+            width: 297mm;
+            height: 210mm;
+            position: relative;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            page-break-after: always;
+        }
+
+        #page-1 { background-image: url('photo_2026-08-03_01-43-11.jpg'); }
+        #page-2 { background-image: url('photo_2026-08-03_01-43-14.jpg'); }
+
+        .data-overlay {
+            position: absolute;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 14px;
+            color: #000080;
+            white-space: nowrap;
+            overflow: hidden;
+            line-height: 1;
+        }
+
+        .data-overlay-textarea {
+            position: absolute;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 11px;
+            color: #000080;
+            line-height: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+            overflow: hidden;
+        }
+
+        .data-overlay-textarea-bold {
+            position: absolute;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 900 !important;
+            font-size: 13px !important;
+            color: #000066;
+            line-height: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow: hidden;
+        }
+
+        .portal-panel {
+            width: 50%;
+            height: 100vh;
+            background-color: #f8fafc;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .portal-card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .portal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .portal-header h3 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 18px;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .status-online { background: #dcfce7; color: #15803d; }
+        .status-offline { background: #fef2f2; color: #b91c1c; }
+
+        .section-title {
+            font-weight: bold;
+            color: #2563eb;
+            margin: 18px 0 8px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .radio-group label {
+            font-weight: normal;
+            font-size: 13px;
+            cursor: pointer;
+            color: #1e293b;
+        }
+
+        .portal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .portal-table th, .portal-table td {
+            border: 1px solid #cbd5e0;
+            padding: 6px;
+            font-size: 12px;
+        }
+
+        .portal-table th {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            text-align: left;
+        }
+
+        .portal-table input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 12px 0 0 0;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-update { background-color: #16a34a; color: white; }
+        .btn-update:hover { background-color: #15803d; }
+
+        .btn-ai { background-color: #7c3aed; color: white; }
+        .btn-ai:hover { background-color: #6d28d9; }
+
+        .btn-scan { background-color: #d97706; color: white; }
+        .btn-scan:hover { background-color: #b45309; }
+
+        .btn-gps { background-color: #2563eb; color: white; }
+        .btn-gps:hover { background-color: #1d4ed8; }
+
+        .btn-map { background-color: #8b5cf6; color: white; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-map:hover { background-color: #7c3aed; }
+
+        .btn-print { background-color: #0284c7; color: white; }
+        .btn-print:hover { background-color: #0369a1; }
+
+        .btn-delete { background-color: #dc2626; color: white; }
+        .btn-delete:hover { background-color: #b91c1c; }
+
+        .btn-reset { background-color: #ef4444; color: white; margin-left: auto; }
+        .btn-reset:hover { background-color: #dc2626; }
+
+        .record-viewer-card {
+            background: #1e293b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .record-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .table-scroll-container {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            margin-top: 10px;
+            background: #ffffff;
+        }
+
+        .db-records-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .db-records-table th, .db-records-table td {
+            border: 1px solid #cbd5e0;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .db-records-table th {
+            position: sticky;
+            top: 0;
+            background-color: #1e293b;
+            color: white;
+            z-index: 10;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 15px;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            background: #2563eb;
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h4 { margin: 0; font-size: 16px; }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            background: #f1f5f9;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* 📱 FULLY UNLOCKED MOBILE SCROLLING & RESPONSIVENESS */
+        @media screen and (max-width: 900px) {
+            html, body { 
+                width: 100%; 
+                min-width: 0; 
+                height: auto !important; 
+                overflow-x: hidden; 
+                overflow-y: auto !important; 
+            }
+            input, select, textarea, button { font-size: 16px !important; }
+            .dashboard-container { 
+                flex-direction: column; 
+                height: auto !important; 
+                min-height: 100vh;
+            }
+            .portal-panel { 
+                width: 100%; 
+                height: auto !important; 
+                order: 1; 
+                padding: 10px; 
+                box-sizing: border-box; 
+                overflow-y: visible !important; 
+            }
+            .preview-panel { 
+                width: 100%; 
+                height: auto !important; 
+                order: 2; 
+                border-right: none; 
+                border-top: 4px solid #0f172a; 
+                padding: 10px 4px; 
+                box-sizing: border-box; 
+                overflow-x: auto; 
+                overflow-y: visible !important; 
+            }
+            .portal-card { padding: 12px; }
+            .form-grid { grid-template-columns: 1fr; gap: 10px; }
+            .form-group { min-width: 0; }
+            .btn { width: 100%; min-height: 44px; text-align: center; }
+            .btn-reset { margin-left: 0; }
+            .table-scroll-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .db-records-table { min-width: 620px; }
+            .db-records-table .btn { width: auto; min-height: 36px; font-size: 13px !important; }
+            .record-viewer-card { overflow-wrap: anywhere; }
+            .record-nav-header { gap: 8px; }
+            .record-nav-header .btn { width: auto; flex: 1; }
+            .preview-scale-wrapper { transform: scale(0.42); transform-origin: top left; margin-bottom: -260px; width: 238%; }
+        }
+
+        @media screen and (max-width: 480px) {
+            .portal-panel { padding: 6px; }
+            .portal-card { padding: 9px; }
+            .section-title { font-size: 13px; }
+            .btn-group { gap: 7px; }
+            .preview-scale-wrapper { transform: scale(0.30); width: 333%; margin-bottom: -330px; }
+        }
+
+        @media print {
+            @page { size: A4 landscape; margin: 0; }
+            html, body { width: 297mm; margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: visible !important; }
+            .dashboard-container { display: block !important; width: 297mm !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
+            .portal-panel { display: none !important; }
+            .preview-panel { width: 297mm !important; height: auto !important; background: none !important; padding: 0 !important; overflow: visible !important; border: none !important; display: block !important; }
+            .preview-scale-wrapper { transform: none !important; transform-origin: top left !important; margin: 0 !important; padding: 0 !important; display: block !important; }
+            .page-container { width: 297mm !important; height: 210mm !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; page-break-after: always !important; break-after: page !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .page-container:last-child { page-break-after: auto !important; break-after: auto !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <div class="preview-panel">
+        <div class="preview-scale-wrapper">
+            <div class="page-container" id="page-1">
+                <span class="data-overlay" id="outPhiRefNo" style="top: 97px; left: 595px; width: 140px;"></span>
+                <span class="data-overlay" id="outPhiRange" style="top: 97px; left: 885px; width: 140px;"></span>
+
+                <span class="data-overlay" id="outMohNotifNo" style="top: 135px; left: 625px; width: 140px;"></span>
+                <span class="data-overlay" id="outMohArea" style="top: 145px; left: 945px; width: 140px;"></span>
+
+                <span class="data-overlay" id="outMohRegNo" style="top: 170px; left: 625px; width: 140px;"></span>
+
+                <span class="data-overlay" id="outDiseaseNotified" style="top: 205px; left: 260px; width: 180px;"></span>
+                <span class="data-overlay" id="outDateNotified" style="top: 203px; left: 480px; width: 100px;"></span>
+
+                <span class="data-overlay" id="outDiseaseConfirmed" style="top: 229px; left: 290px; width: 180px;"></span>
+                <span class="data-overlay" id="outDateConfirmed" style="top: 226px; left: 480px; width: 100px;"></span>
+
+                <span class="data-overlay" id="outPatientName" style="top: 260px; left: 250px; width: 290px;"></span>
+                <span class="data-overlay" id="outPatientAddress" style="top: 280px; left: 190px; width: 330px;"></span>
+                <span class="data-overlay" id="outPatientPhone" style="top: 300px; left: 190px; width: 330px; font-size: 13px;"></span>
+
+                <span class="data-overlay" id="outPatientDobAge" style="top: 325px; left: 180px; width: 180px;"></span>
+
+                <span class="data-overlay" id="outSexMale" style="top: 350px; left: 295px; width: 30px;"></span>
+                <span class="data-overlay" id="outSexFemale" style="top: 350px; left: 295px; width: 30px;"></span>
+
+                <span class="data-overlay" id="outEthnicSinhalese" style="top: 385px; left: 295px; width: 30px;"></span>
+                <span class="data-overlay" id="outEthnicTamil" style="top: 404px; left: 295px; width: 30px;"></span>
+                <span class="data-overlay" id="outEthnicMuslim" style="top: 421px; left: 295px; width: 30px;"></span>
+                <span class="data-overlay" id="outEthnicBurgher" style="top: 438px; left: 295px; width: 30px;"></span>
+                <span class="data-overlay" id="outEthnicOthers" style="top: 453px; left: 295px; width: 30px;"></span>
+
+                <div class="data-overlay-textarea-bold" id="outMovements" style="top: 350px; left: 330px; width: 200px; height: 125px;"></div>
+
+                <span class="data-overlay" id="outDateOnset" style="top: 480px; left: 235px; width: 160px;"></span>
+                <span class="data-overlay" id="outDateHospitalized" style="top: 505px; left: 235px; width: 160px;"></span>
+                <span class="data-overlay" id="outDateDischarged" style="top: 527px; left: 235px; width: 160px;"></span>
+                <span class="data-overlay" id="outHospitalName" style="top: 544px; left: 230px; width: 300px;"></span>
+
+                <div class="data-overlay-textarea" id="outLabFindings" style="top: 565px; left: 330px; width: 200px; height: 180px;"></div>
+
+                <span class="data-overlay" id="outOutcomeRecovered" style="top: 580px; left: 295px; width: 30px;"></span>
+                <span class="data-overlay" id="outOutcomeDied" style="top: 593px; left: 295px; width: 30px;"></span>
+
+                <span class="data-overlay" id="outIsolatedHome" style="top: 610px; left: 295px; width: 30px;"></span>
+                <span class="data-overlay" id="outIsolatedHospital" style="top: 632px; left: 295px; width: 30px;"></span>
+                <span class="data-overlay" id="outIsolatedNotIsolated" style="top: 648px; left: 295px; width: 30px;"></span>
+
+                <span class="data-overlay" id="outNatureIsolatedCase" style="top: 672px; left: 295px; width: 30px;"></span>
+
+                <span class="data-overlay" id="outOutbreakReportNeeded" style="top: 715px; left: 295px; width: 30px;"></span>
+
+                <div id="containerHouseholdOverlay"></div>
+                <div id="containerOtherOverlay"></div>
+
+                <span class="data-overlay" id="outGpsCoordsPage1" style="bottom: 12px; left: 20px; width: 600px; color: #111; font-size: 12px; font-weight: 900;"></span>
+            </div>
+        </div>
+
+        <div class="preview-scale-wrapper">
+            <div class="page-container" id="page-2">
+                <!-- 🆕 PATIENT EXTRA INFO TABLE (Replaces old phone text) -->
+                <div class="data-overlay" id="outP2ExtraInfo" style="top: 160px; left: 750px; width: 310px; font-size: 11px;"></div>
+                
+                <!-- TABLE 01 -->
+                <span class="data-overlay" id="outP2Date1" style="top: 155px; left: 90px; width: 110px;"></span>
+                <div class="data-overlay-textarea" id="outP2Content1" style="top: 155px; left: 230px; width: 780px; height: 110px; font-size: 12px; line-height: 15px;"></div>
+
+                <!-- TABLE 02 -->
+                <span class="data-overlay" id="outP2Date2" style="top: 275px; left: 90px; width: 110px;"></span>
+                <div class="data-overlay-textarea" id="outP2Content2" style="top: 275px; left: 230px; width: 780px; height: 265px; font-size: 12px; line-height: 15px;"></div>
+
+                <!-- LAB REPORTS AREA -->
+                <div class="data-overlay-textarea" id="outP2LabReports" style="top: 600px; left: 230px; width: 780px; height: 135px; font-size: 11px; line-height: 15px; color: #000080; border-top: 1px dashed #2563eb; padding-top: 4px; white-space: pre-wrap; overflow: hidden; overflow-wrap: anywhere; word-break: break-word;"></div>
+
+                <!-- GPS LOCATION -->
+                <div class="data-overlay" id="outP2GpsBlock" style="top: 720px; left: 230px; width: 790px; font-size: 14px; color: #000080; font-weight: 900;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="portal-panel">
+        <div class="portal-card">
+            <div class="portal-header">
+                <h3>Communicable Disease Data Entry Portal</h3>
+                <span id="networkStatusBadge" class="status-badge status-online">🟢 Online Mode</span>
+            </div>
+            
+            <form id="healthPortalForm">
+                <div class="section-title">00. Vision AI Provider Engine Setup</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Select AI Engine</label>
+                        <select id="inAiEngineProvider" onchange="toggleAiEngineUI()">
+                            <option value="GEMINI_AI" selected>Google Gemini AI (SDK Native)</option>
+                            <option value="OCR_SPACE">Free OCR.space API</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 3;">
+                        <label id="lblAiKey">API Key Active</label>
+                        <input type="password" id="inAiApiKey" placeholder="Enter API key" value="" oninput="saveFormData()">
+                    </div>
+                </div>
+
+                <div class="section-title">01. Office & Administrative Reference Details</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>ම. සෞ. ප. යොමු අංකය / P.H.I. Reference No.</label>
+                        <input type="text" id="inPhiRefNo" placeholder="e.g. PHI/REF/102" oninput="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>ම. සෞ. ප. කොට්ඨාස / P.H.I. Range</label>
+                        <input type="text" id="inPhiRange" placeholder="e.g. Area 04" oninput="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>සෞ. වෛ. නි. දැනුම්දීමේ අංකය / M.O.H. Notification No.</label>
+                        <input type="text" id="inMohNotifNo" placeholder="e.g. MOH/NOT/88" oninput="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>සෞ. වෛ. නි. / සෞ. නි. පෙදෙස / M.O.H./H.O. Area</label>
+                        <input type="text" id="inMohArea" placeholder="e.g. Colombo South" oninput="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>සෞ. වෛ. නි. ලේඛන අංකය / M.O.H. Register No.</label>
+                        <input type="text" id="inMohRegNo" placeholder="e.g. REG/2026/05" oninput="updatePrintForm()">
+                    </div>
+                </div>
+
+                <div class="section-title">02. Disease Information & Notification Dates</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>දැනුම් දුන් රෝගය / Disease as Notified</label>
+                        <select id="inDiseaseNotified" class="disease-dropdown" onchange="updatePrintForm()"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>දිනය / Date (Notified)</label>
+                        <input type="date" id="inDateNotified" onchange="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>සහතික කරන ලද රෝගය / Disease Confirmed</label>
+                        <select id="inDiseaseConfirmed" class="disease-dropdown" onchange="updatePrintForm()"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>දිනය / Date (Confirmed)</label>
+                        <input type="date" id="inDateConfirmed" onchange="updatePrintForm()">
+                    </div>
+                </div>
+
+                <div class="section-title">03. Patient Details & Location Tagging</div>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>රෝගියාගේ නම / Name of Patient</label>
+                        <input type="text" id="inPatientName" placeholder="Full Name" oninput="updatePrintForm()">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>ලිපිනය / Address</label>
+                        <input type="text" id="inPatientAddress" placeholder="Address" oninput="updatePrintForm()">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>දුරකථන අංකය / Patient Contact Number</label>
+                        <div style="display:flex; gap:8px; align-items:stretch;">
+                            <input type="tel" id="inPatientPhone" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX" oninput="updatePrintForm()" style="flex:1; min-width:0;">
+                            <button type="button" class="btn btn-gps" onclick="callPatient()" style="white-space:nowrap; padding:8px 12px;">📞 Call Patient</button>
+                        </div>
+                        <small style="display:block; margin-top:4px; color:#64748b;">Enter a valid Sri Lankan mobile number.</small>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>උපන් දිනය / Birthday (DOB)</label>
+                        <input type="date" id="inPatientDob" onchange="autoCalcAge(this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>වයස / Calculated Age</label>
+                        <input type="text" id="inPatientAge" readonly placeholder="Calculated Age">
+                    </div>
+                    <div class="form-group">
+                        <label>ස්ත්‍රී පුරුෂ භාවය / Sex</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="sexOption" value="Male" onchange="updatePrintForm()"> පිරිමි / Male</label>
+                            <label><input type="radio" name="sexOption" value="Female" onchange="updatePrintForm()"> ගැහැණු / Female</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>GPS Coordinates</label>
+                        <input type="text" id="inGpsCoords" placeholder="e.g. 6.9271, 79.8612" oninput="updatePrintForm()">
+                        <span id="gpsStatusNotice" style="font-size: 11px; color: #dc2626; margin-top: 4px; display: none;"></span>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 4; display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-gps" onclick="fetchGPS()">📍 Auto Pick Current GPS</button>
+                        <a id="btnMapPinLink" href="https://maps.google.com" target="_blank" class="btn btn-map">🗺️ Open Map Pin Selector</a>
+                    </div>
+                </div>
+
+                <div class="section-title">03.1 ජාති අනුව වෙන් කිරීම / Ethnic Group</div>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 4;">
+                        <div class="radio-group">
+                            <label><input type="radio" name="ethnicOption" value="Sinhalese" onchange="updatePrintForm()"> සිංහල / Sinhalese</label>
+                            <label><input type="radio" name="ethnicOption" value="Tamil" onchange="updatePrintForm()"> දෙමළ / Tamil</label>
+                            <label><input type="radio" name="ethnicOption" value="Muslim" onchange="updatePrintForm()"> මෝරක්ක / Muslim</label>
+                            <label><input type="radio" name="ethnicOption" value="Burgher" onchange="updatePrintForm()"> බර්ගර් / Burgher</label>
+                            <label><input type="radio" name="ethnicOption" value="Others" onchange="updatePrintForm()"> අනෙකුත් / Others</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">03.2 Patient Movements</div>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 4;">
+                        <label>රෝගය වැළඳීමට පෙර සති තුන ඇතුළත රෝගියාගේ සැම ගමනක්ම / Patient's movements</label>
+                        <textarea id="inMovements" rows="3" placeholder="Enter movements..." oninput="updatePrintForm()"></textarea>
+                    </div>
+                </div>
+
+                <!-- 🆕 03.3 NEW AREA AND DEMOGRAPHICS SECTION -->
+                <div class="section-title">03.3 Additional Area & Demographics (Page 02 Table)</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>GN Area</label>
+                        <select id="inGNArea" onchange="updatePHMArea()">
+                            <option value="">-- Select GN Area --</option>
+                            <option value="Amunupura">Amunupura</option>
+                            <option value="Madiligama">Madiligama</option>
+                            <option value="Gondeniya">Gondeniya</option>
+                            <option value="Pahala Rathmeewala">Pahala Rathmeewala</option>
+                            <option value="Uda Rathmeewala">Uda Rathmeewala</option>
+                            <option value="Deldeniya">Deldeniya</option>
+                            <option value="Godigamuwa">Godigamuwa</option>
+                            <option value="Alagalla Ihala">Alagalla Ihala</option>
+                            <option value="Poththepitiya">Poththepitiya</option>
+                            <option value="Alagalla Waththa">Alagalla Waththa</option>
+                            <option value="Kirimetiya">Kirimetiya</option>
+                            <option value="Pahala Yatigammana">Pahala Yatigammana</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>PHM Area (Auto Selected)</label>
+                        <input type="text" id="inPHMArea" readonly placeholder="Auto generated" style="background-color: #f1f5f9;">
+                    </div>
+                    <div class="form-group">
+                        <label>Village</label>
+                        <input type="text" id="inVillage" placeholder="Village name" oninput="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>Occupation</label>
+                        <input type="text" id="inOccupation" placeholder="Occupation" oninput="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>Religion</label>
+                        <select id="inReligion" onchange="updatePrintForm()">
+                            <option value="">-- Select Religion --</option>
+                            <option value="Buddhism">Buddhism</option>
+                            <option value="Hinduism">Hinduism</option>
+                            <option value="Islam">Islam</option>
+                            <option value="Christianity">Christianity</option>
+                            <option value="Catholic">Catholic</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-title">04. Hospitalization Details & Lab Findings</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date of Onset</label>
+                        <input type="date" id="inDateOnset" onchange="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Hospitalization</label>
+                        <input type="date" id="inDateHospitalized" onchange="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Discharge</label>
+                        <input type="date" id="inDateDischarged" onchange="updatePrintForm()">
+                    </div>
+                    <div class="form-group">
+                        <label>Name of Hospital</label>
+                        <input type="text" id="inHospitalName" placeholder="Hospital Name" oninput="updatePrintForm()">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 4;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                            <label style="margin-bottom: 0;">රසායනාගාරයේදී සොයාගත් දේ / Laboratory findings</label>
+                            <div>
+                                <input type="file" id="labPhotoCameraInput" accept="image/*" capture="environment" style="display: none;" onchange="processLabPhotoAI(event)">
+                                <input type="file" id="labPhotoGalleryInput" accept="image/*" style="display: none;" onchange="processLabPhotoAI(event)">
+                                <button type="button" class="btn btn-scan" onclick="openLabPhotoChooser()">📷 Scan / Upload Handwritten Lab Photo</button>
+                            </div>
+                        </div>
+                        <span id="ocrStatusNotice" style="font-size: 11px; color: #d97706; font-weight: bold; display: none; margin-bottom: 5px;">⏳ AI scanning handwritten report... Please wait.</span>
+                        <textarea id="inLabFindings" rows="5" placeholder="Enter findings manually or scan handwritten lab report photo..." oninput="updatePrintForm()"></textarea>
+                    </div>
+                </div>
+
+                <div class="section-title">05. Outcome, Isolation & Case Nature</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>ප්‍රතිඵල / Outcome</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="outcomeOption" value="Recovered" onchange="updatePrintForm()"> සුවය ලැබූ / Recovered</label>
+                            <label><input type="radio" name="outcomeOption" value="Died" onchange="updatePrintForm()"> මරණයට පත්වු / Died</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>වෙන්කර තබන ලද්දේ කොතැනද / Where isolated</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="isolatedOption" value="Home" onchange="updatePrintForm()"> නිවසේ / Home</label>
+                            <label><input type="radio" name="isolatedOption" value="Hospital" onchange="updatePrintForm()"> රෝහලේ / Hospital</label>
+                            <label><input type="radio" name="isolatedOption" value="NotIsolated" onchange="updatePrintForm()"> වෙන් නොකරන ලදී / Not isolated</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>රෝගියාගේ ස්වභාවය / Nature of case</label>
+                        <div class="radio-group">
+                            <label><input type="checkbox" id="inNatureIsolatedCase" onchange="updatePrintForm()"> වෙන්කර තැබූ රෝගියා / Isolated case</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>රෝගය පැතිරීමේදී ඊට ගොදුරු වූ තැනැත්තෙක්</label>
+                        <div class="radio-group">
+                            <label><input type="checkbox" id="inOutbreakReportNeeded" onchange="updatePrintForm()"> වාර්තාව අවශ්‍යයි / Report needed</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">06. I. රෝගියාගේ නිවෙසේ පදිංචි අය / Patient's household Contacts</div>
+                <div style="overflow-x: auto;">
+                    <table class="portal-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">නම / Name</th>
+                                <th style="width: 15%;">වයස / Age</th>
+                                <th style="width: 25%;">බලන ලද දිනය / Date seen</th>
+                                <th style="width: 25%;">නිරීක්ෂණය / Observation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableHouseholdBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="section-title">07. II. ස්පර්ශ කළ අනෙකුත් අය / Other Contacts</div>
+                <div style="overflow-x: auto;">
+                    <table class="portal-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">නම / Name</th>
+                                <th style="width: 15%;">වයස / Age</th>
+                                <th style="width: 25%;">බලන ලද දිනය / Date seen</th>
+                                <th style="width: 25%;">නිරීක්ෂණය / Observation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableOtherBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span>08. PAGE 2 - INVESTIGATION NOTES</span>
+                    <button type="button" class="btn btn-ai" onclick="openNoteConfirmModal()">✨ Gemini Generate Table 02</button>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>TABLE 01 — DATE (Manual)</label>
+                        <input type="date" id="inP2Date1" onchange="updatePrintForm()">
+                    </div>
+                    <div class="form-group" style="grid-column: span 3;">
+                        <label>TABLE 01 — MANUAL NOTE / PATIENT VISIT RECORD</label>
+                        <textarea id="inP2Content1" rows="3" placeholder="Type this note manually. Nothing in Table 01 will be auto-generated." oninput="updatePrintForm()"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>TABLE 02 — DATE (Manual)</label>
+                        <input type="date" id="inP2Date2" onchange="updatePrintForm()">
+                    </div>
+                    <div class="form-group" style="grid-column: span 3;">
+                        <label>TABLE 02 — GEMINI AI NOTE / SOURCE, SPREAD & ACTION TAKEN</label>
+                        <textarea id="inP2Content2" rows="10" placeholder="Click 'Gemini Generate Table 02' to analyse the case information and generate this note. You may edit the generated text before printing." oninput="updatePrintForm()"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 4;">
+                        <label>LABORATORY REPORTS</label>
+                        <textarea id="inP2LabReports" rows="5" placeholder="Laboratory findings from Page 1 / Gemini scan. You may edit before printing." oninput="updatePrintForm()"></textarea>
+                    </div>
+                </div>
+
+                <div class="section-title">09. Saved Reports Navigation & Search (All Browsers Synced)</div>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 4; display: flex; flex-direction: row; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-update" onclick="saveRecordOfflineFirst()">💾 Save / Sync Report to Cloud</button>
+                        <button type="button" class="btn btn-gps" onclick="manualSyncToFirebase()">🔄 Refresh All Reports from Cloud</button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 4;">
+                        <label>🔍 Search Saved Reports by Patient Name, Ref No, or Disease</label>
+                        <input type="text" id="inSearchQuery" placeholder="Type Patient Name, Ref No, or Disease to filter..." oninput="filterAndRenderRecords()">
+                    </div>
+                </div>
+
+                <div class="record-viewer-card" id="cardNavViewer" style="display: none;">
+                    <div class="record-nav-header">
+                        <span id="navCardCounter" style="font-weight: bold; color: #60a5fa; font-size: 13px;">Report 0 of 0</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-gps" style="padding: 4px 10px; font-size: 12px;" onclick="navigateRecord(-1)">⏮️ Previous</button>
+                            <button type="button" class="btn btn-gps" style="padding: 4px 10px; font-size: 12px;" onclick="navigateRecord(1)">Next ⏭️</button>
+                        </div>
+                    </div>
+                    <div id="navCardBody" style="font-size: 13px; line-height: 1.6;"></div>
+                    <div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px;">
+                        <button type="button" class="btn btn-ai" style="font-size: 12px; padding: 6px 14px;" onclick="loadCurrentNavRecordToForm()">✏️ Load into Form to Edit / Print</button>
+                        <button type="button" class="btn btn-delete" style="font-size: 12px; padding: 6px 14px;" onclick="deleteCurrentNavRecord()">🗑️ Delete Report</button>
+                    </div>
+                </div>
+
+                <div class="table-scroll-container">
+                    <table class="db-records-table">
+                        <thead>
+                            <tr>
+                                <th>Ref No</th>
+                                <th>Patient Name</th>
+                                <th>Disease</th>
+                                <th>Cloud Sync</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="savedRecordsTableBody">
+                            <tr><td colspan="5" style="text-align:center;">Loading cloud database records...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-update" onclick="updatePrintForm()">Update Preview</button>
+                    <button type="button" class="btn btn-print" onclick="window.print()">Print A4 Form</button>
+                    <button type="button" class="btn btn-reset" onclick="resetForm()">Clear Form</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- 📋 MODAL DIALOG POPUP (STATUTORY DIRECTIVE COMPLIANT) -->
+<div class="modal-overlay" id="noteConfirmModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h4>📋 Notes on Source of Infection, Spread of Disease and Action Taken</h4>
+            <button type="button" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;" onclick="closeNoteConfirmModal()">✖</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Disease Confirmed / Notified</label>
+                <input type="text" id="modalDisease" readonly style="background-color: #f1f5f9;">
+            </div>
+
+            <div class="form-group">
+                <label>1. Source of Infection (බෝවීමේ ප්‍රමය පිළිබඳ සටහන්)</label>
+                <input type="text" id="modalSource" placeholder="e.g. Workplace exposure, local vector breeding site, residence neighbourhood">
+            </div>
+
+            <div class="form-group">
+                <label>2. Spread of Disease (රෝගය පැතිරීම)</label>
+                <select id="modalCaseIndex">
+                    <option value="PRIMARY_INDEX_LOCAL">Primary Index Case (Local transmission)</option>
+                    <option value="SUBSEQUENT_LOCAL" selected>Subsequent Case (Local transmission chain)</option>
+                    <option value="IMPORTED_CASE">Imported Case (Acquired outside area / abroad)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>2.1 Outbreak Information (වසංගත තත්ත්වය පිළිබඳ නියෝගය)</label>
+                <select id="modalOutbreakStatus" onchange="toggleOutbreakRefInput()">
+                    <option value="NO_OUTBREAK">Isolated Case (No active outbreak in the area)</option>
+                    <option value="FIRST_CASE_OUTBREAK">First case of an outbreak (Enter full information on report card)</option>
+                    <option value="SUBSEQUENT_OUTBREAK_CASE">Subsequent case of an outbreak (Covered by same information/action)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="outbreakRefGroup" style="display: none;">
+                <label>Reference Number in Infectious Diseases Register</label>
+                <input type="text" id="modalOutbreakRefNo" placeholder="e.g. IDR/2026/DEN/042">
+                <small style="color: #64748b;">Give reference number in infectious diseases register on cards of subsequent cases covered by same action.</small>
+            </div>
+
+            <div class="form-group">
+                <label>3. Action Taken (ගෙන ඇති ක්‍රියා මාර්ගය)</label>
+                <textarea id="modalActionTaken" rows="3">Premises inspection, vector source reduction/fogging conducted, patient isolation ensured, and health education directives given.</textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-reset" onclick="closeNoteConfirmModal()">Cancel</button>
+            <button type="button" class="btn btn-update" onclick="submitAndGeneratePage2Note()">✨ Gemini Analyze & Generate</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    window.GoogleGenAIReady = import('@google/genai')
+        .then(({ GoogleGenAI }) => {
+            window.GoogleGenAI = GoogleGenAI;
+            return GoogleGenAI;
+        })
+        .catch((error) => {
+            console.error('Gemini SDK load failed:', error);
+            throw new Error('Gemini SDK could not be loaded. Check your internet connection and reload the page.');
+        });
+</script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDd9yyyPywkuLYVBXG584PKtNhdWLSVsY8",
+        authDomain: "h411-3b136.firebaseapp.com",
+        databaseURL: "https://h411-3b136-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "h411-3b136",
+        storageBucket: "h411-3b136.firebasestorage.app",
+        messagingSenderId: "1096863942583",
+        appId: "1:1096863942583:web:f814fe2bb72fd0a3f30a32"
+    };
+
+    let fbDb = null;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        fbDb = firebase.database();
+    } catch(e) { console.log("Firebase Init Notice:", e.message); }
+
+    let dbDB = null;
+    let activeEditingRecordId = null;
+    
+    let allFetchedRecords = [];
+    let filteredRecords = [];
+    let currentNavIndex = 0;
+    let firebaseListenerAttached = false;
+
+    function initIndexedDB() {
+        const req = indexedDB.open('Health411OfflineDB', 1);
+        req.onupgradeneeded = function(e) {
+            dbDB = e.target.result;
+            if (!dbDB.objectStoreNames.contains('patient_records')) {
+                dbDB.createObjectStore('patient_records', { keyPath: 'id' });
+            }
+        };
+        req.onsuccess = function(e) {
+            dbDB = e.target.result;
+            if(fbDb && navigator.onLine) {
+                fetchCloudFirebaseRecords();
+            } else {
+                loadOfflineRecordsTable();
+            }
+        };
+    }
+
+    window.addEventListener('online', () => {
+        updateNetworkBadge(true);
+        fetchCloudFirebaseRecords();
+    });
+    window.addEventListener('offline', () => {
+        updateNetworkBadge(false);
+        loadOfflineRecordsTable();
+    });
+
+    function updateNetworkBadge(isOnline) {
+        const badge = document.getElementById('networkStatusBadge');
+        if (isOnline) {
+            badge.className = "status-badge status-online";
+            badge.innerText = "🟢 Cloud Live Mode";
+        } else {
+            badge.className = "status-badge status-offline";
+            badge.innerText = "🔴 Local Offline Mode";
+        }
+    }
+
+    function fetchCloudFirebaseRecords() {
+        if (!fbDb || !navigator.onLine) {
+            loadOfflineRecordsTable();
+            return;
+        }
+
+        if (firebaseListenerAttached) {
+            return;
+        }
+        firebaseListenerAttached = true;
+
+        fbDb.ref('health_reports').on('value', (snapshot) => {
+            const data = snapshot.val();
+            const recordMap = new Map();
+            
+            if (data) {
+                for (let key in data) {
+                    recordMap.set(key, { ...data[key], id: key, synced: true });
+                }
+                
+                allFetchedRecords = Array.from(recordMap.values());
+
+                if (dbDB) {
+                    const tx = dbDB.transaction('patient_records', 'readwrite');
+                    const store = tx.objectStore('patient_records');
+                    allFetchedRecords.forEach(rec => store.put(rec));
+                }
+            } else {
+                allFetchedRecords = [];
+            }
+            filterAndRenderRecords();
+        });
+    }
+
+    function saveRecordOfflineFirst() {
+        const phiRefInput = document.getElementById('inPhiRefNo').value.trim();
+        
+        if (!phiRefInput) {
+            alert("⚠️ කරුණාකර 'P.H.I. Reference No.' ඇතුළත් කරන්න. Record එක duplicate වීම වැළැක්වීමට මෙය අත්‍යවශ්‍ය වේ.");
+            document.getElementById('inPhiRefNo').focus();
+            return;
+        }
+
+        const storedEditId = sessionStorage.getItem('h411_active_edit_id') || '';
+        let recordId = activeEditingRecordId || storedEditId;
+        let wasEditing = !!recordId;
+
+        if (!wasEditing) {
+            const existingRecord = allFetchedRecords.find(r => r.inPhiRefNo && r.inPhiRefNo.trim() === phiRefInput);
+            
+            if (existingRecord) {
+                const userConfirmed = confirm(`⚠️ Warning: "${phiRefInput}" කියන Ref No එකෙන් දැනටමත් Record එකක් Cloud එකේ තියෙනවා!\n\nඔයාට අලුත් Record එකක් හදනවා වෙනුවට දැනට තියෙන එකම Update (Overwrite) කරන්න අවශ්‍යද?`);
+                
+                if (userConfirmed) {
+                    recordId = existingRecord.id;
+                    wasEditing = true;
+                } else {
+                    return;
+                }
+            } else {
+                recordId = 'REC_' + Date.now();
+            }
+        }
+        
+        const formData = { id: recordId, synced: false, timestamp: new Date().toISOString(), updatedAt: new Date().toISOString() };
+
+        const inputs = document.querySelectorAll('#healthPortalForm input, #healthPortalForm select, #healthPortalForm textarea');
+        inputs.forEach(input => {
+            if (input.type === 'radio') {
+                if (input.checked) {
+                    formData[input.name] = input.value;
+                }
+            } else if (input.type === 'checkbox') {
+                formData[input.id] = input.checked;
+            } else if (input.id) {
+                formData[input.id] = input.value;
+            }
+        });
+
+        for (let i = 0; i < 5; i++) {
+            ['inHhName_', 'inHhAge_', 'inHhDate_', 'inHhObs_', 'inOthName_', 'inOthAge_', 'inOthDate_', 'inOthObs_'].forEach(prefix => {
+                const fieldId = prefix + i;
+                const el = document.getElementById(fieldId);
+                if (el) {
+                    formData[fieldId] = el.value;
+                }
+            });
+        }
+
+        if (dbDB) {
+            const tx = dbDB.transaction('patient_records', 'readwrite');
+            const store = tx.objectStore('patient_records');
+            store.put(formData);
+        }
+
+        if (fbDb && navigator.onLine) {
+            formData.synced = true;
+            fbDb.ref('health_reports/' + recordId).set(formData).then(() => {
+                alert(wasEditing ? "✅ Record Updated in Cloud Database!" : "✅ Full Report Saved & Synced to Cloud!");
+                activeEditingRecordId = null;
+                sessionStorage.removeItem('h411_active_edit_id');
+                loadOfflineRecordsTable();
+            }).catch(err => {
+                alert("⚠️ Cloud Save Error. Stored locally: " + err.message);
+            });
+        } else {
+            alert("✅ Full Report saved locally in Browser! Will auto-sync when Online.");
+            activeEditingRecordId = null;
+            sessionStorage.removeItem('h411_active_edit_id');
+            loadOfflineRecordsTable();
+        }
+    }
+
+    function manualSyncToFirebase() {
+        if (!navigator.onLine) {
+            alert("⚠️ Internet connection unavailable. Records remain saved safely in local IndexedDB.");
+            return;
+        }
+        fetchCloudFirebaseRecords();
+        alert("🔄 Realtime Cloud Sync Triggered!");
+    }
+
+    function loadOfflineRecordsTable() {
+        if (!dbDB) return;
+
+        const tx = dbDB.transaction('patient_records', 'readonly');
+        const store = tx.objectStore('patient_records');
+        const req = store.getAll();
+
+        req.onsuccess = function() {
+            const map = new Map();
+            (req.result || []).forEach(r => map.set(r.id, r));
+            allFetchedRecords = Array.from(map.values());
+            filterAndRenderRecords();
+        };
+    }
+
+    function filterAndRenderRecords() {
+        const query = document.getElementById('inSearchQuery')?.value.toLowerCase().trim() || '';
+        const reversedRecords = [...allFetchedRecords].reverse();
+
+        filteredRecords = reversedRecords.filter(r => {
+            const name = (r.inPatientName || '').toLowerCase();
+            const ref = (r.inPhiRefNo || '').toLowerCase();
+            const disease = (r.inDiseaseConfirmed || r.inDiseaseNotified || '').toLowerCase();
+            return name.includes(query) || ref.includes(query) || disease.includes(query);
+        });
+
+        const tbody = document.getElementById('savedRecordsTableBody');
+        const cardViewer = document.getElementById('cardNavViewer');
+        tbody.innerHTML = '';
+
+        if (filteredRecords.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No matching saved reports found.</td></tr>';
+            cardViewer.style.display = 'none';
+            return;
+        }
+
+        filteredRecords.forEach(r => {
+            const ref = r.inPhiRefNo || 'No Ref';
+            const name = r.inPatientName || 'Unnamed Patient';
+            const disease = r.inDiseaseConfirmed || r.inDiseaseNotified || 'N/A';
+            const statusHtml = r.synced ? '<span style="color:#16a34a; font-weight:bold;">🟢 Synced</span>' : '<span style="color:#d97706; font-weight:bold;">🟡 Local Only</span>';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${ref}</b></td>
+                    <td>${name}</td>
+                    <td>${disease}</td>
+                    <td>${statusHtml}</td>
+                    <td>
+                        <button type="button" class="btn btn-gps" style="padding:4px 8px; font-size:11px;" onclick="loadRecordForEditing('${r.id}')">✏️ Edit</button>
+                        <button type="button" class="btn btn-delete" style="padding:4px 8px; font-size:11px;" onclick="deleteRecord('${r.id}')">🗑️ Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        if (currentNavIndex >= filteredRecords.length) currentNavIndex = 0;
+        cardViewer.style.display = 'block';
+        renderCurrentNavCard();
+    }
+
+    function navigateRecord(direction) {
+        if (filteredRecords.length === 0) return;
+        currentNavIndex += direction;
+        if (currentNavIndex < 0) currentNavIndex = filteredRecords.length - 1;
+        if (currentNavIndex >= filteredRecords.length) currentNavIndex = 0;
+        renderCurrentNavCard();
+    }
+
+    function renderCurrentNavCard() {
+        const rec = filteredRecords[currentNavIndex];
+        if (!rec) return;
+
+        document.getElementById('navCardCounter').innerText = `Report ${currentNavIndex + 1} of ${filteredRecords.length}`;
+        
+        const ref = rec.inPhiRefNo || 'No Ref';
+        const name = rec.inPatientName || 'Unnamed Patient';
+        const address = rec.inPatientAddress || 'No Address';
+        const disease = rec.inDiseaseConfirmed || rec.inDiseaseNotified || 'N/A';
+        const hospital = rec.inHospitalName || 'N/A';
+        const phone = rec.inPatientPhone || 'Not provided';
+        const syncStr = rec.synced ? '🟢 Synced to Cloud' : '🟡 Offline Local Only';
+
+        document.getElementById('navCardBody').innerHTML = `
+            <div><b>👤 Patient:</b> ${name}</div>
+            <div><b>🏷️ PHI Ref No:</b> ${ref} | <b>🦠 Disease:</b> ${disease}</div>
+            <div><b>📍 Address:</b> ${address}</div>
+            <div><b>📞 Contact:</b> ${phone} | <b>🏥 Hospital:</b> ${hospital}</div>
+            <div><b>Status:</b> ${syncStr}</div>
+        `;
+    }
+
+    function loadCurrentNavRecordToForm() {
+        const rec = filteredRecords[currentNavIndex];
+        if (rec) {
+            loadRecordForEditing(rec.id);
+        }
+    }
+
+    function deleteCurrentNavRecord() {
+        const rec = filteredRecords[currentNavIndex];
+        if (rec) {
+            deleteRecord(rec.id);
+        }
+    }
+
+    function deleteRecord(recordId) {
+        if (!confirm("Are you sure you want to permanently delete this report? This will remove it from all devices.")) {
+            return;
+        }
+
+        if (fbDb && navigator.onLine) {
+            fbDb.ref('health_reports/' + recordId).remove().then(() => {
+                alert("🗑️ Report deleted from Cloud Database!");
+            }).catch(err => console.log("Cloud Delete Notice:", err));
+        }
+
+        if (dbDB) {
+            const tx = dbDB.transaction('patient_records', 'readwrite');
+            const store = tx.objectStore('patient_records');
+            store.delete(recordId);
+
+            tx.oncomplete = function() {
+                if (activeEditingRecordId === recordId) {
+                    activeEditingRecordId = null;
+                    sessionStorage.removeItem('h411_active_edit_id');
+                }
+                loadOfflineRecordsTable();
+            };
+        }
+    }
+
+    function loadRecordForEditing(recordId) {
+        const data = allFetchedRecords.find(r => r.id === recordId);
+        if (!data) return;
+
+        activeEditingRecordId = data.id;
+        sessionStorage.setItem('h411_active_edit_id', data.id);
+
+        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+
+        Object.keys(data).forEach(key => {
+            const el = document.getElementById(key);
+            if (el) {
+                if (el.type === 'checkbox') {
+                    el.checked = data[key];
+                } else {
+                    el.value = data[key];
+                }
+            } else {
+                const radios = document.querySelectorAll(`input[name="${key}"]`);
+                radios.forEach(radio => {
+                    if (radio.value === data[key]) {
+                        radio.checked = true;
+                    }
+                });
+            }
+        });
+
+        // Add special handling for PHM Area auto-update just in case
+        updatePHMArea();
+        
+        updatePrintForm();
+        alert("📋 Record " + (data.inPhiRefNo || recordId) + " loaded for editing! Any changes will update this existing record.");
+    }
+
+    const diseaseList = [
+        "-- Select Disease --",
+        "Cholera", "Plague", "Yellow Fever",
+        "Acute Poliomyelitis / AFP", "Chicken pox", "Chikungunya", "Dengue Fever / DHF",
+        "Diphtheria", "Dysentery", "Encephalitis", "Enteric Fever",
+        "Food poisoning", "Human Rabies", "Leptospirosis", "Malaria",
+        "Measles", "Meningitis", "Mumps", "Rubella / Congenital Rubella",
+        "Simple Continued Fever", "Tetanus", "Neonatal Tetanus",
+        "Typhus Fever", "Viral Hepatitis", "Whooping Cough",
+        "Tuberculosis", "Leishmaniasis", "Leprosy", "NND", "VIRAL FEVER", "OTHER"
+    ];
+
+    function generateContactTableRows() {
+        const hhBody = document.getElementById('tableHouseholdBody');
+        const othBody = document.getElementById('tableOtherBody');
+
+        hhBody.innerHTML = '';
+        othBody.innerHTML = '';
+
+        for (let i = 0; i < 5; i++) {
+            hhBody.innerHTML += `
+                <tr>
+                    <td><input type="text" id="inHhName_${i}" oninput="updatePrintForm()"></td>
+                    <td><input type="text" id="inHhAge_${i}" oninput="updatePrintForm()"></td>
+                    <td><input type="date" id="inHhDate_${i}" onchange="updatePrintForm()"></td>
+                    <td><input type="text" id="inHhObs_${i}" oninput="updatePrintForm()"></td>
+                </tr>
+            `;
+
+            othBody.innerHTML += `
+                <tr>
+                    <td><input type="text" id="inOthName_${i}" oninput="updatePrintForm()"></td>
+                    <td><input type="text" id="inOthAge_${i}" oninput="updatePrintForm()"></td>
+                    <td><input type="date" id="inOthDate_${i}" onchange="updatePrintForm()"></td>
+                    <td><input type="text" id="inOthObs_${i}" oninput="updatePrintForm()"></td>
+                </tr>
+            `;
+        }
+    }
+
+    // 🆕 Auto update PHM Area based on GN Area
+    function updatePHMArea() {
+        const gnArea = document.getElementById('inGNArea').value;
+        const phmInput = document.getElementById('inPHMArea');
+        
+        const phmMapping = {
+            "Amunupura": "Amunupura",
+            "Madiligama": "Amunupura",
+            "Gondeniya": "Amunupura",
+            "Pahala Rathmeewala": "Rathmeewala",
+            "Uda Rathmeewala": "Rathmeewala",
+            "Deldeniya": "Rathmeewala",
+            "Godigamuwa": "Godigamuwa",
+            "Alagalla Ihala": "Godigamuwa",
+            "Poththepitiya": "Godigamuwa",
+            "Alagalla Waththa": "Yatigammana",
+            "Kirimetiya": "Yatigammana",
+            "Pahala Yatigammana": "Yatigammana"
+        };
+        
+        phmInput.value = phmMapping[gnArea] || '';
+        updatePrintForm();
+    }
+
+    window.onload = function() {
+        const dropdowns = document.querySelectorAll('.disease-dropdown');
+        dropdowns.forEach(select => {
+            select.innerHTML = '';
+            diseaseList.forEach(disease => {
+                const opt = document.createElement('option');
+                opt.value = (disease === "-- Select Disease --") ? "" : disease;
+                opt.textContent = disease;
+                select.appendChild(opt);
+            });
+        });
+
+        generateContactTableRows();
+        initIndexedDB();
+        updateNetworkBadge(navigator.onLine);
+        loadSavedData();
+    };
+
+    function toggleAiEngineUI() {
+        const provider = document.getElementById('inAiEngineProvider').value;
+        const keyInput = document.getElementById('inAiApiKey');
+        const lblKey = document.getElementById('lblAiKey');
+
+        if (provider === 'GEMINI_AI') {
+            lblKey.innerText = "Google Gemini API Key";
+            if (!keyInput.value) keyInput.placeholder = "Paste a valid Gemini API key";
+        } else if (provider === 'OCR_SPACE') {
+            lblKey.innerText = "Free OCR.space API Key";
+            keyInput.value = "K88879688888957";
+        }
+    }
+
+    function autoCalcAge(dobStr) {
+        if (!dobStr) return;
+        const birthDate = new Date(dobStr);
+        const today = new Date();
+        let years = today.getFullYear() - birthDate.getFullYear();
+        let months = today.getMonth() - birthDate.getMonth();
+        if (today.getDate() < birthDate.getDate()) {
+            months--;
+        }
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+        document.getElementById('inPatientAge').value = years + "Y / " + months + "M";
+        updatePrintForm();
+    }
+
+    function fetchGPS() {
+        const noticeEl = document.getElementById('gpsStatusNotice');
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const coords = position.coords.latitude.toFixed(6) + ", " + position.coords.longitude.toFixed(6);
+                document.getElementById('inGpsCoords').value = coords;
+                if (noticeEl) noticeEl.style.display = 'none';
+                updatePrintForm();
+            }, (error) => {
+                if (noticeEl) {
+                    noticeEl.innerText = "⚠️ Mobile Location Permission Blocked. Please type coordinates or use Map Pin Selector.";
+                    noticeEl.style.display = 'block';
+                }
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+        } else {
+            if (noticeEl) {
+                noticeEl.innerText = "⚠️ Geolocation not supported on this browser. Type coordinates manually.";
+                noticeEl.style.display = 'block';
+            }
+        }
+    }
+
+    function openLabPhotoChooser() {
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isMobile) {
+            document.getElementById('labPhotoGalleryInput').click();
+            return;
+        }
+
+        const existing = document.getElementById('labPhotoChoiceModal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'labPhotoChoiceModal';
+        modal.className = 'modal-overlay';
+        modal.style.cssText = 'display:flex;z-index:99999;align-items:center;justify-content:center;padding:18px;';
+        modal.innerHTML = `
+            <div class="modal-card" style="width:min(420px,94vw);padding:22px;border-radius:16px;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.28);">
+                <div style="font-size:20px;font-weight:800;margin-bottom:8px;">📷 Lab Report Photo</div>
+                <div style="color:#475569;margin-bottom:18px;line-height:1.45;">Choose how you want to add the handwritten laboratory report.</div>
+                <div style="display:grid;gap:10px;">
+                    <button type="button" class="btn btn-scan" style="width:100%;min-height:50px;" onclick="chooseLabCamera()">📷 Take Photo with Camera</button>
+                    <button type="button" class="btn" style="width:100%;min-height:50px;background:#2563eb;color:#fff;" onclick="chooseLabGallery()">🖼️ Choose from Gallery</button>
+                    <button type="button" class="btn" style="width:100%;min-height:46px;background:#e5e7eb;color:#111827;" onclick="closeLabPhotoChooser()">Cancel</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+    }
+
+    function closeLabPhotoChooser() {
+        const modal = document.getElementById('labPhotoChoiceModal');
+        if (modal) modal.remove();
+    }
+
+    function chooseLabCamera() {
+        closeLabPhotoChooser();
+        document.getElementById('labPhotoCameraInput').click();
+    }
+
+    function chooseLabGallery() {
+        closeLabPhotoChooser();
+        document.getElementById('labPhotoGalleryInput').click();
+    }
+
+    async function processLabPhotoAI(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const provider = document.getElementById('inAiEngineProvider').value;
+        const apiKey = document.getElementById('inAiApiKey').value.trim();
+        const noticeEl = document.getElementById('ocrStatusNotice');
+
+        if (!apiKey) {
+            alert('Please enter a valid Gemini API key in Section 00.');
+            return;
+        }
+
+        if (noticeEl) {
+            noticeEl.innerText = `⏳ AI Scanning Handwritten Report via ${provider}... Please wait.`;
+            noticeEl.style.display = 'block';
+        }
+
+        if (provider === 'GEMINI_AI') {
+            try {
+                const base64Image = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = String(reader.result || '');
+                        const commaIndex = result.indexOf(',');
+                        if (commaIndex === -1) {
+                            reject(new Error('Could not read the selected image.'));
+                            return;
+                        }
+                        resolve(result.slice(commaIndex + 1));
+                    };
+                    reader.onerror = () => reject(new Error('Could not read the selected image file.'));
+                    reader.readAsDataURL(file);
+                });
+
+                const GoogleGenAI = window.GoogleGenAIReady
+                    ? await window.GoogleGenAIReady
+                    : window.GoogleGenAI;
+
+                if (!GoogleGenAI) {
+                    throw new Error('Gemini SDK is not loaded. Please reload the page and try again.');
+                }
+
+                const ai = new GoogleGenAI({ apiKey });
+
+                const response = await ai.models.generateContent({
+                    model: 'gemini-3.6-flash',
+                    contents: [
+                        {
+                            inlineData: {
+                                mimeType: file.type || 'image/jpeg',
+                                data: base64Image
+                            }
+                        },
+                        {
+                            text: [
+                                'Read this handwritten/printed medical laboratory report carefully.',
+                                'Extract only the laboratory findings that are actually visible in the image.',
+                                'Return one finding per line.',
+                                'Prioritize WBC, HCT, Hb, Creatinine, AST, ALT and CRP.',
+                                'Preserve the numeric value, unit when visible, and any H/L/↑/↓ indicator.',
+                                'Do not invent or estimate values that are unclear.',
+                                'If a requested value cannot be read, omit it rather than guessing.'
+                            ].join(' ')
+                        }
+                    ]
+                });
+
+                const text = response?.text?.trim();
+                if (!text) {
+                    throw new Error('Gemini returned an empty response. Try a clearer or higher-resolution photo.');
+                }
+
+                appendParsedLabText(text);
+
+            } catch (e) {
+                console.error('Gemini AI error:', e);
+                const message = e?.message || String(e);
+                let help = '';
+
+                if (/404|NOT_FOUND|no longer available|model/i.test(message)) {
+                    help = '\n\nModel error: this page now uses the current stable gemini-3.6-flash model. If the error persists, check that your API key has Gemini API access.';
+                } else if (/401|403|API key|permission|PERMISSION_DENIED|UNAUTHENTICATED/i.test(message)) {
+                    help = '\n\nAPI key error: create a new Gemini API key in Google AI Studio and paste it into Section 00.';
+                } else if (/429|quota|RESOURCE_EXHAUSTED/i.test(message)) {
+                    help = '\n\nQuota/rate-limit error: wait a little and try again, or check the API key quota/billing settings.';
+                }
+
+                alert('Gemini AI Engine Error:\n\n' + message + help);
+            } finally {
+                if (noticeEl) noticeEl.style.display = 'none';
+                event.target.value = '';
+            }
+
+        } else if (provider === 'OCR_SPACE') {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('apikey', apiKey);
+            formData.append('language', 'eng');
+            formData.append('isTable', 'true');
+            formData.append('OCREngine', '2');
+
+            try {
+                const res = await fetch('https://api.ocr.space/parse/image', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.ParsedResults && data.ParsedResults[0]) {
+                    appendParsedLabText(data.ParsedResults[0].ParsedText);
+                } else {
+                    throw new Error('OCR.space parse failed. Try another image.');
+                }
+            } catch (err) {
+                alert('OCR.Space Error: ' + err.message);
+            } finally {
+                if (noticeEl) noticeEl.style.display = 'none';
+                event.target.value = '';
+            }
+        }
+    }
+
+    function appendParsedLabText(text) {
+        const labTextarea = document.getElementById('inLabFindings');
+        const cleanText = text.trim();
+        if (labTextarea.value.trim() !== '') {
+            labTextarea.value += "\n" + cleanText;
+        } else {
+            labTextarea.value = cleanText;
+        }
+        updatePrintForm();
+    }
+
+    function formatMonthDay(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            return `${parts[1]}-${parts[2]}`;
+        }
+        return dateStr;
+    }
+
+    function toggleOutbreakRefInput() {
+        const outbreakVal = document.getElementById('modalOutbreakStatus').value;
+        const refGroup = document.getElementById('outbreakRefGroup');
+        if (outbreakVal === 'SUBSEQUENT_OUTBREAK_CASE') {
+            refGroup.style.display = 'flex';
+        } else {
+            refGroup.style.display = 'none';
+        }
+    }
+
+    function openNoteConfirmModal() {
+        const confirmedDis = document.getElementById('inDiseaseConfirmed').value || document.getElementById('inDiseaseNotified').value || 'Communicable Disease';
+        const movements = document.getElementById('inMovements').value || '';
+        
+        document.getElementById('modalDisease').value = confirmedDis;
+        
+        if (movements) {
+            document.getElementById('modalSource').value = movements.split('\n')[0];
+        } else {
+            document.getElementById('modalSource').value = "Residential premises / local working environment";
+        }
+
+        toggleOutbreakRefInput();
+        document.getElementById('noteConfirmModal').style.display = 'flex';
+    }
+
+    function closeNoteConfirmModal() {
+        document.getElementById('noteConfirmModal').style.display = 'none';
+    }
+
+    // 🌟 OFFICIAL STATUTORY COMPLIANT PAGE 02 NOTE GENERATOR (STRICT POINT-WISE ANALYSIS)
+    async function generatePage2FromPage1() {
+        const apiKey = document.getElementById('inAiApiKey').value.trim();
+        const provider = document.getElementById('inAiEngineProvider').value;
+        if (provider !== 'GEMINI_AI') {
+            alert('Please select Google Gemini AI in Section 00 before generating Page 2 Table 02.');
+            return;
+        }
+        if (!apiKey) {
+            alert('Please enter your Gemini API key in Section 00 before generating Page 2 Table 02.');
+            return;
+        }
+
+        const get = id => document.getElementById(id)?.value?.trim() || '';
+        const checked = name => document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+
+        const patient = {
+            movements: get('inMovements')
+        };
+
+        const confirmed = {
+            source: get('modalSource'),
+            classification: get('modalCaseIndex'),
+            outbreak: get('modalOutbreakStatus'),
+            outbreakRefNo: get('modalOutbreakRefNo'),
+            actions: get('modalActionTaken')
+        };
+
+        let spreadDescription = "Subsequent Case acquired through local transmission chain.";
+        if (confirmed.classification === 'PRIMARY_INDEX_LOCAL') {
+            spreadDescription = "Primary Index Case in the local MOH/PHI area (Local transmission).";
+        } else if (confirmed.classification === 'IMPORTED_CASE') {
+            spreadDescription = "Imported Case (Infection acquired from outside MOH boundary or overseas).";
+        }
+
+        const button = document.querySelector('.section-title button.btn-ai');
+        const oldText = button ? button.innerText : '';
+        try {
+            closeNoteConfirmModal();
+            if (button) { button.disabled = true; button.innerText = '⏳ Gemini preparing statutory investigation note...'; }
+            const GoogleGenAI = window.GoogleGenAIReady ? await window.GoogleGenAIReady : window.GoogleGenAI;
+            if (!GoogleGenAI) throw new Error('Gemini SDK is not loaded. Please reload the page and try again.');
+            const ai = new GoogleGenAI({ apiKey });
+
+            const prompt = `You are a Sri Lankan Public Health Inspector (PHI). Write the investigation note for PAGE 2, TABLE 02 strictly analyzing and responding to this exact statutory directive:
+"Notes on source of infection, spread of disease and ACTION TAKEN. If case was one of an outbreak enter information on report card first case only and give reference number in infectious diseases register on the cards of all other cases covered by the same information and/or action."
+
+Input Data for Analysis:
+- Prior Movements: ${patient.movements || 'Not documented'}
+- Source of Infection: ${confirmed.source || 'Not documented'}
+- Spread of Disease: ${spreadDescription}
+- Outbreak Status: ${confirmed.outbreak}
+- ID Register Ref No: ${confirmed.outbreakRefNo || 'N/A'}
+- Action Taken: ${confirmed.actions || 'Not documented'}
+
+CRITICAL RULES:
+- DO NOT INCLUDE ANY PATIENT DETAILS (No Name, Address, Age, Sex, or Disease Header).
+- Do NOT use markdown bolding (**) or asterisks (*).
+- Analyze the data and provide the output strictly in the 4 points below.
+
+Required Output Structure:
+
+1. Source of infection:
+[Analyze and detail the probable source based on movements and exposure]
+
+2. Spread of disease:
+[Analyze and detail the case classification and transmission chain]
+
+3. Action taken:
+[Analyze and detail the control measures, isolation, and directives given]
+
+4. Outbreak recording directive:
+[Analyze the outbreak status based on the rule. If ${confirmed.outbreak} is 'FIRST_CASE_OUTBREAK', state: "First case of an outbreak: Full information entered on this report card." If ${confirmed.outbreak} is 'SUBSEQUENT_OUTBREAK_CASE', state: "Subsequent case of an outbreak: Covered by the same action. Refer to Infectious Diseases Register Reference Number: ${confirmed.outbreakRefNo || 'N/A'}." If ${confirmed.outbreak} is 'NO_OUTBREAK', state: "Isolated case: Not part of an active outbreak."]`;
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-3.6-flash',
+                contents: [{ text: prompt }]
+            });
+            const text = response?.text?.trim();
+            if (!text) throw new Error('Gemini returned an empty Page 2 note.');
+
+            document.getElementById('inP2Content2').value = text;
+            updatePrintForm();
+        } catch (e) {
+            console.error('Gemini Page 2 error:', e);
+            alert('Gemini Page 2 Error:\n\n' + (e?.message || String(e)));
+        } finally {
+            if (button) { button.disabled = false; button.innerText = oldText || '✨ Gemini Generate Table 02'; }
+        }
+    }
+
+    async function submitAndGeneratePage2Note() {
+        return generatePage2FromPage1();
+    }
+
+    function updatePrintForm() {
+        document.getElementById('outPhiRefNo').innerText = document.getElementById('inPhiRefNo').value;
+        document.getElementById('outPhiRange').innerText = document.getElementById('inPhiRange').value;
+        document.getElementById('outMohNotifNo').innerText = document.getElementById('inMohNotifNo').value;
+        document.getElementById('outMohArea').innerText = document.getElementById('inMohArea').value;
+        document.getElementById('outMohRegNo').innerText = document.getElementById('inMohRegNo').value;
+
+        document.getElementById('outDiseaseNotified').innerText = document.getElementById('inDiseaseNotified').value;
+        document.getElementById('outDateNotified').innerText = document.getElementById('inDateNotified').value;
+        document.getElementById('outDiseaseConfirmed').innerText = document.getElementById('inDiseaseConfirmed').value;
+        document.getElementById('outDateConfirmed').innerText = document.getElementById('inDateConfirmed').value;
+
+        document.getElementById('outPatientName').innerText = document.getElementById('inPatientName').value;
+        document.getElementById('outPatientAddress').innerText = document.getElementById('inPatientAddress').value;
+        
+        // Page 1 phone text
+        const patientPhone = document.getElementById('inPatientPhone')?.value.trim() || '';
+        document.getElementById('outPatientPhone').innerText = patientPhone ? 'Tel: ' + patientPhone : '';
+
+        const dob = document.getElementById('inPatientDob').value;
+        const age = document.getElementById('inPatientAge').value;
+        document.getElementById('outPatientDobAge').innerText = dob ? `${dob} (${age})` : age;
+
+        const sexVal = document.querySelector('input[name="sexOption"]:checked')?.value;
+        document.getElementById('outSexMale').innerText = (sexVal === 'Male') ? '✓' : '';
+        document.getElementById('outSexFemale').innerText = (sexVal === 'Female') ? '✓' : '';
+
+        const ethnicVal = document.querySelector('input[name="ethnicOption"]:checked')?.value;
+        document.getElementById('outEthnicSinhalese').innerText = (ethnicVal === 'Sinhalese') ? '✓' : '';
+        document.getElementById('outEthnicTamil').innerText = (ethnicVal === 'Tamil') ? '✓' : '';
+        document.getElementById('outEthnicMuslim').innerText = (ethnicVal === 'Muslim') ? '✓' : '';
+        document.getElementById('outEthnicBurgher').innerText = (ethnicVal === 'Burgher') ? '✓' : '';
+        document.getElementById('outEthnicOthers').innerText = (ethnicVal === 'Others') ? '✓' : '';
+
+        const page1LabFindings = document.getElementById('inLabFindings').value;
+        document.getElementById('outLabFindings').innerText = page1LabFindings;
+        
+        const p2LabField = document.getElementById('inP2LabReports');
+        if (page1LabFindings && !p2LabField.value) {
+            p2LabField.value = page1LabFindings;
+        }
+        
+        const labDisplayContent = p2LabField.value || page1LabFindings;
+        document.getElementById('outP2LabReports').innerText = labDisplayContent ? 'LABORATORY REPORTS: ' + labDisplayContent.replace(/\s*[\r\n]+\s*/g, ' | ') : '';
+
+        document.getElementById('outMovements').innerText = document.getElementById('inMovements').value;
+
+        const outcomeVal = document.querySelector('input[name="outcomeOption"]:checked')?.value;
+        document.getElementById('outOutcomeRecovered').innerText = (outcomeVal === 'Recovered') ? '✓' : '';
+        document.getElementById('outOutcomeDied').innerText = (outcomeVal === 'Died') ? '✓' : '';
+
+        const isoVal = document.querySelector('input[name="isolatedOption"]:checked')?.value;
+        document.getElementById('outIsolatedHome').innerText = (isoVal === 'Home') ? '✓' : '';
+        document.getElementById('outIsolatedHospital').innerText = (isoVal === 'Hospital') ? '✓' : '';
+        document.getElementById('outIsolatedNotIsolated').innerText = (isoVal === 'NotIsolated') ? '✓' : '';
+
+        const isNatureIso = document.getElementById('inNatureIsolatedCase').checked;
+        document.getElementById('outNatureIsolatedCase').innerText = isNatureIso ? '✓' : '';
+
+        const isOutbreakReq = document.getElementById('inOutbreakReportNeeded').checked;
+        document.getElementById('outOutbreakReportNeeded').innerText = isOutbreakReq ? '✓' : '';
+
+        document.getElementById('outHospitalName').innerText = document.getElementById('inHospitalName').value;
+
+        document.getElementById('outDateOnset').innerText = document.getElementById('inDateOnset').value;
+        document.getElementById('outDateHospitalized').innerText = document.getElementById('inDateHospitalized').value;
+        document.getElementById('outDateDischarged').innerText = document.getElementById('inDateDischarged').value;
+
+        let hhHtml = '';
+        let othHtml = '';
+        const baseTopHH = 300;
+        const baseTopOTH = 560;
+        const rowHeight = 18;
+
+        for (let i = 0; i < 5; i++) {
+            const nameHh = document.getElementById(`inHhName_${i}`)?.value || '';
+            const ageHh = document.getElementById(`inHhAge_${i}`)?.value || '';
+            const dateHhRaw = document.getElementById(`inHhDate_${i}`)?.value || '';
+            const dateHh = formatMonthDay(dateHhRaw);
+            const obsHh = document.getElementById(`inHhObs_${i}`)?.value || '';
+
+            if (nameHh || ageHh || dateHh || obsHh) {
+                const currentTop = baseTopHH + (i * rowHeight);
+                hhHtml += `
+                    <span class="data-overlay" style="top: ${currentTop}px; left: 590px; width: 190px;">${nameHh}</span>
+                    <span class="data-overlay" style="top: ${currentTop}px; left: 792px; width: 45px;">${ageHh}</span>
+                    <span class="data-overlay" style="top: ${currentTop}px; left: 825px; width: 90px;">${dateHh}</span>
+                    <span class="data-overlay" style="top: ${currentTop}px; left: 885px; width: 140px;">${obsHh}</span>
+                `;
+            }
+
+            const nameOth = document.getElementById(`inOthName_${i}`)?.value || '';
+            const ageOth = document.getElementById(`inOthAge_${i}`)?.value || '';
+            const dateOthRaw = document.getElementById(`inOthDate_${i}`)?.value || '';
+            const dateOth = formatMonthDay(dateOthRaw);
+            const obsOth = document.getElementById(`inOthObs_${i}`)?.value || '';
+
+            if (nameOth || ageOth || dateOth || obsOth) {
+                const currentTop = baseTopOTH + (i * rowHeight);
+                othHtml += `
+                    <span class="data-overlay" style="top: ${currentTop}px; left: 590px; width: 190px;">${nameOth}</span>
+                    <span class="data-overlay" style="top: ${currentTop}px; left: 792px; width: 45px;">${ageOth}</span>
+                    <span class="data-overlay" style="top: ${currentTop}px; left: 825px; width: 90px;">${dateOth}</span>
+                    <span class="data-overlay" style="top: ${currentTop}px; left: 885px; width: 140px;">${obsOth}</span>
+                `;
+            }
+        }
+
+        document.getElementById('containerHouseholdOverlay').innerHTML = hhHtml;
+        document.getElementById('containerOtherOverlay').innerHTML = othHtml;
+
+        document.getElementById('outP2Date1').innerText = document.getElementById('inP2Date1').value;
+        document.getElementById('outP2Content1').innerText = document.getElementById('inP2Content1').value;
+
+        document.getElementById('outP2Date2').innerText = document.getElementById('inP2Date2').value;
+        document.getElementById('outP2Content2').innerText = document.getElementById('inP2Content2').value;
+
+        const gpsVal = document.getElementById('inGpsCoords').value;
+        
+        const mapBtn = document.getElementById('btnMapPinLink');
+        if (gpsVal) {
+            mapBtn.href = `https://www.google.com/maps?q=${gpsVal}`;
+        } else {
+            mapBtn.href = `https://maps.google.com`;
+        }
+
+        document.getElementById('outP2GpsBlock').innerText = gpsVal ? "PATIENT LOCATION GPS - " + gpsVal : "";
+        document.getElementById('outGpsCoordsPage1').innerText = gpsVal ? "PATIENT HOME / LOCATION GPS COORDINATE - " + gpsVal : "";
+
+        // 🆕 NEW: Generate the Extra Info Table dynamically
+        const phone = patientPhone || '-';
+        const gn = document.getElementById('inGNArea')?.value || '-';
+        const phm = document.getElementById('inPHMArea')?.value || '-';
+        const village = document.getElementById('inVillage')?.value || '-';
+        const occ = document.getElementById('inOccupation')?.value || '-';
+        const religion = document.getElementById('inReligion')?.value || '-';
+
+        document.getElementById('outP2ExtraInfo').innerHTML = `
+            <table style="width:100%; border-collapse: collapse; font-family:'Courier New', Courier, monospace; color:#000080; text-align:left; background:rgba(255,255,255,0.9);">
+                <tr><td style="border:1px solid #000080; padding:2px 5px; font-weight:bold; width:45%;">Patient TP Number</td><td style="border:1px solid #000080; padding:2px 5px; font-weight:bold;">${phone}</td></tr>
+                <tr><td style="border:1px solid #000080; padding:2px 5px; font-weight:bold;">GN Area</td><td style="border:1px solid #000080; padding:2px 5px;">${gn}</td></tr>
+                <tr><td style="border:1px solid #000080; padding:2px 5px; font-weight:bold;">PHM Area</td><td style="border:1px solid #000080; padding:2px 5px;">${phm}</td></tr>
+                <tr><td style="border:1px solid #000080; padding:2px 5px; font-weight:bold;">Village</td><td style="border:1px solid #000080; padding:2px 5px;">${village}</td></tr>
+                <tr><td style="border:1px solid #000080; padding:2px 5px; font-weight:bold;">Occupation</td><td style="border:1px solid #000080; padding:2px 5px;">${occ}</td></tr>
+                <tr><td style="border:1px solid #000080; padding:2px 5px; font-weight:bold;">Religion</td><td style="border:1px solid #000080; padding:2px 5px;">${religion}</td></tr>
+            </table>
+        `;
+
+        saveFormData();
+    }
+
+    function normalizeSriLankanPhone(raw) {
+        const value = (raw || '').trim();
+        if (!value) return '';
+
+        let cleaned = value.replace(/[^0-9+]/g, '');
+
+        if (cleaned.startsWith('+94')) {
+            const digits = '+94' + cleaned.slice(3).replace(/\D/g, '');
+            return /^\+947\d{8}$/.test(digits) ? digits : '';
+        }
+
+        cleaned = cleaned.replace(/\D/g, '');
+
+        if (/^07\d{8}$/.test(cleaned)) return '+94' + cleaned.slice(1);
+        if (/^947\d{8}$/.test(cleaned)) return '+' + cleaned;
+
+        return '';
+    }
+
+    function callPatient() {
+        const input = document.getElementById('inPatientPhone');
+        const raw = input?.value || '';
+        const phone = normalizeSriLankanPhone(raw);
+
+        if (!phone) {
+            alert('📞 Please add a valid patient contact number first.\n\nExample: 0712345678');
+            input?.focus();
+            return;
+        }
+
+        window.location.href = 'tel:' + phone;
+    }
+
+    function saveFormData() {
+        const formData = {};
+        const inputs = document.querySelectorAll('#healthPortalForm input, #healthPortalForm select, #healthPortalForm textarea');
+        inputs.forEach(input => {
+            if (input.type === 'radio' || input.type === 'checkbox') {
+                formData[input.id || input.name + '_' + input.value] = input.checked;
+            } else {
+                formData[input.id] = input.value;
+            }
+        });
+        localStorage.setItem('h411_form_data', JSON.stringify(formData));
+    }
+
+    function loadSavedData() {
+        const saved = localStorage.getItem('h411_form_data');
+        if (!saved) return;
+        const formData = JSON.parse(saved);
+        
+        Object.keys(formData).forEach(key => {
+            const el = document.getElementById(key);
+            if (el) {
+                if (el.type === 'checkbox') {
+                    el.checked = formData[key];
+                } else {
+                    el.value = formData[key];
+                }
+            } else {
+                const radios = document.querySelectorAll(`input[name="${key.split('_')[0]}"]`);
+                radios.forEach(radio => {
+                    if (radio.value === key.split('_')[1]) {
+                        radio.checked = formData[key];
+                    }
+                });
+            }
+        });
+        
+        updatePHMArea();
+        updatePrintForm();
+    }
+
+    function resetForm() {
+        if (confirm("Are you sure you want to clear all form fields?")) {
+            document.getElementById('healthPortalForm').reset();
+            localStorage.removeItem('h411_form_data');
+            activeEditingRecordId = null;
+            sessionStorage.removeItem('h411_active_edit_id');
+            updatePrintForm();
+        }
+    }
+</script>
+
+</body>
+</html>
