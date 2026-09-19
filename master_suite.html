@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Executive Master Suite - Poththapitiya Division</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .glow-purple {
+            box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 font-sans text-slate-200 flex h-screen overflow-hidden antialiased select-none">
+
+    <!-- ==================== 1. වම් පස මෙනු තීරුව (SIDEBAR) ==================== -->
+    <aside class="w-72 bg-slate-900/95 border-r border-slate-800/90 flex flex-col justify-between flex-shrink-0 z-30">
+        
+        <div class="p-4 space-y-5 overflow-y-auto custom-scrollbar">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateSuite('hub')">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-pink-500 flex items-center justify-center text-white text-lg shadow-lg shadow-purple-600/30">
+                    <i class="fa-solid fa-staff-snake"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-black tracking-wider uppercase text-white">PHI MASTER SUITE</h2>
+                    <p class="text-[10px] text-purple-400 font-bold uppercase tracking-widest">Executive Operations</p>
+                </div>
+            </div>
+
+            <!-- Profile Summary Card -->
+            <div class="p-4 rounded-2xl bg-gradient-to-br from-purple-700 via-fuchsia-600 to-pink-600 text-white shadow-xl glow-purple space-y-2 relative overflow-hidden">
+                <div class="absolute -right-3 -bottom-3 text-white/10 text-6xl font-black">
+                    <i class="fa-solid fa-shield-virus"></i>
+                </div>
+                <div class="flex justify-between items-center relative z-10">
+                    <span class="text-[10px] uppercase font-black tracking-widest text-purple-200">FIELD DUTY CORE</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-white/20 text-white">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span> ONLINE
+                    </span>
+                </div>
+                <div class="relative z-10">
+                    <p class="text-[11px] text-purple-100 font-medium">Divisional Duty Station</p>
+                    <h3 class="text-base font-black tracking-tight text-white">Poththapitiya Area</h3>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="space-y-4 text-xs font-semibold">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-2">ප්‍රධාන පාලන මැදිරිය</p>
+                    <div class="space-y-1">
+                        <button onclick="navigateSuite('hub')" id="nav-hub" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-white bg-purple-600 shadow-md shadow-purple-600/20 font-bold transition">
+                            <i class="fa-solid fa-layer-group w-4 text-center"></i>
+                            <span>Master Launchpad</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Command Center Modules (modules/ folder) -->
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-2">Command Modules (00-10)</p>
+                    <div class="space-y-1">
+                        <button onclick="loadLocalModule('modules/dashboard.html', '00. Divisional Overview & GIS')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-chart-pie w-4 text-center text-indigo-400"></i>
+                            <span>00. Overview & GIS</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/erhmis.html', '01. eRHMIS Returns & Annual Sheets')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-file-invoice w-4 text-center text-orange-400"></i>
+                            <span>01. eRHMIS Returns</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/disease.html', '02. Communicable Diseases & Timeliness')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-virus-covid w-4 text-center text-rose-400"></i>
+                            <span>02. Disease Registry</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/food_safety.html', '03. Food Safety & H800 Grading')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-utensils w-4 text-center text-teal-400"></i>
+                            <span>03. Food Safety H800</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/occupational.html', '04. Occupational Health & Factories')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-user-shield w-4 text-center text-amber-400"></i>
+                            <span>04. Occupational Health</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/environmental.html', '05. Environmental Pollution & Grievances')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-leaf w-4 text-center text-emerald-400"></i>
+                            <span>05. Public Complaints</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/school_health.html', '07. School Health & SMI Immunization')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-graduation-cap w-4 text-center text-blue-400"></i>
+                            <span>07. School Health (SMI)</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/education.html', '08. Health Education Programmes')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-chalkboard-user w-4 text-center text-purple-400"></i>
+                            <span>08. Health Education</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/special.html', '10. Special Operations & Photo Evidence')" class="w-full flex items-center space-x-3 px-3.5 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-camera-retro w-4 text-center text-pink-400"></i>
+                            <span>10. Special Field Diary</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Field Tools -->
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-2">ක්ෂේත්‍ර මෙවලම් (Tools)</p>
+                    <div class="space-y-1">
+                        <button onclick="loadLocalModule('modules/SMI_BMI/index.html', 'SMI Pro - WHO Growth & Z-Score Calculator')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-weight-scale w-4 text-center text-cyan-400"></i>
+                            <span>WHO Growth Calculator</span>
+                        </button>
+                        <button onclick="loadLocalModule('h510_advance_programme.html', 'Advance Programme Planner Portal')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-calendar-check w-4 text-center text-amber-400"></i>
+                            <span>Advance Programme</span>
+                        </button>
+                        <button onclick="loadLocalModule('modules/411/index.html', 'H411 Return Documentation System')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                            <i class="fa-solid fa-file-shield w-4 text-center text-emerald-400"></i>
+                            <span>H411 Return Portal</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Bottom Footer -->
+        <div class="p-4 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-sm font-bold">
+                    <i class="fa-solid fa-user-doctor"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-slate-200">Public Health Inspector</p>
+                    <p class="text-[10px] text-slate-400 font-mono">Poththapitiya Area</p>
+                </div>
+            </div>
+            <button onclick="location.href='index.html'" title="Gateway Log" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg transition">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ==================== 2. ප්‍රධාන වැඩබිම (MAIN WORKSPACE) ==================== -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950 relative">
+        
+        <!-- TOP APP BAR -->
+        <header class="h-16 border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md px-6 flex justify-between items-center flex-shrink-0 z-20">
+            <div class="w-96 relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="suite-search" placeholder="පාසල්, හෝටල්, පැමිණිලි හෝ GN වසම සොයන්න..." class="w-full pl-9 pr-4 py-2 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition">
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-slate-400">DATABASE SYNC:</span>
+                    <span class="text-emerald-400 font-bold">LIVE ONLINE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- VIEW CONTAINER A: EXECUTIVE LAUNCHPAD HOME -->
+        <div id="container-hub" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+            
+            <!-- STATS KPI COUNTER ROW -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 rounded-2xl glass-card flex items-center justify-between">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Pathology Alerts</p>
+                        <h4 class="text-xl font-black text-white">03 Active</h4>
+                        <span class="text-[10px] font-bold text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation"></i> 100% Within 7 Days
+                        </span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-virus-covid"></i>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl glass-card flex items-center justify-between">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">eRHMIS Returns</p>
+                        <h4 class="text-xl font-black text-white">4 / 4 Schools</h4>
+                        <span class="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-check"></i> H1014 & H631 Done
+                        </span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl glass-card flex items-center justify-between">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">H800 Registered</p>
+                        <h4 class="text-xl font-black text-white">57 Premises</h4>
+                        <span class="text-[10px] font-bold text-teal-400 flex items-center gap-1">
+                            <i class="fa-solid fa-utensils"></i> A, B, C, D Graded
+                        </span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-hotel"></i>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl glass-card flex items-center justify-between">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Public Inquiries</p>
+                        <h4 class="text-xl font-black text-white">100% Settled</h4>
+                        <span class="text-[10px] font-bold text-purple-400 flex items-center gap-1">
+                            <i class="fa-solid fa-scale-balanced"></i> 14 Grievance Types
+                        </span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS & QUICK TRIGGERS ROW -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Large Curve Analytics -->
+                <div class="lg:col-span-2 p-5 rounded-2xl glass-card space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-800/80 pb-3">
+                        <div>
+                            <h3 class="text-sm font-black text-white tracking-wide uppercase">Annual Surveillance & Field Actions Velocity</h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Epidemiological Notifications vs Routine Field Inspections</p>
+                        </div>
+                        <span class="text-[10px] font-mono px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-purple-400 font-bold">2026 AUDIT CYCLE</span>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="mainVelocityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Fast Field Actions -->
+                <div class="p-5 rounded-2xl glass-card flex flex-col justify-between space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800/80 pb-2">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-200">ඉක්මන් ලොග් සටහන් (Shortcuts)</h4>
+                            <span class="text-[10px] text-purple-400 font-bold">READY</span>
+                        </div>
+                        <div class="space-y-2 text-xs">
+                            <button onclick="loadLocalModule('modules/disease.html', '02. Disease Registry')" class="w-full p-2.5 rounded-xl bg-slate-900/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500/40 flex items-center justify-between text-left transition group">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center"><i class="fa-solid fa-plus"></i></div>
+                                    <span class="font-bold text-slate-200 group-hover:text-white">Log Disease Case</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-purple-400 text-[10px]"></i>
+                            </button>
+
+                            <button onclick="loadLocalModule('modules/food_safety.html', '03. Food Safety H800')" class="w-full p-2.5 rounded-xl bg-slate-900/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500/40 flex items-center justify-between text-left transition group">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center"><i class="fa-solid fa-clipboard-check"></i></div>
+                                    <span class="font-bold text-slate-200 group-hover:text-white">Audit Food Premises H800</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-purple-400 text-[10px]"></i>
+                            </button>
+
+                            <button onclick="loadLocalModule('modules/school_health.html', '07. School Health SMI')" class="w-full p-2.5 rounded-xl bg-slate-900/80 hover:bg-purple-950/40 border border-slate-800 hover:border-purple-500/40 flex items-center justify-between text-left transition group">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-syringe"></i></div>
+                                    <span class="font-bold text-slate-200 group-hover:text-white">Log SMI & Vaccines</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-purple-400 text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-purple-950/30 rounded-xl border border-purple-900/40 text-[11px] text-purple-300">
+                        <i class="fa-solid fa-folder-tree mr-1 text-purple-400"></i> සියලුම sub-systems එකම repository එකෙන් direct load වේ.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONE-CLICK MASTER LAUNCHPAD (PORTFOLIO STYLE CARDS) -->
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">ප්‍රධාන ක්ෂේත්‍ර මෙවලම් (Field Utilities)</h3>
+                    <span class="text-[10px] text-slate-500 font-mono">1-CLICK INSTANT ACCESS</span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- TOOL CARD 1: WHO CALCULATOR -->
+                    <div onclick="loadLocalModule('modules/SMI_BMI/index.html', 'SMI Pro - WHO Growth & Z-Score Calculator')" class="p-4 rounded-2xl glass-card hover:border-cyan-500/60 transition cursor-pointer group hover:bg-slate-900/80 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-lg group-hover:scale-105 transition">
+                                <i class="fa-solid fa-weight-scale"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-cyan-400 group-hover:translate-x-0.5 transition flex items-center gap-1">OPEN <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white group-hover:text-cyan-300 transition">WHO Growth Calculator</h4>
+                            <p class="text-[11px] text-slate-400 mt-0.5">SMI Z-score, BMI, Stunting curves & Gemini scan OCR</p>
+                        </div>
+                    </div>
+
+                    <!-- TOOL CARD 2: ADVANCE PROGRAMME -->
+                    <div onclick="loadLocalModule('h510_advance_programme.html', 'Advance Programme Planner Portal')" class="p-4 rounded-2xl glass-card hover:border-amber-500/50 transition cursor-pointer group hover:bg-slate-900/80 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div class="w-10 h-10 rounded-xl bg-amber-600/20 border border-amber-500/30 text-amber-400 flex items-center justify-center text-lg group-hover:scale-105 transition">
+                                <i class="fa-solid fa-calendar-days"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-amber-400 group-hover:translate-x-0.5 transition flex items-center gap-1">OPEN <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white group-hover:text-amber-300 transition">Advance Programme</h4>
+                            <p class="text-[11px] text-slate-400 mt-0.5">මාසික රාජකාරි සැලැස්ම (Field duty itinerary planner)</p>
+                        </div>
+                    </div>
+
+                    <!-- TOOL CARD 3: H411 PORTAL -->
+                    <div onclick="loadLocalModule('modules/411/index.html', 'H411 Return Documentation System')" class="p-4 rounded-2xl glass-card hover:border-emerald-500/50 transition cursor-pointer group hover:bg-slate-900/80 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-lg group-hover:scale-105 transition">
+                                <i class="fa-solid fa-file-shield"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-emerald-400 group-hover:translate-x-0.5 transition flex items-center gap-1">OPEN <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white group-hover:text-emerald-300 transition">H411 Return Portal</h4>
+                            <p class="text-[11px] text-slate-400 mt-0.5">H411 ලේඛන සහ වාර්තා ජනනය කිරීමේ පද්ධතිය</p>
+                        </div>
+                    </div>
+
+                    <!-- TOOL CARD 4: SPECIAL DIARY -->
+                    <div onclick="loadLocalModule('modules/special.html', '10. Special Operations & Photo Evidence')" class="p-4 rounded-2xl glass-card hover:border-pink-500/50 transition cursor-pointer group hover:bg-slate-900/80 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div class="w-10 h-10 rounded-xl bg-pink-600/20 border border-pink-500/30 text-pink-400 flex items-center justify-center text-lg group-hover:scale-105 transition">
+                                <i class="fa-solid fa-camera-retro"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-pink-400 group-hover:translate-x-0.5 transition flex items-center gap-1">OPEN <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-white group-hover:text-pink-300 transition">විශේෂ ක්ෂේත්‍ර දිනපොත</h4>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Special raid records & 4-slot ඡායාරූප සාක්ෂි ලොගය</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- VIEW CONTAINER B: IN-APP EMBEDDED EXTENSION VIEWER (SEAMLESS SINGLE PAGE) -->
+        <div id="container-app-viewer" class="flex-1 flex-col h-full hidden">
+            <!-- App Bar Controls -->
+            <div class="h-10 bg-slate-900 border-b border-slate-800 px-4 flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center space-x-2">
+                    <button onclick="navigateSuite('hub')" class="text-slate-400 hover:text-white text-xs font-bold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-arrow-left"></i> <span>Back to Main Hub</span>
+                    </button>
+                    <span class="text-slate-700">|</span>
+                    <span id="active-app-title" class="text-xs font-bold text-purple-400 font-mono">Module</span>
+                </div>
+                <button onclick="reloadActiveFrame()" title="Reload Frame" class="text-slate-400 hover:text-white text-xs transition">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+            <!-- Dynamic Embedded Target Frame -->
+            <iframe id="app-viewport-frame" src="" class="w-full flex-1 border-0 bg-slate-950"></iframe>
+        </div>
+
+    </main>
+
+    <!-- ROUTING & ANALYTICS CONTROLLER SCRIPT -->
+    <script>
+        function navigateSuite(targetView) {
+            const hubContainer = document.getElementById('container-hub');
+            const viewerContainer = document.getElementById('container-app-viewer');
+            const frame = document.getElementById('app-viewport-frame');
+
+            if (targetView === 'hub') {
+                hubContainer.classList.remove('hidden');
+                viewerContainer.classList.add('hidden');
+                frame.src = "";
+            }
+        }
+
+        // Direct local relative path loader (No network lag)
+        function loadLocalModule(relativePath, moduleTitle) {
+            const hubContainer = document.getElementById('container-hub');
+            const viewerContainer = document.getElementById('container-app-viewer');
+            const frame = document.getElementById('app-viewport-frame');
+            const title = document.getElementById('active-app-title');
+
+            hubContainer.classList.add('hidden');
+            viewerContainer.classList.remove('hidden');
+
+            title.innerText = moduleTitle.toUpperCase();
+            frame.src = relativePath;
+        }
+
+        function reloadActiveFrame() {
+            const frame = document.getElementById('app-viewport-frame');
+            if (frame.src) frame.src = frame.src;
+        }
+
+        // Initialize Velocity Chart
+        window.onload = function() {
+            const ctx = document.getElementById('mainVelocityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        {
+                            label: 'Surveillance & Disease Alerts',
+                            data: [3, 2, 2, 0, 1, 0, 1, 2, 1, 0, 0, 1],
+                            borderColor: '#a855f7',
+                            backgroundColor: 'rgba(168, 85, 247, 0.12)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Field Inspections & Actions',
+                            data: [23, 27, 19, 22, 18, 25, 20, 24, 21, 19, 22, 26],
+                            borderColor: '#10b981',
+                            backgroundColor: 'transparent',
+                            tension: 0.35,
+                            borderWidth: 2,
+                            borderDash: [4, 4]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#64748b', font: { size: 10 } }
+                        },
+                        x: {
+                            grid: { color: 'transparent' },
+                            ticks: { color: '#64748b', font: { size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { boxWidth: 10, color: '#94a3b8', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
