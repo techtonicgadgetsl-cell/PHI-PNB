@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 48 - Upgraded School Health Program (A4 Portrait)</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Portrait Printable Container --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            height: 297mm; /* Exact A4 Height */
+            padding: 10mm 12mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .page-main-title {
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            height: 18px;
+        }
+
+        /* 2x2 Grid Layout for 4 Graphs on A4 Page */
+        .charts-grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            height: calc(100% - 25px);
+        }
+
+        .chart-card {
+            background: #ffffff;
+            border: 2px solid #000;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header {
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #000;
+            padding: 4px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* --- Portal Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            max-width: 210mm;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .btn-config { background-color: #6c757d; color: white; }
+        .btn-update { background-color: #28a745; color: white; }
+        .btn-print { background-color: #007bff; color: white; }
+
+        /* --- Strict Print Rules for A4 Portrait Page Fill --- */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .portal-card, h2 {
+                display: none !important;
+            }
+
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 8mm 10mm !important;
+                margin: 0 !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+
+            .chart-card {
+                border: 2px solid #000 !important;
+            }
+
+            .chart-wrapper {
+                background-color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Data Portal - Page 48 (Upgraded)</h2>
+
+    <!-- PRINTABLE A4 PORTRAIT PAGE -->
+    <div class="print-a4-page">
+        <div class="page-main-title">SCHOOL HEALTH PROGRAMME</div>
+
+        <div class="charts-grid-container">
+            <!-- GRAPH 1 -->
+            <div class="chart-card">
+                <div class="chart-header">GRAPH 01: TO BE EXAMINED VS EXAMINED</div>
+                <div class="chart-wrapper">
+                    <canvas id="chart1"></canvas>
+                </div>
+            </div>
+
+            <!-- GRAPH 2 -->
+            <div class="chart-card">
+                <div class="chart-header">GRAPH 02: EXAMINED VS DEFECTIVE</div>
+                <div class="chart-wrapper">
+                    <canvas id="chart2"></canvas>
+                </div>
+            </div>
+
+            <!-- GRAPH 3 -->
+            <div class="chart-card">
+                <div class="chart-header">GRAPH 03: DEFECTIVE VS NO. OF DEFECTS</div>
+                <div class="chart-wrapper">
+                    <canvas id="chart3"></canvas>
+                </div>
+            </div>
+
+            <!-- GRAPH 4 -->
+            <div class="chart-card">
+                <div class="chart-header">GRAPH 04: DEFECTS VS CORRECTED</div>
+                <div class="chart-wrapper">
+                    <canvas id="chart4"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 0. YEAR CONFIGURATION PORTAL -->
+    <div class="portal-card">
+        <h3>0. Year Setup (X-Axis Labels)</h3>
+        <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="form-group">
+                <label>Previous Year Label</label>
+                <input type="text" id="inputPrevYear">
+            </div>
+            <div class="form-group">
+                <label>Current Year Label</label>
+                <input type="text" id="inputCurrYear">
+            </div>
+        </div>
+        <button type="button" class="btn btn-config" onclick="applyYearConfig()">Update X-Axis Labels</button>
+    </div>
+
+    <!-- MASTER DATA INPUT PORTAL -->
+    <div class="portal-card">
+        <h3>1. Master Data Entry Portal (Auto-Calculates Linked Values)</h3>
+        <p style="font-size: 11px; color: #555;">සටහන: එකම අගයන් නැවත නැවත ඇතුළත් කිරීම වැළැක්වීමට linked අගයන් (Examined, Defective, Defects) ස්වයංක්‍රීයව ඊළඟ ප්‍රස්ථාරයට ගලා යයි.</p>
+        <form id="dataForm">
+            <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <!-- PREVIOUS YEAR DATA -->
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: navy;" id="titlePrevYear">Previous Year Data</h4>
+                    <div class="form-group">
+                        <label style="color: red;">1. To Be Examined (Red)</label>
+                        <input type="number" id="py_toBeExamined" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="margin-top: 5px;">
+                        <label style="color: black;">2. Number Examined (Black)</label>
+                        <input type="number" id="py_examined" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="margin-top: 5px;">
+                        <label style="color: blue;">3. Number Defective (Blue)</label>
+                        <input type="number" id="py_defective" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="margin-top: 5px;">
+                        <label style="color: #b59b00;">4. Number of Defects (Yellow)</label>
+                        <input type="number" id="py_defects" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="margin-top: 5px;">
+                        <label style="color: #28a745;">5. Number Corrected (Light Green)</label>
+                        <input type="number" id="py_corrected" min="0" value="0">
+                    </div>
+                </div>
+
+                <!-- CURRENT YEAR DATA -->
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: green;" id="titleCurrYear">Current Year Data</h4>
+                    <div class="form-group">
+                        <label style="color: red;">1. To Be Examined (Red)</label>
+                        <input type="number" id="cy_toBeExamined" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="margin-top: 5px;">
+                        <label style="color: black;">2. Number Examined (Black)</label>
+                        <input type="number" id="cy_examined" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="margin-top: 5px;">
+                        <label style="color: blue;">3. Number Defective (Blue)</label>
+                        <input type="number" id="cy_defective" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="margin-top: 5px;">
+                        <label style="color: #b59b00;">4. Number of Defects (Yellow)</label>
+                        <input type="number" id="cy_defects" min="0" value="0">
+                    </div>
+                    <div class="form-group" style="margin-top: 5px;">
+                        <label style="color: #28a745;">5. Number Corrected (Light Green)</label>
+                        <input type="number" id="cy_corrected" min="0" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-update" onclick="updateAllGraphs()">Update All Graphs</button>
+            <button type="button" class="btn btn-print" onclick="window.print()">Print A4 Full Page</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let chart1, chart2, chart3, chart4;
+    let yearLabels = ['Previous Year', 'Current Year'];
+
+    function initAutoYears() {
+        const cYear = new Date().getFullYear();
+        document.getElementById('inputPrevYear').value = `Previous Year (${cYear - 1})`;
+        document.getElementById('inputCurrYear').value = `Current Year (${cYear})`;
+        applyYearConfig();
+    }
+
+    function applyYearConfig() {
+        const pYear = document.getElementById('inputPrevYear').value;
+        const cYear = document.getElementById('inputCurrYear').value;
+
+        yearLabels = [pYear, cYear];
+
+        document.getElementById('titlePrevYear').innerText = pYear;
+        document.getElementById('titleCurrYear').innerText = cYear;
+
+        const allCharts = [chart1, chart2, chart3, chart4];
+        allCharts.forEach(c => {
+            if (c) {
+                c.data.labels = yearLabels;
+                c.update();
+            }
+        });
+    }
+
+    function initCharts() {
+        // --- GRAPH 1: To Be Examined (Red) vs Examined (Black) ---
+        const ctx1 = document.getElementById('chart1').getContext('2d');
+        chart1 = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: yearLabels,
+                datasets: [
+                    { label: 'To Be Examined', data: [0, 0], backgroundColor: 'red', borderColor: '#000', borderWidth: 1 },
+                    { label: 'Examined', data: [0, 0], backgroundColor: 'black', borderColor: '#000', borderWidth: 1 }
+                ]
+            },
+            options: getChartOptions('NUMBER OF STUDENTS')
+        });
+
+        // --- GRAPH 2: Examined (Black) vs Defective (Blue) ---
+        const ctx2 = document.getElementById('chart2').getContext('2d');
+        chart2 = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: yearLabels,
+                datasets: [
+                    { label: 'Examined', data: [0, 0], backgroundColor: 'black', borderColor: '#000', borderWidth: 1 },
+                    { label: 'Defective', data: [0, 0], backgroundColor: 'blue', borderColor: '#000', borderWidth: 1 }
+                ]
+            },
+            options: getChartOptions('NUMBER OF STUDENTS')
+        });
+
+        // --- GRAPH 3: Defective (Blue) vs Defects (Yellow) ---
+        const ctx3 = document.getElementById('chart3').getContext('2d');
+        chart3 = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: yearLabels,
+                datasets: [
+                    { label: 'Defective Students', data: [0, 0], backgroundColor: 'blue', borderColor: '#000', borderWidth: 1 },
+                    { label: 'Number of Defects', data: [0, 0], backgroundColor: '#ffd700', borderColor: '#000', borderWidth: 1 }
+                ]
+            },
+            options: getChartOptions('COUNT')
+        });
+
+        // --- GRAPH 4: Defects (Yellow) vs Corrected (Light Green) ---
+        const ctx4 = document.getElementById('chart4').getContext('2d');
+        chart4 = new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: yearLabels,
+                datasets: [
+                    { label: 'Number of Defects', data: [0, 0], backgroundColor: '#ffd700', borderColor: '#000', borderWidth: 1 },
+                    { label: 'Number Corrected', data: [0, 0], backgroundColor: '#90ee90', borderColor: '#000', borderWidth: 1 }
+                ]
+            },
+            options: getChartOptions('COUNT')
+        });
+    }
+
+    function getChartOptions(yTitle) {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { font: { size: 8, weight: 'bold' }, boxWidth: 10 }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { font: { size: 8, weight: 'bold' } },
+                    grid: { display: false }
+                },
+                y: {
+                    title: { display: true, text: yTitle, font: { weight: 'bold', size: 8 } },
+                    beginAtZero: true,
+                    ticks: { precision: 0, font: { size: 8 } },
+                    grid: { color: '#ccc' }
+                }
+            }
+        };
+    }
+
+    function updateAllGraphs() {
+        // Fetch Values
+        const pyToBe = parseInt(document.getElementById('py_toBeExamined').value) || 0;
+        const pyExam = parseInt(document.getElementById('py_examined').value) || 0;
+        const pyDefe = parseInt(document.getElementById('py_defective').value) || 0;
+        const pyDefs = parseInt(document.getElementById('py_defects').value) || 0;
+        const pyCorr = parseInt(document.getElementById('py_corrected').value) || 0;
+
+        const cyToBe = parseInt(document.getElementById('cy_toBeExamined').value) || 0;
+        const cyExam = parseInt(document.getElementById('cy_examined').value) || 0;
+        const cyDefe = parseInt(document.getElementById('cy_defective').value) || 0;
+        const cyDefs = parseInt(document.getElementById('cy_defects').value) || 0;
+        const cyCorr = parseInt(document.getElementById('cy_corrected').value) || 0;
+
+        // Update Graph 1
+        chart1.data.datasets[0].data = [pyToBe, cyToBe];
+        chart1.data.datasets[1].data = [pyExam, cyExam];
+        chart1.update();
+
+        // Update Graph 2 (Uses Examined from G1 + Defective)
+        chart2.data.datasets[0].data = [pyExam, cyExam];
+        chart2.data.datasets[1].data = [pyDefe, cyDefe];
+        chart2.update();
+
+        // Update Graph 3 (Uses Defective from G2 + Defects)
+        chart3.data.datasets[0].data = [pyDefe, cyDefe];
+        chart3.data.datasets[1].data = [pyDefs, cyDefs];
+        chart3.update();
+
+        // Update Graph 4 (Uses Defects from G3 + Corrected)
+        chart4.data.datasets[0].data = [pyDefs, cyDefs];
+        chart4.data.datasets[1].data = [pyCorr, cyCorr];
+        chart4.update();
+
+        alert('All 4 Graphs updated successfully with auto-linked data!');
+    }
+
+    window.onload = function() {
+        initCharts();
+        initAutoYears();
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 45 - Food Safety Charts (A4 Portrait)</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Portrait Printable Container --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            height: 297mm; /* Exact A4 Height */
+            padding: 10mm 12mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .section-box {
+            border: 1.5px solid #000;
+            padding: 10px;
+            background: #fff;
+        }
+
+        /* Balanced spacing between the two main sections */
+        .section-assessment {
+            flex: 1.2;
+            margin-bottom: 12px; /* Perfect Gap between graph sets */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-sampling {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Grid for Assessment Charts (Top Half) */
+        .assessment-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .chart-container {
+            position: relative;
+            background: #fff;
+            border: 1px solid #000;
+            padding: 4px;
+            width: 100%;
+        }
+
+        /* Dynamic Heights inside sections */
+        .height-prev { height: calc(100% - 20px); }
+        .height-curr { height: calc(50% - 12px); }
+        .height-sampling { flex: 1; }
+
+        /* --- Portal Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            max-width: 210mm;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 15px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 9px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .btn-config { background-color: #6c757d; color: white; }
+        .btn-update { background-color: #28a745; color: white; }
+        .btn-print { background-color: #007bff; color: white; }
+
+        /* --- Strict Print Rules --- */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .portal-card, h2 { display: none !important; }
+
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 10mm 12mm !important;
+                margin: 0 !important;
+                page-break-inside: avoid;
+            }
+
+            .chart-container {
+                background-color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Data Portal - Page 45</h2>
+
+    <!-- PRINTABLE A4 PORTRAIT PAGE -->
+    <div class="print-a4-page">
+        
+        <!-- SECTION 1: FOOD HANDLING ESTABLISHMENTS -->
+        <div class="section-box section-assessment">
+            <div class="section-title">ASSESSMENT OF FOOD HANDLING ESTABLISHMENTS</div>
+            <div class="assessment-grid">
+                
+                <!-- Previous Year -->
+                <div style="display: flex; flex-direction: column;">
+                    <div style="text-align:center; font-size:11px; font-weight:bold; margin-bottom:4px;" id="hdrPrevYear">PREVIOUS YEAR</div>
+                    <div class="chart-container height-prev">
+                        <canvas id="chartPrevYear"></canvas>
+                    </div>
+                </div>
+
+                <!-- Current Year Quarters -->
+                <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div style="text-align:center; font-size:11px; font-weight:bold; margin-bottom:4px;" id="hdrCurrYear">CURRENT YEAR</div>
+                    <div class="chart-container height-curr">
+                        <canvas id="chartCurrQ1Q2"></canvas>
+                    </div>
+                    <div class="chart-container height-curr">
+                        <canvas id="chartCurrQ3Q4"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SECTION 2: FOOD SAMPLING -->
+        <div class="section-box section-sampling">
+            <div class="section-title" id="hdrFoodSampling">FOOD SAMPLING - CURRENT YEAR</div>
+            <div class="chart-container height-sampling">
+                <canvas id="chartFoodSampling"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 0. YEAR HEADER SETUP PORTAL -->
+    <div class="portal-card">
+        <h3>0. Year Setup (Auto / Manual Override)</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Current Year Label</label>
+                <input type="text" id="inputCurrYear">
+            </div>
+            <div class="form-group">
+                <label>Previous Year Label</label>
+                <input type="text" id="inputPrevYear">
+            </div>
+        </div>
+        <button type="button" class="btn btn-config" onclick="applyYearHeaders()">Update Year Labels</button>
+    </div>
+
+    <!-- DATA INPUT PORTAL -->
+    <div class="portal-card">
+        <h3>1. Assessment of Food Establishments (Grades A, B, C, D)</h3>
+        <p style="font-size:11px; color:#555;">Enter count for Category A (Green), Category B (Blue), Category C (Yellow), and Category D (Red).</p>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Select Target</label>
+                <select id="assessTarget">
+                    <option value="prev" id="optPrevYear">Previous Year</option>
+                    <option value="q1">1st Quarter (Current)</option>
+                    <option value="q2">2nd Quarter (Current)</option>
+                    <option value="q3">3rd Quarter (Current)</option>
+                    <option value="q4">4th Quarter (Current)</option>
+                </select>
+            </div>
+            <div class="form-group"><label style="color:green;">Category A (Green)</label><input type="number" id="catA" value="0" min="0"></div>
+            <div class="form-group"><label style="color:blue;">Category B (Blue)</label><input type="number" id="catB" value="0" min="0"></div>
+            <div class="form-group"><label style="color:#d1b200;">Category C (Yellow)</label><input type="number" id="catC" value="0" min="0"></div>
+            <div class="form-group"><label style="color:red;">Category D (Red)</label><input type="number" id="catD" value="0" min="0"></div>
+        </div>
+        <button type="button" class="btn btn-update" onclick="saveAssessmentData()">Update Assessment Data</button>
+
+        <h3 style="margin-top:20px;">2. Food Sampling Monthly Data</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Select Month</label>
+                <select id="sampleMonth">
+                    <option value="0">Jan (J)</option><option value="1">Feb (F)</option><option value="2">Mar (M)</option>
+                    <option value="3">Apr (A)</option><option value="4">May (M)</option><option value="5">Jun (J)</option>
+                    <option value="6">Jul (J)</option><option value="7">Aug (A)</option><option value="8">Sep (S)</option>
+                    <option value="9">Oct (O)</option><option value="10">Nov (N)</option><option value="11">Dec (D)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Chemical Samples (Black)</label><input type="number" id="valChem" value="0" min="0"></div>
+            <div class="form-group"><label>Bacteriological Samples (Red)</label><input type="number" id="valBac" value="0" min="0"></div>
+            <div class="form-group"><label>Monthly Target Line</label><input type="number" id="valTarget" value="2" min="0"></div>
+        </div>
+        <button type="button" class="btn btn-update" onclick="saveSamplingData()">Update Food Sampling Data</button>
+        <button type="button" class="btn btn-print" onclick="window.print()">Print A4 Full Page</button>
+    </div>
+</div>
+
+<script>
+    let chartPrev, chartQ1Q2, chartQ3Q4, chartSampling;
+
+    const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+
+    let assessData = {
+        prev: [0, 0, 0, 0],
+        q1: [0, 0, 0, 0],
+        q2: [0, 0, 0, 0],
+        q3: [0, 0, 0, 0],
+        q4: [0, 0, 0, 0]
+    };
+
+    let samplingData = {
+        chem: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        bac: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        target: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+    };
+
+    function initAutoYears() {
+        const cYear = new Date().getFullYear();
+        const pYear = cYear - 1;
+
+        document.getElementById('inputCurrYear').value = `CURRENT YEAR - ${cYear}`;
+        document.getElementById('inputPrevYear').value = `PREVIOUS YEAR - ${pYear}`;
+        applyYearHeaders();
+    }
+
+    function applyYearHeaders() {
+        const curTxt = document.getElementById('inputCurrYear').value;
+        const prevTxt = document.getElementById('inputPrevYear').value;
+
+        document.getElementById('hdrPrevYear').innerText = prevTxt;
+        document.getElementById('hdrCurrYear').innerText = curTxt;
+        document.getElementById('hdrFoodSampling').innerText = `FOOD SAMPLING - ${curTxt}`;
+        document.getElementById('optPrevYear').innerText = prevTxt;
+    }
+
+    window.onload = function() {
+        initAutoYears();
+
+        // 1. Previous Year Assessment
+        chartPrev = new Chart(document.getElementById('chartPrevYear').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['A', 'B', 'C', 'D'],
+                datasets: [{
+                    data: assessData.prev,
+                    backgroundColor: ['green', 'blue', '#d1b200', 'red'],
+                    borderColor: '#000', borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { title: { display: true, text: 'CATEGORY', font: { size: 9, weight: 'bold' } } },
+                    y: { title: { display: true, text: 'NUMBER', font: { size: 9, weight: 'bold' } }, beginAtZero: true }
+                }
+            }
+        });
+
+        // 2. Current Year Q1 & Q2
+        chartQ1Q2 = new Chart(document.getElementById('chartCurrQ1Q2').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['1st QUARTER', '2nd QUARTER'],
+                datasets: [
+                    { label: 'A', data: [assessData.q1[0], assessData.q2[0]], backgroundColor: 'green', borderColor: '#000', borderWidth: 1 },
+                    { label: 'B', data: [assessData.q1[1], assessData.q2[1]], backgroundColor: 'blue', borderColor: '#000', borderWidth: 1 },
+                    { label: 'C', data: [assessData.q1[2], assessData.q2[2]], backgroundColor: '#d1b200', borderColor: '#000', borderWidth: 1 },
+                    { label: 'D', data: [assessData.q1[3], assessData.q2[3]], backgroundColor: 'red', borderColor: '#000', borderWidth: 1 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } },
+                scales: {
+                    x: { title: { display: true, text: 'QUARTER', font: { size: 8, weight: 'bold' } } },
+                    y: { title: { display: true, text: 'NUMBER', font: { size: 8, weight: 'bold' } }, beginAtZero: true }
+                }
+            }
+        });
+
+        // 3. Current Year Q3 & Q4
+        chartQ3Q4 = new Chart(document.getElementById('chartCurrQ3Q4').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['3rd QUARTER', '4th QUARTER'],
+                datasets: [
+                    { label: 'A', data: [assessData.q3[0], assessData.q4[0]], backgroundColor: 'green', borderColor: '#000', borderWidth: 1 },
+                    { label: 'B', data: [assessData.q3[1], assessData.q4[1]], backgroundColor: 'blue', borderColor: '#000', borderWidth: 1 },
+                    { label: 'C', data: [assessData.q3[2], assessData.q4[2]], backgroundColor: '#d1b200', borderColor: '#000', borderWidth: 1 },
+                    { label: 'D', data: [assessData.q3[3], assessData.q4[3]], backgroundColor: 'red', borderColor: '#000', borderWidth: 1 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } },
+                scales: {
+                    x: { title: { display: true, text: 'QUARTER', font: { size: 8, weight: 'bold' } } },
+                    y: { title: { display: true, text: 'NUMBER', font: { size: 8, weight: 'bold' } }, beginAtZero: true }
+                }
+            }
+        });
+
+        // 4. Food Sampling
+        chartSampling = new Chart(document.getElementById('chartFoodSampling').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'CHEMICAL',
+                        data: samplingData.chem,
+                        backgroundColor: 'black',
+                        stack: 'Stack 0'
+                    },
+                    {
+                        label: 'BACTERIOLOGICAL',
+                        data: samplingData.bac,
+                        backgroundColor: 'red',
+                        stack: 'Stack 0'
+                    },
+                    {
+                        type: 'line',
+                        label: 'Monthly Target',
+                        data: samplingData.target,
+                        borderColor: 'red',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 9, weight: 'bold' } } } },
+                scales: {
+                    x: { title: { display: true, text: 'MONTH', font: { size: 9, weight: 'bold' } } },
+                    y: { title: { display: true, text: 'NO. OF SAMPLES', font: { size: 9, weight: 'bold' } }, beginAtZero: true, stacked: true }
+                }
+            }
+        });
+    };
+
+    function saveAssessmentData() {
+        const target = document.getElementById('assessTarget').value;
+        const a = parseInt(document.getElementById('catA').value) || 0;
+        const b = parseInt(document.getElementById('catB').value) || 0;
+        const c = parseInt(document.getElementById('catC').value) || 0;
+        const d = parseInt(document.getElementById('catD').value) || 0;
+
+        assessData[target] = [a, b, c, d];
+
+        if (target === 'prev') {
+            chartPrev.data.datasets[0].data = [a, b, c, d];
+            chartPrev.update();
+        } else {
+            chartQ1Q2.data.datasets[0].data = [assessData.q1[0], assessData.q2[0]];
+            chartQ1Q2.data.datasets[1].data = [assessData.q1[1], assessData.q2[1]];
+            chartQ1Q2.data.datasets[2].data = [assessData.q1[2], assessData.q2[2]];
+            chartQ1Q2.data.datasets[3].data = [assessData.q1[3], assessData.q2[3]];
+            chartQ1Q2.update();
+
+            chartQ3Q4.data.datasets[0].data = [assessData.q3[0], assessData.q4[0]];
+            chartQ3Q4.data.datasets[1].data = [assessData.q3[1], assessData.q4[1]];
+            chartQ3Q4.data.datasets[2].data = [assessData.q3[2], assessData.q4[2]];
+            chartQ3Q4.data.datasets[3].data = [assessData.q3[3], assessData.q4[3]];
+            chartQ3Q4.update();
+        }
+
+        alert('Assessment Data Updated Successfully!');
+    }
+
+    function saveSamplingData() {
+        const mIdx = parseInt(document.getElementById('sampleMonth').value);
+        const chem = parseInt(document.getElementById('valChem').value) || 0;
+        const bac = parseInt(document.getElementById('valBac').value) || 0;
+        const targetVal = parseInt(document.getElementById('valTarget').value) || 0;
+
+        samplingData.chem[mIdx] = chem;
+        samplingData.bac[mIdx] = bac;
+        samplingData.target[mIdx] = targetVal;
+
+        chartSampling.update();
+        alert(`Food Sampling updated for month ${months[mIdx]}!`);
+    }
+</script>
+
+</body>
+</html>

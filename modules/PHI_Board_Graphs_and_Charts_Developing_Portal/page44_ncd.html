@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 44 - Non Communicable Diseases (Customizable)</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Portrait Printable Container --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            height: 297mm;
+            padding: 12mm 15mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            height: 25px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            height: calc(100% - 35px);
+        }
+
+        .chart-card {
+            background: #ffffff;
+            border: 2px solid #000;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chart-header {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #000;
+            padding: 6px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* --- Portal Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            max-width: 210mm;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 15px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 9px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .btn-config { background-color: #6c757d; color: white; }
+        .btn-disease { background-color: #17a2b8; color: white; }
+        .btn-update { background-color: #28a745; color: white; }
+        .btn-print { background-color: #007bff; color: white; }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .portal-card, h2 {
+                display: none !important;
+            }
+
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 10mm 12mm !important;
+                margin: 0 !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+
+            .chart-card {
+                border: 2px solid #000 !important;
+            }
+
+            .chart-wrapper {
+                background-color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Data Portal - Page 44</h2>
+
+    <!-- PRINTABLE A4 PORTRAIT PAGE -->
+    <div class="print-a4-page">
+        <div class="page-title">NON COMMUNICABLE DISEASES</div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header" id="headerY1">YEAR 1</div>
+                <div class="chart-wrapper"><canvas id="chartY1"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header" id="headerY2">YEAR 2</div>
+                <div class="chart-wrapper"><canvas id="chartY2"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header" id="headerY3">YEAR 3</div>
+                <div class="chart-wrapper"><canvas id="chartY3"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header" id="headerY4">YEAR 4</div>
+                <div class="chart-wrapper"><canvas id="chartY4"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 0. ANNUAL YEAR SETUP -->
+    <div class="portal-card">
+        <h3>0. Annual Year Header Setup</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Year 1 Label</label><input type="text" id="inputY1"></div>
+            <div class="form-group"><label>Year 2 Label</label><input type="text" id="inputY2"></div>
+            <div class="form-group"><label>Year 3 Label</label><input type="text" id="inputY3"></div>
+            <div class="form-group"><label>Year 4 Label</label><input type="text" id="inputY4"></div>
+        </div>
+        <button type="button" class="btn btn-config" onclick="applyYearHeaders()">Update Year Labels</button>
+    </div>
+
+    <!-- 1. DYNAMIC DISEASE CONFIGURATION -->
+    <div class="portal-card">
+        <h3>1. NCD Diseases Name & Color Setup</h3>
+        <p style="font-size: 11px; color: #555; margin-top: 3px;">Customize the 5 disease titles and graph bar colors as needed.</p>
+        <div class="form-grid" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="form-group">
+                <label>Disease 1</label>
+                <input type="text" id="nameD1" value="MI">
+                <input type="color" id="colD1" value="#ff0000" style="height: 30px; margin-top: 4px; padding: 2px;">
+            </div>
+            <div class="form-group">
+                <label>Disease 2</label>
+                <input type="text" id="nameD2" value="CANCER">
+                <input type="color" id="colD2" value="#0000ff" style="height: 30px; margin-top: 4px; padding: 2px;">
+            </div>
+            <div class="form-group">
+                <label>Disease 3</label>
+                <input type="text" id="nameD3" value="DIABETES">
+                <input type="color" id="colD3" value="#008000" style="height: 30px; margin-top: 4px; padding: 2px;">
+            </div>
+            <div class="form-group">
+                <label>Disease 4</label>
+                <input type="text" id="nameD4" value="STROKE">
+                <input type="color" id="colD4" value="#ffd700" style="height: 30px; margin-top: 4px; padding: 2px;">
+            </div>
+            <div class="form-group">
+                <label>Disease 5</label>
+                <input type="text" id="nameD5" value="HYPERTENSION">
+                <input type="color" id="colD5" value="#8B4513" style="height: 30px; margin-top: 4px; padding: 2px;">
+            </div>
+        </div>
+        <button type="button" class="btn btn-disease" onclick="applyDiseaseConfig()">Update Disease Names & Colors</button>
+    </div>
+
+    <!-- 2. BULK DATA ENTRY PORTAL -->
+    <div class="portal-card">
+        <h3>2. NCD Cases Data Entry Portal</h3>
+        <form id="dataForm">
+            <div class="form-grid" style="grid-template-columns: 1fr; margin-bottom: 10px;">
+                <div class="form-group">
+                    <label>Select Target Year Graph</label>
+                    <select id="targetYearSelect" onchange="loadTargetYearData()">
+                        <option value="0" id="optY1">YEAR 1</option>
+                        <option value="1" id="optY2">YEAR 2</option>
+                        <option value="2" id="optY3">YEAR 3</option>
+                        <option value="3" id="optY4">YEAR 4</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label id="lblD1" style="color: red;">MI</label>
+                    <input type="number" id="valD1" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label id="lblD2" style="color: blue;">Cancer</label>
+                    <input type="number" id="valD2" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label id="lblD3" style="color: green;">Diabetes</label>
+                    <input type="number" id="valD3" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label id="lblD4" style="color: #d1b200;">Stroke</label>
+                    <input type="number" id="valD4" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label id="lblD5" style="color: #8B4513;">Hypertension</label>
+                    <input type="number" id="valD5" min="0" value="0">
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-update" onclick="saveNCDData()">Save NCD Data</button>
+            <button type="button" class="btn btn-print" onclick="window.print()">Print A4 Full Page</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let charts = [];
+    let ncdLabels = ['MI', 'CANCER', 'DIABETES', 'STROKE', 'HYPERTENSION'];
+    let barColors = ['#ff0000', '#0000ff', '#008000', '#ffd700', '#8B4513'];
+    const borderColors = ['#000', '#000', '#000', '#000', '#000'];
+
+    let ncdData = [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0]
+    ];
+
+    function initAutoYears() {
+        const nowYear = new Date().getFullYear();
+        document.getElementById('inputY1').value = localStorage.getItem('ncd_y1') || `YEAR 1 (${nowYear - 3})`;
+        document.getElementById('inputY2').value = localStorage.getItem('ncd_y2') || `YEAR 2 (${nowYear - 2})`;
+        document.getElementById('inputY3').value = localStorage.getItem('ncd_y3') || `YEAR 3 (${nowYear - 1})`;
+        document.getElementById('inputY4').value = localStorage.getItem('ncd_y4') || `YEAR 4 (${nowYear})`;
+        applyYearHeaders(false);
+    }
+
+    function applyYearHeaders(showAlert = true) {
+        const y1 = document.getElementById('inputY1').value;
+        const y2 = document.getElementById('inputY2').value;
+        const y3 = document.getElementById('inputY3').value;
+        const y4 = document.getElementById('inputY4').value;
+
+        document.getElementById('headerY1').innerText = y1;
+        document.getElementById('headerY2').innerText = y2;
+        document.getElementById('headerY3').innerText = y3;
+        document.getElementById('headerY4').innerText = y4;
+
+        document.getElementById('optY1').innerText = y1;
+        document.getElementById('optY2').innerText = y2;
+        document.getElementById('optY3').innerText = y3;
+        document.getElementById('optY4').innerText = y4;
+
+        localStorage.setItem('ncd_y1', y1);
+        localStorage.setItem('ncd_y2', y2);
+        localStorage.setItem('ncd_y3', y3);
+        localStorage.setItem('ncd_y4', y4);
+
+        if (showAlert) alert("Year Labels Updated Successfully!");
+    }
+
+    function loadSavedDiseaseConfig() {
+        const savedLabels = JSON.parse(localStorage.getItem('ncd_custom_labels'));
+        const savedColors = JSON.parse(localStorage.getItem('ncd_custom_colors'));
+
+        if (savedLabels && savedLabels.length === 5) ncdLabels = savedLabels;
+        if (savedColors && savedColors.length === 5) barColors = savedColors;
+
+        for (let i = 0; i < 5; i++) {
+            document.getElementById(`nameD${i+1}`).value = ncdLabels[i];
+            document.getElementById(`colD${i+1}`).value = barColors[i];
+        }
+        updateFormLabels();
+    }
+
+    function updateFormLabels() {
+        for (let i = 0; i < 5; i++) {
+            const lbl = document.getElementById(`lblD${i+1}`);
+            lbl.innerText = ncdLabels[i];
+            lbl.style.color = barColors[i];
+        }
+    }
+
+    function applyDiseaseConfig() {
+        ncdLabels = [
+            document.getElementById('nameD1').value.trim().toUpperCase() || 'MI',
+            document.getElementById('nameD2').value.trim().toUpperCase() || 'CANCER',
+            document.getElementById('nameD3').value.trim().toUpperCase() || 'DIABETES',
+            document.getElementById('nameD4').value.trim().toUpperCase() || 'STROKE',
+            document.getElementById('nameD5').value.trim().toUpperCase() || 'HYPERTENSION'
+        ];
+
+        barColors = [
+            document.getElementById('colD1').value,
+            document.getElementById('colD2').value,
+            document.getElementById('colD3').value,
+            document.getElementById('colD4').value,
+            document.getElementById('colD5').value
+        ];
+
+        localStorage.setItem('ncd_custom_labels', JSON.stringify(ncdLabels));
+        localStorage.setItem('ncd_custom_colors', JSON.stringify(barColors));
+
+        updateFormLabels();
+
+        charts.forEach((chart) => {
+            chart.data.labels = ncdLabels;
+            chart.data.datasets[0].backgroundColor = barColors;
+            chart.update();
+        });
+
+        alert("Disease Titles & Graph Colors Updated Successfully!");
+    }
+
+    function createBarChart(ctx, dataValues) {
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ncdLabels,
+                datasets: [{
+                    data: [...dataValues],
+                    backgroundColor: barColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'DISEASE', font: { weight: 'bold', size: 10 } },
+                        ticks: { font: { size: 9, weight: 'bold' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'NO. OF CASES', font: { weight: 'bold', size: 10 } },
+                        beginAtZero: true,
+                        ticks: { precision: 0, font: { size: 9 } },
+                        grid: { color: '#eee' }
+                    }
+                }
+            }
+        });
+    }
+
+    function loadSavedNCDData() {
+        const savedData = JSON.parse(localStorage.getItem('ncd_matrix_data'));
+        if (savedData && savedData.length === 4) {
+            ncdData = savedData;
+        }
+    }
+
+    function loadTargetYearData() {
+        const yearIdx = parseInt(document.getElementById('targetYearSelect').value);
+        const currentYearRow = ncdData[yearIdx] || [0, 0, 0, 0, 0];
+        document.getElementById('valD1').value = currentYearRow[0];
+        document.getElementById('valD2').value = currentYearRow[1];
+        document.getElementById('valD3').value = currentYearRow[2];
+        document.getElementById('valD4').value = currentYearRow[3];
+        document.getElementById('valD5').value = currentYearRow[4];
+    }
+
+    function saveNCDData() {
+        const yearIdx = parseInt(document.getElementById('targetYearSelect').value);
+
+        const d1 = parseInt(document.getElementById('valD1').value) || 0;
+        const d2 = parseInt(document.getElementById('valD2').value) || 0;
+        const d3 = parseInt(document.getElementById('valD3').value) || 0;
+        const d4 = parseInt(document.getElementById('valD4').value) || 0;
+        const d5 = parseInt(document.getElementById('valD5').value) || 0;
+
+        ncdData[yearIdx] = [d1, d2, d3, d4, d5];
+        localStorage.setItem('ncd_matrix_data', JSON.stringify(ncdData));
+
+        charts[yearIdx].data.datasets[0].data = [d1, d2, d3, d4, d5];
+        charts[yearIdx].update();
+
+        alert(`Data saved successfully for Graph Year ${yearIdx + 1}!`);
+    }
+
+    window.onload = function() {
+        initAutoYears();
+        loadSavedDiseaseConfig();
+        loadSavedNCDData();
+
+        for (let i = 0; i < 4; i++) {
+            const ctx = document.getElementById(`chartY${i+1}`).getContext('2d');
+            charts.push(createBarChart(ctx, ncdData[i]));
+        }
+
+        loadTargetYearData();
+    };
+</script>
+
+</body>
+</html>

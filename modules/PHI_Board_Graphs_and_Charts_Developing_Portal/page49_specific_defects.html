@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 49 - Specific Defects Dashboard (A4 Portrait)</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Portrait Printable Container (210mm x 297mm) --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            height: 297mm; /* Strict A4 Height */
+            padding: 8mm 10mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .page-main-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 2px;
+            height: 22px;
+        }
+
+        /* --- Top 30%: Previous Year Graph 05 --- */
+        .main-summary-wrapper {
+            border: 2px solid #000;
+            padding: 4px;
+            background: #fff;
+            height: calc(30% - 15px); /* Exactly 30% height allocated */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Bottom 70%: Current Year Graphs 1-4 (Grid) --- */
+        .charts-grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+            height: calc(70% - 15px); /* Exactly 70% height allocated */
+        }
+
+        .chart-card {
+            background: #ffffff;
+            border: 2px solid #000;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chart-header {
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            background: #f0f0f0;
+            padding: 2px;
+            border: 1px solid #ccc;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #000;
+            padding: 2px;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Input Portal Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin: 15px 0 8px 0;
+            padding: 5px;
+            background-color: #e9ecef;
+            border-left: 4px solid #007bff;
+        }
+
+        .defect-input-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 8px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .btn-config { background-color: #6c757d; color: white; }
+        .btn-update { background-color: #28a745; color: white; }
+        .btn-print { background-color: #007bff; color: white; }
+
+        /* Print Settings for Strict A4 Portrait */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body { background: white; padding: 0; margin: 0; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .portal-card, h2 { display: none !important; }
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 8mm 10mm !important;
+                margin: 0 !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+            .chart-card, .main-summary-wrapper { border: 2px solid #000 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Portal - Page 49 (Specific Defects)</h2>
+
+    <!-- PRINTABLE A4 PORTRAIT PAGE -->
+    <div class="print-a4-page">
+        <div class="page-main-title">SPECIFIC DEFECTS & DEFECTS CORRECTED (PAGE 49)</div>
+
+        <!-- TOP 30%: PREVIOUS YEAR SUMMARY (GRAPH 05) -->
+        <div class="main-summary-wrapper">
+            <div class="chart-header" id="headerMainPrev">PREVIOUS YEAR SUMMARY</div>
+            <div class="chart-wrapper">
+                <canvas id="chartMainPrev"></canvas>
+            </div>
+        </div>
+
+        <!-- BOTTOM 70%: CURRENT YEAR GRAPHS 1-4 (GRID) -->
+        <div class="charts-grid-container">
+            <!-- CURRENT YEAR DEFECT 1 -->
+            <div class="chart-card">
+                <div class="chart-header" id="headerDef1">CURRENT YEAR DEFECT 1</div>
+                <div class="chart-wrapper"><canvas id="chartDef1"></canvas></div>
+            </div>
+
+            <!-- CURRENT YEAR DEFECT 2 -->
+            <div class="chart-card">
+                <div class="chart-header" id="headerDef2">CURRENT YEAR DEFECT 2</div>
+                <div class="chart-wrapper"><canvas id="chartDef2"></canvas></div>
+            </div>
+
+            <!-- CURRENT YEAR DEFECT 3 -->
+            <div class="chart-card">
+                <div class="chart-header" id="headerDef3">CURRENT YEAR DEFECT 3</div>
+                <div class="chart-wrapper"><canvas id="chartDef3"></canvas></div>
+            </div>
+
+            <!-- CURRENT YEAR DEFECT 4 -->
+            <div class="chart-card">
+                <div class="chart-header" id="headerDef4">CURRENT YEAR DEFECT 4</div>
+                <div class="chart-wrapper"><canvas id="chartDef4"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 0. YEAR CONFIGURATION PORTAL -->
+    <div class="portal-card">
+        <h3>0. Year Setup (Labels)</h3>
+        <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="form-group">
+                <label>Previous Year Label</label>
+                <input type="text" id="inputPrevYear">
+            </div>
+            <div class="form-group">
+                <label>Current Year Label</label>
+                <input type="text" id="inputCurrYear">
+            </div>
+        </div>
+        <button type="button" class="btn btn-config" style="margin-top: 10px;" onclick="applyYearConfig()">Update Year Labels</button>
+    </div>
+
+    <!-- DATA INPUT PORTAL -->
+    <div class="portal-card">
+        <h3>1. Specific Diseases Data Entry Portal</h3>
+        <form id="defectsForm">
+            
+            <!-- SECTION 1: PREVIOUS YEAR DATA (GRAPH 05) -->
+            <div class="section-title" id="secTitlePrev">PREVIOUS YEAR DATA (GRAPH 05)</div>
+            <div class="defect-input-box" style="background: #eef2ff;">
+                <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <!-- DEF 1 PREV -->
+                    <div style="border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fff;">
+                        <label style="color: #b91c1c; font-weight: bold;">Select Defect 1:</label>
+                        <select id="py_selectDef1" class="defect-select" style="width: 100%; margin-bottom: 4px;"></select>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="number" id="py_d1_detected" value="55" placeholder="Defects" min="0">
+                            <input type="number" id="py_d1_corrected" value="39" placeholder="Corrected" min="0">
+                        </div>
+                    </div>
+                    <!-- DEF 2 PREV -->
+                    <div style="border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fff;">
+                        <label style="color: #1d4ed8; font-weight: bold;">Select Defect 2:</label>
+                        <select id="py_selectDef2" class="defect-select" style="width: 100%; margin-bottom: 4px;"></select>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="number" id="py_d2_detected" value="48" placeholder="Defects" min="0">
+                            <input type="number" id="py_d2_corrected" value="23" placeholder="Corrected" min="0">
+                        </div>
+                    </div>
+                    <!-- DEF 3 PREV -->
+                    <div style="border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fff;">
+                        <label style="color: #15803d; font-weight: bold;">Select Defect 3:</label>
+                        <select id="py_selectDef3" class="defect-select" style="width: 100%; margin-bottom: 4px;"></select>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="number" id="py_d3_detected" value="73" placeholder="Defects" min="0">
+                            <input type="number" id="py_d3_corrected" value="47" placeholder="Corrected" min="0">
+                        </div>
+                    </div>
+                    <!-- DEF 4 PREV -->
+                    <div style="border: 1px solid #ccc; padding: 6px; border-radius: 4px; background: #fff;">
+                        <label style="color: #a16207; font-weight: bold;">Select Defect 4:</label>
+                        <select id="py_selectDef4" class="defect-select" style="width: 100%; margin-bottom: 4px;"></select>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="number" id="py_d4_detected" value="31" placeholder="Defects" min="0">
+                            <input type="number" id="py_d4_corrected" value="22" placeholder="Corrected" min="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: CURRENT YEAR DATA (GRAPHS 1-4) -->
+            <div class="section-title" id="secTitleCurr">CURRENT YEAR DATA (GRAPHS 01 - 04)</div>
+            
+            <!-- CURRENT YEAR DEFECT 1 -->
+            <div class="defect-input-box">
+                <h4 style="margin: 0 0 5px 0; font-size: 12px; color: #b91c1c;">Current Year - Defect 1</h4>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Select Specific Disease/Defect:</label>
+                        <select id="cy_selectDef1" class="defect-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Detected Count:</label>
+                        <input type="number" id="cy_d1_detected" value="60" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Corrected Count:</label>
+                        <input type="number" id="cy_d1_corrected" value="42" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CURRENT YEAR DEFECT 2 -->
+            <div class="defect-input-box">
+                <h4 style="margin: 0 0 5px 0; font-size: 12px; color: #1d4ed8;">Current Year - Defect 2</h4>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Select Specific Disease/Defect:</label>
+                        <select id="cy_selectDef2" class="defect-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Detected Count:</label>
+                        <input type="number" id="cy_d2_detected" value="50" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Corrected Count:</label>
+                        <input type="number" id="cy_d2_corrected" value="30" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CURRENT YEAR DEFECT 3 -->
+            <div class="defect-input-box">
+                <h4 style="margin: 0 0 5px 0; font-size: 12px; color: #15803d;">Current Year - Defect 3</h4>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Select Specific Disease/Defect:</label>
+                        <select id="cy_selectDef3" class="defect-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Detected Count:</label>
+                        <input type="number" id="cy_d3_detected" value="80" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Corrected Count:</label>
+                        <input type="number" id="cy_d3_corrected" value="55" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CURRENT YEAR DEFECT 4 -->
+            <div class="defect-input-box">
+                <h4 style="margin: 0 0 5px 0; font-size: 12px; color: #a16207;">Current Year - Defect 4</h4>
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Select Specific Disease/Defect:</label>
+                        <select id="cy_selectDef4" class="defect-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Detected Count:</label>
+                        <input type="number" id="cy_d4_detected" value="35" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Corrected Count:</label>
+                        <input type="number" id="cy_d4_corrected" value="25" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-update" onclick="updatePage49Graphs()">Update All Graphs</button>
+            <button type="button" class="btn btn-print" onclick="window.print()">Print A4 Page</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const defectList = [
+        "Visual defects",
+        "Hearing defects",
+        "Speech defects",
+        "Pallor",
+        "Untreated dental caries",
+        "Calculus",
+        "ENT defects",
+        "Heart problems",
+        "Bronchial Asthma",
+        "Behavioural problems (as reported by teacher)",
+        "Learning difficulties (as reported by teacher)",
+        "Pediculosis",
+        "Night blindness",
+        "Bitot spots",
+        "Squint",
+        "Xeraphthalmia",
+        "Angular stomatitis / glossitis",
+        "Fluorosis",
+        "Malocclusion",
+        "Goitre",
+        "Lymphadenapathy",
+        "Scabies",
+        "Hypopigmented anaesthetic patches",
+        "Other skin disorders",
+        "Orthopaedic defects",
+        "Rhuematic disorders",
+        "Lung Diseases",
+        "Thalassaemia",
+        "History of fits",
+        "Other defects"
+    ];
+
+    let chartMainPrev, chart1, chart2, chart3, chart4;
+    let prevYearText = "PREVIOUS YEAR";
+    let currYearText = "CURRENT YEAR";
+
+    function initAutoYears() {
+        const cYear = new Date().getFullYear();
+        document.getElementById('inputPrevYear').value = `PREVIOUS YEAR (${cYear - 1})`;
+        document.getElementById('inputCurrYear').value = `CURRENT YEAR (${cYear})`;
+        applyYearConfig();
+    }
+
+    function applyYearConfig() {
+        prevYearText = document.getElementById('inputPrevYear').value;
+        currYearText = document.getElementById('inputCurrYear').value;
+
+        document.getElementById('secTitlePrev').innerText = `${prevYearText} DATA (GRAPH 05)`;
+        document.getElementById('secTitleCurr').innerText = `${currYearText} DATA (GRAPHS 01 - 04)`;
+
+        updatePage49Graphs();
+    }
+
+    function populateDropdowns() {
+        const selects = document.querySelectorAll('.defect-select');
+        selects.forEach((select) => {
+            select.innerHTML = '';
+            defectList.forEach(defect => {
+                const opt = document.createElement('option');
+                opt.value = defect;
+                opt.innerText = defect;
+                select.appendChild(opt);
+            });
+        });
+
+        // Set Default Selections for Previous Year
+        document.getElementById('py_selectDef1').value = "Untreated dental caries";
+        document.getElementById('py_selectDef2').value = "Visual defects";
+        document.getElementById('py_selectDef3').value = "Pediculosis";
+        document.getElementById('py_selectDef4').value = "Pallor";
+
+        // Set Default Selections for Current Year
+        document.getElementById('cy_selectDef1').value = "Untreated dental caries";
+        document.getElementById('cy_selectDef2').value = "Visual defects";
+        document.getElementById('cy_selectDef3').value = "Pediculosis";
+        document.getElementById('cy_selectDef4').value = "Pallor";
+    }
+
+    function initPage49Charts() {
+        // --- PREVIOUS YEAR SUMMARY CHART (TOP - 30% Area) ---
+        const ctxMain = document.getElementById('chartMainPrev').getContext('2d');
+        chartMainPrev = new Chart(ctxMain, {
+            type: 'bar',
+            data: {
+                labels: ['DEF. 1', 'DEF. 2', 'DEF. 3', 'DEF. 4'],
+                datasets: [
+                    { label: 'Defects Detected', data: [55, 48, 73, 31], backgroundColor: ['#ef4444', '#3b82f6', '#22c55e', '#eab308'] },
+                    { label: 'Corrected', data: [39, 23, 47, 22], backgroundColor: '#000000' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { 
+                        position: 'top', 
+                        labels: { 
+                            font: { size: 9, weight: 'bold' }, 
+                            boxWidth: 10,
+                            // Filter legend to ONLY show "Corrected" (hides "Defects Detected" item)
+                            filter: function(legendItem, data) {
+                                return legendItem.text === 'Corrected';
+                            }
+                        } 
+                    } 
+                },
+                scales: {
+                    x: { ticks: { font: { size: 9, weight: 'bold' } } },
+                    y: { beginAtZero: true, ticks: { precision: 0, font: { size: 8 } } }
+                }
+            }
+        });
+
+        // --- CURRENT YEAR CHARTS 1-4 (BOTTOM - 70% Area) ---
+        chart1 = createSingleDefectChart('chartDef1', 'DEFECTS', '#ef4444', 60, 42);
+        chart2 = createSingleDefectChart('chartDef2', 'DEFECTS', '#3b82f6', 50, 30);
+        chart3 = createSingleDefectChart('chartDef3', 'DEFECTS', '#22c55e', 80, 55);
+        chart4 = createSingleDefectChart('chartDef4', 'DEFECTS', '#eab308', 35, 25);
+    }
+
+    function createSingleDefectChart(canvasId, defectXLabel, color, defVal, corrVal) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [defectXLabel, 'CORRECTED'],
+                datasets: [{
+                    data: [defVal, corrVal],
+                    backgroundColor: [color, '#000000'],
+                    borderWidth: 1,
+                    borderColor: '#000'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { font: { size: 8, weight: 'bold' } } },
+                    y: { beginAtZero: true, ticks: { precision: 0, font: { size: 8 } } }
+                }
+            }
+        });
+    }
+
+    function updatePage49Graphs() {
+        // --- 1. PREVIOUS YEAR DATA (GRAPH 05) ---
+        const py1Name = document.getElementById('py_selectDef1').value;
+        const py1Det = parseInt(document.getElementById('py_d1_detected').value) || 0;
+        const py1Corr = parseInt(document.getElementById('py_d1_corrected').value) || 0;
+
+        const py2Name = document.getElementById('py_selectDef2').value;
+        const py2Det = parseInt(document.getElementById('py_d2_detected').value) || 0;
+        const py2Corr = parseInt(document.getElementById('py_d2_corrected').value) || 0;
+
+        const py3Name = document.getElementById('py_selectDef3').value;
+        const py3Det = parseInt(document.getElementById('py_d3_detected').value) || 0;
+        const py3Corr = parseInt(document.getElementById('py_d3_corrected').value) || 0;
+
+        const py4Name = document.getElementById('py_selectDef4').value;
+        const py4Det = parseInt(document.getElementById('py_d4_detected').value) || 0;
+        const py4Corr = parseInt(document.getElementById('py_d4_corrected').value) || 0;
+
+        // Update Top Previous Year Graph Title & Data
+        document.getElementById('headerMainPrev').innerText = `${prevYearText} SPECIFIC DEFECTS & CORRECTED`;
+        chartMainPrev.data.labels = [py1Name, py2Name, py3Name, py4Name];
+        chartMainPrev.data.datasets[0].data = [py1Det, py2Det, py3Det, py4Det];
+        chartMainPrev.data.datasets[1].data = [py1Corr, py2Corr, py3Corr, py4Corr];
+        chartMainPrev.update();
+
+        // --- 2. CURRENT YEAR DATA (GRAPHS 01 - 04) ---
+        const cy1Name = document.getElementById('cy_selectDef1').value;
+        const cy1Det = parseInt(document.getElementById('cy_d1_detected').value) || 0;
+        const cy1Corr = parseInt(document.getElementById('cy_d1_corrected').value) || 0;
+
+        const cy2Name = document.getElementById('cy_selectDef2').value;
+        const cy2Det = parseInt(document.getElementById('cy_d2_detected').value) || 0;
+        const cy2Corr = parseInt(document.getElementById('cy_d2_corrected').value) || 0;
+
+        const cy3Name = document.getElementById('cy_selectDef3').value;
+        const cy3Det = parseInt(document.getElementById('cy_d3_detected').value) || 0;
+        const cy3Corr = parseInt(document.getElementById('cy_d3_corrected').value) || 0;
+
+        const cy4Name = document.getElementById('cy_selectDef4').value;
+        const cy4Det = parseInt(document.getElementById('cy_d4_detected').value) || 0;
+        const cy4Corr = parseInt(document.getElementById('cy_d4_corrected').value) || 0;
+
+        // Update Current Year Headers
+        document.getElementById('headerDef1').innerText = `${currYearText} - ${cy1Name.toUpperCase()}`;
+        document.getElementById('headerDef2').innerText = `${currYearText} - ${cy2Name.toUpperCase()}`;
+        document.getElementById('headerDef3').innerText = `${currYearText} - ${cy3Name.toUpperCase()}`;
+        document.getElementById('headerDef4').innerText = `${currYearText} - ${cy4Name.toUpperCase()}`;
+
+        // Update Current Year Individual Charts
+        chart1.data.labels = [cy1Name.toUpperCase(), 'CORRECTED'];
+        chart1.data.datasets[0].data = [cy1Det, cy1Corr];
+        chart1.update();
+
+        chart2.data.labels = [cy2Name.toUpperCase(), 'CORRECTED'];
+        chart2.data.datasets[0].data = [cy2Det, cy2Corr];
+        chart2.update();
+
+        chart3.data.labels = [cy3Name.toUpperCase(), 'CORRECTED'];
+        chart3.data.datasets[0].data = [cy3Det, cy3Corr];
+        chart3.update();
+
+        chart4.data.labels = [cy4Name.toUpperCase(), 'CORRECTED'];
+        chart4.data.datasets[0].data = [cy4Det, cy4Corr];
+        chart4.update();
+    }
+
+    window.onload = function() {
+        populateDropdowns();
+        initPage49Charts();
+        initAutoYears();
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Pages 40-42 - Health 796 (Revised)</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Page Design with Executive Frame Border --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            height: 297mm; /* Strict A4 Height */
+            padding: 10mm 12mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000; /* Executive Double Frame Border */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            page-break-after: always; /* Force strict page break per page */
+            overflow: hidden;
+        }
+
+        .doc-header { text-align: right; font-size: 11px; font-weight: bold; }
+        .doc-title { text-align: center; font-size: 16px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin: 2px 0 6px 0; text-decoration: underline; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-bottom: 1.5px solid #000;
+            padding-bottom: 6px;
+        }
+
+        /* Health 796 Table Styling - Bigger Fonts & Full Height Fit */
+        .stats-table-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stats-table {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px; /* Larger Font for clear visibility */
+        }
+
+        .stats-table th, .stats-table td {
+            border: 1px solid #000;
+            padding: 4.5px 6px; /* Increased cell padding to stretch table nicely */
+            text-align: center;
+        }
+
+        .stats-table th { 
+            background-color: #f2f2f2; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .section-header {
+            background-color: #e5e7eb;
+            font-weight: bold;
+            text-align: left !important;
+            padding-left: 8px !important;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .sub-section-header {
+            font-weight: bold;
+            text-align: left !important;
+            padding-left: 16px !important;
+            background-color: #f9fafb;
+            font-size: 10.5px;
+        }
+
+        .item-row td:first-child { text-align: left; padding-left: 18px; }
+
+        .annex-footer { 
+            text-align: right; 
+            font-size: 11px; 
+            font-weight: bold; 
+            margin-top: 6px; 
+            border-top: 1.5px solid #000; 
+            padding-top: 4px; 
+        }
+
+        /* Portal Card Styling */
+        .portal-card {
+            background: #fff;
+            padding: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .portal-card h3 { margin-top: 0; border-bottom: 2px solid #333; padding-bottom: 4px; font-size: 14px; }
+        .portal-card h4 { margin: 10px 0 5px 0; font-size: 12px; color: #0284c7; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 10.5px; font-weight: bold; margin-bottom: 2px; }
+        .form-group input, .form-group select { padding: 5px; border: 1px solid #ccc; border-radius: 3px; font-size: 11px; }
+
+        .btn { padding: 8px 15px; font-size: 11px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-right: 6px; }
+        .btn-update { background-color: #0284c7; color: white; }
+        .btn-save { background-color: #16a34a; color: white; }
+        .btn-print { background-color: #2563eb; color: white; }
+
+        /* Print Rules - Strict Page Boundaries & Full Fit */
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body { background: white; padding: 0; margin: 0; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .portal-card, h2 { display: none !important; }
+
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 10mm 12mm !important;
+                margin: 0 !important;
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+            }
+
+            .stats-table th, .stats-table td {
+                border: 1px solid #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Data Portal - Health 796 (Pages 40-42)</h2>
+
+    <!-- ================= PAGE 1 (MANUAL PAGE 40) ================= -->
+    <div class="print-a4-page">
+        <div class="stats-table-container">
+            <div class="doc-header">Health-796 (Revised)</div>
+            <div class="doc-title">PUBLIC HEALTH STATISTICS</div>
+
+            <div class="meta-grid">
+                <div>Area: <span id="lblArea">........................</span></div>
+                <div>Divisional Secretary Area: <span id="lblDS">........................</span></div>
+                <div>Local Authority: <span id="lblLA">........................</span></div>
+                <div>No. of Grama Niladhari Divisions: <span id="lblGN">..........</span></div>
+                <div style="grid-column: span 2;">No. of Villages/Streets/Estates/Wards: <span id="lblVillages">..........</span></div>
+            </div>
+
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 45%; text-align: left; padding-left: 8px;">Description</th>
+                        <th colspan="5">Year</th>
+                    </tr>
+                    <tr id="trYearsP1"></tr>
+                </thead>
+                <tbody id="tbodyPage1"></tbody>
+            </table>
+        </div>
+        <div class="annex-footer">Annex - 2 (Page 1)</div>
+    </div>
+
+    <!-- ================= PAGE 2 (MANUAL PAGE 41) ================= -->
+    <div class="print-a4-page">
+        <div class="stats-table-container">
+            <div class="doc-header" style="visibility: hidden;">Health-796 (Revised)</div>
+            <div style="font-weight: bold; font-size: 12px; margin-bottom: 8px; text-align: center; text-transform: uppercase;">PUBLIC HEALTH STATISTICS (Contd. - Page 2)</div>
+
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 45%; text-align: left; padding-left: 8px;">Description</th>
+                        <th colspan="5">Year</th>
+                    </tr>
+                    <tr id="trYearsP2"></tr>
+                </thead>
+                <tbody id="tbodyPage2"></tbody>
+            </table>
+        </div>
+        <div class="annex-footer">Annex - 2 (Page 2)</div>
+    </div>
+
+    <!-- ================= PAGE 3 (MANUAL PAGE 42) ================= -->
+    <div class="print-a4-page">
+        <div class="stats-table-container">
+            <div class="doc-header" style="visibility: hidden;">Health-796 (Revised)</div>
+            <div style="font-weight: bold; font-size: 12px; margin-bottom: 8px; text-align: center; text-transform: uppercase;">PUBLIC HEALTH STATISTICS (Contd. - Page 3)</div>
+
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 45%; text-align: left; padding-left: 8px;">Description</th>
+                        <th colspan="5">Year</th>
+                    </tr>
+                    <tr id="trYearsP3"></tr>
+                </thead>
+                <tbody id="tbodyPage3"></tbody>
+            </table>
+        </div>
+        <div class="annex-footer">Annex - 2 (Page 3)</div>
+    </div>
+
+
+    <!-- ================= DATA INPUT PORTAL ================= -->
+    <div class="portal-card">
+        <h3>1. Header & 5-Year Configuration</h3>
+        <div class="form-grid">
+            <div class="form-group"><label>Area Name</label><input type="text" id="inpArea" value="Poththapitiya Range"></div>
+            <div class="form-group"><label>DS Area</label><input type="text" id="inpDS" value="Yatinuwara"></div>
+            <div class="form-group"><label>Local Authority</label><input type="text" id="inpLA" value="Yatinuwara PS"></div>
+            <div class="form-group"><label>GN Divisions Count</label><input type="text" id="inpGN" value="12"></div>
+            <div class="form-group"><label>Villages/Estates Count</label><input type="text" id="inpVillages" value="28"></div>
+        </div>
+        <div class="form-grid">
+            <div class="form-group"><label>Year 1 Column</label><input type="text" id="inpY0" value="2022"></div>
+            <div class="form-group"><label>Year 2 Column</label><input type="text" id="inpY1" value="2023"></div>
+            <div class="form-group"><label>Year 3 Column</label><input type="text" id="inpY2" value="2024"></div>
+            <div class="form-group"><label>Year 4 Column</label><input type="text" id="inpY3" value="2025"></div>
+            <div class="form-group"><label>Year 5 Column</label><input type="text" id="inpY4" value="2026"></div>
+        </div>
+        <button type="button" class="btn btn-update" onclick="updateConfig()">Update Headers & Years</button>
+
+        <h3 style="margin-top: 18px;">2. Section-wise Bulk Data Entry</h3>
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+                <label style="color: #2563eb; font-size: 11px;">Select Target Year Column:</label>
+                <select id="selectTargetYear"></select>
+            </div>
+            <div class="form-group">
+                <label style="color: #2563eb; font-size: 11px;">Select Section to Fill Data:</label>
+                <select id="selectSection" onchange="renderSectionInputs()"></select>
+            </div>
+        </div>
+
+        <!-- Dynamic Section Entry Container -->
+        <div id="sectionInputsContainer" style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 5px; margin-bottom: 12px;"></div>
+
+        <button type="button" class="btn btn-save" onclick="saveSectionData()">💾 Save Section Data to Selected Year</button>
+        <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print All 3 Pages</button>
+    </div>
+</div>
+
+<script>
+    // Balanced Schema Distribution across 3 Pages to fill 100% A4 height
+    const page1Schema = [
+        { type: "section", name: "Population" },
+        { type: "item", key: "pop_urban", name: "Urban" },
+        { type: "item", key: "pop_rural", name: "Rural" },
+        { type: "item", key: "pop_estate", name: "Estate" },
+        { type: "item", key: "pop_total", name: "Total" },
+
+        { type: "section", name: "Vital Statistics" },
+        { type: "item", key: "vital_births", name: "Births" },
+        { type: "item", key: "vital_deaths", name: "Deaths" },
+
+        { type: "section", name: "Communicable Diseases (Confirmed Cases)" },
+        { type: "subsection", name: "Group A" },
+        { type: "item", key: "cd_cholera", name: "Cholera" },
+        { type: "item", key: "cd_plague", name: "Plague" },
+        { type: "item", key: "cd_yellow_fever", name: "Yellow Fever" },
+
+        { type: "subsection", name: "Group B" },
+        { type: "item", key: "cd_polio", name: "Poliomyelitis / AFP" },
+        { type: "item", key: "cd_chickenpox", name: "Chicken pox" },
+        { type: "item", key: "cd_dengue", name: "Dengue Fever / DHF" },
+        { type: "item", key: "cd_diphtheria", name: "Diphtheria" },
+        { type: "item", key: "cd_dysentery", name: "Dysentery" },
+        { type: "item", key: "cd_encephalitis", name: "Encephalitis" },
+        { type: "item", key: "cd_enteric", name: "Enteric Fever" },
+        { type: "item", key: "cd_food_poisoning", name: "Food Poisoning" },
+        { type: "item", key: "cd_rabies", name: "Human Rabies" },
+        { type: "item", key: "cd_leptospirosis", name: "Leptospirosis" },
+        { type: "item", key: "cd_malaria", name: "Malaria" },
+        { type: "item", key: "cd_measles", name: "Measles" },
+        { type: "item", key: "cd_meningitis", name: "Meningitis" },
+        { type: "item", key: "cd_mumps", name: "Mumps" },
+        { type: "item", key: "cd_rubella", name: "Rubella / CRS" },
+        { type: "item", key: "cd_fever", name: "Simple Continued Fever" }
+    ];
+
+    const page2Schema = [
+        { type: "section", name: "Communicable Diseases (Group B Contd.)" },
+        { type: "item", key: "cd_tetanus", name: "Tetanus" },
+        { type: "item", key: "cd_typhus", name: "Typhus Fever" },
+        { type: "item", key: "cd_hepatitis", name: "Viral Hepatitis" },
+        { type: "item", key: "cd_whooping", name: "Whooping Cough" },
+        { type: "item", key: "cd_sars", name: "SARS / Suspected for SARS" },
+        { type: "item", key: "cd_tb", name: "Tuberculosis" },
+
+        { type: "section", name: "Sanitation" },
+        { type: "item", key: "san_sanitary", name: "No. of Houses with Sanitary Latrines" },
+        { type: "item", key: "san_insanitary", name: "No. of Houses with Insanitary Latrines" },
+        { type: "item", key: "san_none", name: "No. of Houses without Latrines" },
+
+        { type: "section", name: "Water Safety" },
+        { type: "item", key: "wat_safe", name: "No. of Houses with Safe Water Supplies" },
+        { type: "item", key: "wat_unsafe", name: "No. of Houses with Unsafe Water Supplies" },
+
+        { type: "section", name: "Food Safety" },
+        { type: "item", key: "food_factories", name: "No. of Food Factories" },
+        { type: "item", key: "food_bakeries", name: "No. of Bakeries" },
+        { type: "item", key: "food_hotels", name: "No. of Hotels / Restaurants" },
+        { type: "item", key: "food_snack", name: "No. of Snack Bars" },
+        { type: "item", key: "food_kiosks", name: "No. of Tea & Coffee Kiosks" },
+        { type: "item", key: "food_groceries", name: "No. of Groceries" },
+        { type: "item", key: "food_others", name: "No. of Others" },
+
+        { type: "section", name: "School Health" },
+        { type: "item", key: "sch_under200", name: "No. of Schools less than 200 children" },
+        { type: "item", key: "sch_over200", name: "No. of Schools more than 200 children" },
+        { type: "item", key: "sch_private", name: "No. of Private Schools" },
+        { type: "item", key: "sch_pirivena", name: "No. of Pirivena Schools" },
+        { type: "item", key: "sch_pop_total", name: "Total School Population in All Schools" },
+        { type: "item", key: "sch_preschools", name: "No. of Pre Schools" }
+    ];
+
+    const page3Schema = [
+        { type: "section", name: "Occupational Health" },
+        { type: "item", key: "occ_factories", name: "No. of Factories" },
+
+        { type: "section", name: "Medical Institutions & Pharmacies" },
+        { type: "item", key: "med_gov_western", name: "Government Medical Institutions (Western)" },
+        { type: "item", key: "med_gov_indigenous", name: "Government Medical Institutions (Indigenous)" },
+        { type: "item", key: "med_pvt_hosp_western", name: "Private Hospitals (Western)" },
+        { type: "item", key: "med_pvt_hosp_other", name: "Private Hospitals (Indigenous/Others)" },
+        { type: "item", key: "med_pvt_disp_western", name: "Private Dispensaries (Western)" },
+        { type: "item", key: "med_pvt_disp_indigenous", name: "Private Dispensaries (Indigenous)" },
+        { type: "item", key: "med_pharmacies", name: "No. of Pharmacies" },
+        { type: "item", key: "med_welfare_children", name: "No. of Welfare Centres for Children" },
+        { type: "item", key: "med_welfare_elders", name: "No. of Welfare Centres for Elders" },
+        { type: "item", key: "med_refugee", name: "No. of Refugee Camps" }
+    ];
+
+    const sectionsList = [
+        { name: "Population", schema: page1Schema },
+        { name: "Vital Statistics", schema: page1Schema },
+        { name: "Communicable Diseases (Group A)", schema: page1Schema },
+        { name: "Communicable Diseases (Group B - Part 1)", schema: page1Schema },
+        { name: "Communicable Diseases (Group B - Part 2)", schema: page2Schema },
+        { name: "Sanitation", schema: page2Schema },
+        { name: "Water Safety", schema: page2Schema },
+        { name: "Food Safety", schema: page2Schema },
+        { name: "School Health", schema: page2Schema },
+        { name: "Occupational Health", schema: page3Schema },
+        { name: "Medical Institutions & Pharmacies", schema: page3Schema }
+    ];
+
+    let yearLabels = ["2022", "2023", "2024", "2025", "2026"];
+    let storeData = {};
+
+    function initDataStorage() {
+        const allSchemas = [...page1Schema, ...page2Schema, ...page3Schema];
+        allSchemas.forEach(row => {
+            if (row.type === 'item') {
+                storeData[row.key] = [0, 0, 0, 0, 0];
+            }
+        });
+    }
+
+    function updateConfig() {
+        document.getElementById('lblArea').innerText = document.getElementById('inpArea').value || "..............";
+        document.getElementById('lblDS').innerText = document.getElementById('inpDS').value || "..............";
+        document.getElementById('lblLA').innerText = document.getElementById('inpLA').value || "..............";
+        document.getElementById('lblGN').innerText = document.getElementById('inpGN').value || "......";
+        document.getElementById('lblVillages').innerText = document.getElementById('inpVillages').value || "......";
+
+        for (let i = 0; i < 5; i++) {
+            yearLabels[i] = document.getElementById(`inpY${i}`).value || `Year ${i+1}`;
+        }
+
+        renderYearHeaders();
+        populateYearDropdown();
+        renderAllTables();
+    }
+
+    function renderYearHeaders() {
+        let trHtml = '';
+        yearLabels.forEach(y => { trHtml += `<th style="width: 11%;">${y}</th>`; });
+
+        document.getElementById('trYearsP1').innerHTML = trHtml;
+        document.getElementById('trYearsP2').innerHTML = trHtml;
+        document.getElementById('trYearsP3').innerHTML = trHtml;
+    }
+
+    function renderTableRows(schema, tbodyId) {
+        const tbody = document.getElementById(tbodyId);
+        tbody.innerHTML = '';
+
+        schema.forEach(row => {
+            const tr = document.createElement('tr');
+            if (row.type === 'section') {
+                tr.innerHTML = `<td colspan="6" class="section-header">${row.name}</td>`;
+            } else if (row.type === 'subsection') {
+                tr.innerHTML = `<td colspan="6" class="sub-section-header">${row.name}</td>`;
+            } else if (row.type === 'item') {
+                tr.className = 'item-row';
+                const vals = storeData[row.key] || [0, 0, 0, 0, 0];
+                tr.innerHTML = `
+                    <td>${row.name}</td>
+                    <td>${vals[0]}</td>
+                    <td>${vals[1]}</td>
+                    <td>${vals[2]}</td>
+                    <td>${vals[3]}</td>
+                    <td>${vals[4]}</td>
+                `;
+            }
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderAllTables() {
+        renderTableRows(page1Schema, 'tbodyPage1');
+        renderTableRows(page2Schema, 'tbodyPage2');
+        renderTableRows(page3Schema, 'tbodyPage3');
+    }
+
+    function populateYearDropdown() {
+        const sel = document.getElementById('selectTargetYear');
+        sel.innerHTML = '';
+        yearLabels.forEach((y, idx) => {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            opt.innerText = `Year Column ${idx+1} (${y})`;
+            sel.appendChild(opt);
+        });
+    }
+
+    function populateSectionDropdown() {
+        const sel = document.getElementById('selectSection');
+        sel.innerHTML = '';
+        sectionsList.forEach((sec, idx) => {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            opt.innerText = sec.name;
+            sel.appendChild(opt);
+        });
+        renderSectionInputs();
+    }
+
+    function renderSectionInputs() {
+        const secIdx = document.getElementById('selectSection').value;
+        const targetSec = sectionsList[secIdx];
+        const container = document.getElementById('sectionInputsContainer');
+        const yearIdx = parseInt(document.getElementById('selectTargetYear').value) || 0;
+
+        container.innerHTML = `<h4>Section: ${targetSec.name} (Fill Data for ${yearLabels[yearIdx]})</h4>`;
+
+        let gridHtml = '<div class="form-grid">';
+        
+        let activeItems = [];
+        if (targetSec.name === "Communicable Diseases (Group A)") {
+            activeItems = page1Schema.filter(r => r.key === "cd_cholera" || r.key === "cd_plague" || r.key === "cd_yellow_fever");
+        } else if (targetSec.name === "Communicable Diseases (Group B - Part 1)") {
+            activeItems = page1Schema.filter(r => r.type === 'item' && r.key.startsWith('cd_') && r.key !== "cd_cholera" && r.key !== "cd_plague" && r.key !== "cd_yellow_fever");
+        } else if (targetSec.name === "Communicable Diseases (Group B - Part 2)") {
+            activeItems = page2Schema.filter(r => r.type === 'item' && r.key.startsWith('cd_'));
+        } else {
+            activeItems = targetSec.schema.filter(r => r.type === 'item' && isKeyInSection(r.key, targetSec.name));
+        }
+
+        activeItems.forEach(item => {
+            const currentVal = storeData[item.key][yearIdx];
+            gridHtml += `
+                <div class="form-group">
+                    <label>${item.name}</label>
+                    <input type="number" id="inp_${item.key}" value="${currentVal}" min="0">
+                </div>
+            `;
+        });
+
+        gridHtml += '</div>';
+        container.innerHTML += gridHtml;
+    }
+
+    function isKeyInSection(key, secName) {
+        if (secName === "Population") return key.startsWith("pop_");
+        if (secName === "Vital Statistics") return key.startsWith("vital_");
+        if (secName === "Sanitation") return key.startsWith("san_");
+        if (secName === "Water Safety") return key.startsWith("wat_");
+        if (secName === "Food Safety") return key.startsWith("food_");
+        if (secName === "School Health") return key.startsWith("sch_");
+        if (secName === "Occupational Health") return key.startsWith("occ_");
+        if (secName === "Medical Institutions & Pharmacies") return key.startsWith("med_");
+        return false;
+    }
+
+    function saveSectionData() {
+        const yearIdx = parseInt(document.getElementById('selectTargetYear').value);
+        const inputs = document.querySelectorAll('#sectionInputsContainer input[type="number"]');
+
+        inputs.forEach(inp => {
+            const key = inp.id.replace('inp_', '');
+            const val = parseInt(inp.value) || 0;
+            storeData[key][yearIdx] = val;
+        });
+
+        renderAllTables();
+        alert(`Successfully saved Section Data to Year Column ${yearIdx + 1} (${yearLabels[yearIdx]})!`);
+    }
+
+    document.getElementById('selectTargetYear').addEventListener('change', renderSectionInputs);
+
+    window.onload = function() {
+        initDataStorage();
+        updateConfig();
+        populateSectionDropdown();
+    };
+</script>
+
+</body>
+</html>

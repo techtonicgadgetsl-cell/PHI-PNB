@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Portal - Detailed Instruction Manual</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1e293b; padding: 25px; max-width: 900px; margin: 0 auto; background: #f8fafc; }
+        .manual-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        
+        h1 { color: #1a365d; font-size: 22px; border-bottom: 3px solid #1a365d; padding-bottom: 8px; text-transform: uppercase; text-align: center; margin-top: 0; }
+        .subtitle { text-align: center; color: #475569; font-weight: bold; margin-bottom: 25px; font-size: 14px; }
+        
+        h2 { color: #0284c7; font-size: 17px; margin-top: 30px; border-left: 5px solid #0284c7; padding-left: 10px; background: #e0f2fe; padding-top: 6px; padding-bottom: 6px; border-radius: 0 4px 4px 0; }
+        h3 { font-size: 15px; color: #0f172a; margin-top: 22px; background: #f1f5f9; padding: 8px; border-radius: 4px; border-left: 3px solid #0f172a; }
+        
+        p, li { font-size: 13px; color: #334155; }
+        ul, ol { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+
+        .step-box { background: #fafafa; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 6px; margin: 10px 0; }
+        .step-title { font-weight: bold; color: #2563eb; font-size: 13px; margin-bottom: 5px; }
+        .note-box { background: #fffbebe6; border-left: 4px solid #f59e0b; padding: 10px; font-size: 12px; margin-top: 8px; border-radius: 0 4px 4px 0; }
+
+        .btn-pdf { background: #059669; color: white; border: none; padding: 12px 24px; font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; display: block; margin: 0 auto 20px auto; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+        .btn-pdf:hover { background: #047857; }
+        
+        .developer-box { background: #1e293b; color: white; padding: 15px; border-radius: 6px; font-size: 11px; text-align: center; margin-top: 40px; font-weight: 500; line-height: 1.6; }
+        
+        /* A4 Print Layout Rules */
+        @media print {
+            body { background: white; padding: 0; }
+            .manual-card { box-shadow: none; padding: 0; }
+            .btn-pdf { display: none !important; }
+            h3 { page-break-after: avoid; }
+            .step-box { page-break-inside: avoid; }
+            @page { size: A4; margin: 12mm; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="btn-pdf" onclick="window.print()">📥 Download / Save as PDF</button>
+
+    <div class="manual-card">
+        <h1>📖 PHI Office Display Board - Web Portal Instruction Manual</h1>
+        <div class="subtitle">සවිස්තරාත්මක පරිශීලක හා පියවරෙන් පියවර උපදෙස් සංග්‍රහය</div>
+
+        <h2>📌 01. පද්ධතියේ ප්‍රධාන අරමුණ හා භාවිතය (Overview)</h2>
+        <p>මෙම Web Portal එක සකස් කර ඇත්තේ <strong>Public Health Inspector (PHI Manual)</strong> සටහන් පොතේ <strong>Page 39 සිට Page 51 දක්වා</strong> ඇති සියලුම පාලන පෝරම (Administrative Forms) සහ ප්‍රස්ථාර (Annual Display Board Graphs) ඉතා පහසුවෙන්, නිවැරදිව Digital ක්‍රමයට සකස් කරගැනීමටයි[cite: 15]. මෙහි ඇති විශේෂතා:</p>
+        <ul>
+            <li><strong>A4 Portrait Standard Fit:</strong> සෑම පිටුවක්ම මුද්‍රණය කළ විට (Print) A4 කොළයකට නියමිත පරතරයන් සහිතව සියයට සියයක් සරිලන පරිදි සකසා ඇත[cite: 15].</li>
+            <li><strong>Auto-Hide Controls:</strong> මුද්‍රණ (Print/PDF) බොත්තම එබූ සැනින් දත්ත ඇතුළත් කරන Forms, Dropdown, Buttons සියල්ල ස්වයංක්‍රීයව සැඟවී Display Board එකට අවශ්‍ය අලංකාර සටහන පමණක් Print වේ[cite: 15].</li>
+            <li><strong>Dynamic Calculation & Charting:</strong> ඔබ ඇතුළත් කරන අගයන්ට අනුකූලව එකතුවන් (Totals) සහ ප්‍රස්ථාර ක්ෂණිකව වෙනස් වේ[cite: 15].</li>
+        </ul>
+
+        <h2>📌 02. Administrative Forms භාවිත උපදෙස් (Administrative Registers Guide)</h2>
+
+        <!-- Health 795 - Page 39 -->
+        <h3>📋 Page 39: Health 795 - Administration (පාලන හා ජනගහන පෝරමය)</h3>
+        <p><strong>අරමුණ:</strong> බලප්‍රදේශයේ ග්‍රාම නිලධාරී වසම්, වතු/ගම්මාන, නිවාස සංඛ්‍යාව සහ සැබෑ (Actual) හා ඇස්තමේන්තුගත (Estimated) ජනගහන දත්ත වාර්තා කිරීම.</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Step 01 (Range Setup):</strong> "PHI Range Name" කොටුවට ඔබගේ බලප්‍රදේශයේ නම (උදා: Poththapitiya PHI Range) ඇතුළත් කරන්න. Header එක Auto Update වේ.</li>
+                <li><strong>Step 02 (Data Entry):</strong> "GN Div & Code No.", "Name of Village/Estate", Dwellings, Actual Population, සහ Estimated Population යන අගයන් ඇතුළත් කරන්න. අදාළ ප්‍රදේශය වත්තක් නම් "Is Estate Area?" යන්න 'Yes' ලෙස තෝරන්න.</li>
+                <li><strong>Step 03 (Add Record):</strong> <em>➕ Add Record to Table</em> බොත්තම ඔබන්න. එම දත්ත සටහන ප්‍රධාන වගුවට එකතු වන අතර Total සහ Estate Total ස්වයංක්‍රීයව ගණනය වේ.</li>
+                <li><strong>Step 04 (Print):</strong> අවශ්‍ය සියලුම ගම්මාන ඇතුළත් කර අවසන් වූ පසු <em>🖨️ Print A4 Form (Health 795)</em> ක්ලික් කරන්න.</li>
+            </ol>
+        </div>
+
+        <!-- Health 796 - Pages 40-42 -->
+        <h3>📋 Pages 40-42: Health 796 - Public Health Statistics (මහජන සෞඛ්‍ය සංඛ්‍යාන පෝරමය)</h3>
+        <p><strong>අරමුණ:</strong> ජනගහනය, වැදගත් සංඛ්‍යාන, බෝවන/බෝනොවන රෝග, සෞඛ්‍යාරක්ෂාව, ජල සුරක්ෂිතතාව, ආහාර සුරක්ෂිතතාව සහ පාසල් සෞඛ්‍යය පිළිබඳ වසර 5ක ප්‍රගතිය පිටු 3කින් වාර්තා කිරීම.</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Step 01 (Header & Years Setup):</strong> Area, DS Area, Local Authority, GN Divisions Count සහ වසර 5 (Year 1 සිට Year 5 Column දක්වා) සඳහන් කර <em>Update Headers & Years</em> බොත්තම ඔබන්න. පිටු 3 හිම Column හිස්සිරස්තල auto update වේ.</li>
+                <li><strong>Step 02 (Select Target Year Column):</strong> "Select Target Year Column" Dropdown එකෙන් දත්ත ඇතුළත් කිරීමට අවශ්‍ය වසර (උදා: Year Column 1 - 2022) තෝරන්න.</li>
+                <li><strong>Step 03 (Select Section):</strong> "Select Section to Fill Data" Dropdown එකෙන් දත්ත ඇතුළත් කිරීමට අවශ්‍ය කොටස (උදා: Population, Food Safety, Sanitation, etc.) තෝරන්න.</li>
+                <li><strong>Step 04 (Save Data):</strong> පාදෙන කොටුවලට අදාළ අගයන් ඇතුළත් කර <em>💾 Save Section Data to Selected Year</em> ඔබන්න. එම අගයන් තෝරාගත් Year Column එකට එකතු වේ. (අනෙක් Years සඳහාද මෙසේම දත්ත ඇතුළත් කරන්න).</li>
+                <li><strong>Step 05 (Print):</strong> <em>🖨️ Print All 3 Pages</em> ක්ලික් කර A4 පිටු 3ම එකවර Print ලබාගන්න.</li>
+            </ol>
+        </div>
+
+        <h2>📌 03. Display Board Graphs භාවිත උපදෙස් (Page-by-Page Detailed Guide)</h2>
+
+        <!-- Page 43 -->
+        <h3>🔹 Page 43: Specific Communicable Diseases (විශේෂ බෝවන රෝග ප්‍රස්ථාරය)</h3>
+        <p><strong>අරමුණ:</strong> බලප්‍රදේශයේ වර්ෂය තුළ වාර්තා වන ප්‍රධාන බෝවන රෝග 5ක තත්ත්වය පසුගිය වසර හා සංසන්දනය කිරීම[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Step 01 (Annual Year Setup):</strong> "Current Year Label" සහ "Previous Year Label" කොටුවල අදාළ වර්ෂයන් (උදා: Current Year - 2026, Previous Year - 2025) සඳහන් කර <em>Update Year Labels</em> බොත්තම ඔබන්න[cite: 15].</li>
+                <li><strong>Step 02 (Disease Configuration):</strong> D1, D2, D3, D4, D5 යන Dropdown ලැයිස්තු වලින් ඔබගේ බලප්‍රදේශයට අදාළ ප්‍රධාන රෝග 5 තෝරන්න[cite: 15]. <em>Set Active Diseases</em> ක්ලික් කළ විට ප්‍රස්ථාරවල පාට හා Legend එක Auto-Update වේ[cite: 15].</li>
+                <li><strong>Step 03 (Data Entry):</strong> Target Year එක සහ අදාළ මාසය තෝරා රෝග 5 සඳහාම වාර්තා වූ රෝගීන් සංඛ්‍යාව ඇතුළත් කර <em>Save All 5 Diseases Data</em> ඔබන්න[cite: 15].</li>
+                <li><strong>Step 04 (Print):</strong> සියලු දත්ත ඇතුළත් කළ පසු <em>Print / Download A4 Page</em> ක්ලික් කරන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <!-- Page 44 -->
+        <h3>🔹 Page 44: Non Communicable Diseases - NCD (බෝනොවන රෝග ප්‍රස්ථාරය)</h3>
+        <p><strong>අරමුණ:</strong> පසුගිය වසර 4ක කාලයක MI, Cancer, Diabetes, Stroke, Hypertension යන බෝනොවන රෝගීන් සංඛ්‍යාවේ ප්‍රවණතාව සංසන්දනය[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Step 01 (Year Header Setup):</strong> Year 1, Year 2, Year 3, Year 4 සඳහා අදාළ වසර 4 සකසා <em>Update Year Labels</em> දෙන්න[cite: 15].</li>
+                <li><strong>Step 02 (Data Entry):</strong> Dropdown එකෙන් දත්ත ඇතුළත් කිරීමට අවශ්‍ය වසර තෝරන්න[cite: 15].</li>
+                <li><strong>Step 03:</strong> MI, Cancer, Diabetes, Stroke, Hypertension යන රෝග 5 සඳහා වූ අගයන් සටහන් කර <em>Save NCD Data</em> ඔබන්න[cite: 15].</li>
+                <li><strong>Step 04:</strong> <em>Print A4 Full Page</em> මගින් කොළයට Fit වන සේ Print ලබාගන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <!-- Page 45 -->
+        <h3>🔹 Page 45: Food Safety & Sampling (ආහාර සුරක්ෂිතතාව හා සාම්පල)</h3>
+        <p><strong>අරමුණ:</strong> ආහාර වෙළඳසැල් ශ්‍රේණිගත කිරීම් (A, B, C, D) සහ ආහාර සාම්පල ලබාගැනීමේ මාසික ප්‍රගතිය පෙන්වීම[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Section 1 (Assessment of Establishments):</strong> Target එක තෝරා A, B, C, D ශ්‍රේණිවල වෙළඳසැල් ගණන දී <em>Update Assessment Data</em> ඔබන්න[cite: 15].</li>
+                <li><strong>Section 2 (Food Sampling):</strong> අදාළ මාසය තෝරා Chemical, Bacteriological Samples ගණන සහ මාසික ඉලක්කය සටහන් කර <em>Update Food Sampling Data</em> ඔබන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <!-- Page 46 -->
+        <h3>🔹 Page 46: Occupational Health (වෘත්තීය සෞඛ්‍යය)</h3>
+        <p><strong>අරමුණ:</strong> බලප්‍රදේශයේ කර්මාන්තශාලා වර්ගීකරණය (F1-F6) සහ කාර්තුමය පරීක්ෂණ වාර්තා සටහන[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Section 1 (Types of Factories):</strong> F1 සිට F6 දක්වා කර්මාන්තශාලා ගණන දී <em>Update Factory Types Data</em> ඔබන්න[cite: 15].</li>
+                <li><strong>Section 2 (Factory Inspection):</strong> කාර්තුව තෝරා Inspected සහ Unsatisfactory ගණන ඇතුළත් කර <em>Update Inspection Data</em> ඔබන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <!-- Page 47 -->
+        <h3>🔹 Page 47: Solid Waste Management (ඝන අපද්‍රව්‍ය කළමනාකරණය)</h3>
+        <p><strong>අරමුණ:</strong> පසුගිය වසර 2 හි අපද්‍රව්‍ය බැහැර කරන ක්‍රම (M1-M5) භාවිත කරන ගෘහස්ථ සංඛ්‍යාව සංසන්දනය[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Step 01:</strong> දත්ත ඇතුළත් කිරීමට අවශ්‍ය Graph එක (Previous Year 1 හෝ 2) තෝරන්න[cite: 15].</li>
+                <li><strong>Step 02:</strong> M1 - M5 ක්‍රම සඳහා ගෘහස්ථ ගණන දී <em>Save Solid Waste Data</em> ඔබන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <!-- Page 48 -->
+        <h3>🔹 Page 48: School Health Programme (පාසල් සෞඛ්‍ය වැඩසටහන)</h3>
+        <p><strong>අරමුණ:</strong> පරීක්ෂා කළ, ඌනතා සහිත, හා ඌනතා සකස් කළ සිසුන් සංඛ්‍යාව ස්වයංක්‍රීයව ගණනය වන ප්‍රස්ථාර 4කින් දැක්වීම[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Master Data Entry:</strong> Previous Year සහ Current Year සඳහා "To Be Examined", "Examined", "Defective", "Number of Defects", "Number Corrected" යන අගයන් ඇතුළත් කරන්න[cite: 15].</li>
+                <li><strong>Auto-Link Feature:</strong> අගයන් ස්වයංක්‍රීයව ඊළඟ ප්‍රස්ථාරයට ගලා යන අතර <em>Update All Graphs</em> ඔබන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <!-- Page 49 -->
+        <h3>🔹 Page 49: Specific Defects (විශේෂිත ඌනතා හා සකස් කිරීම්)</h3>
+        <p><strong>අරමුණ:</strong> දන්ත, පෙනීම්, ශ්‍රවණ වැනි විශේෂිත ඌනතා 4ක් සඳහා හඳුනාගත් සහ සකස් කළ (Corrected) සංඛ්‍යා විග්‍රහය[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Previous & Current Year Data:</strong> ඌනතා 4 තෝරා හඳුනාගත් ගණන සහ සකස් කළ ගණන ඇතුළත් කර <em>Update All Graphs</em> ඔබන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <!-- Page 50 -->
+        <h3>🔹 Page 50: Immunization Programme (දේශීය ප්‍රතිශක්තීකරණ සටහන)</h3>
+        <p><strong>අරමුණ:</strong> aTd, HPV I, HPV II හෝ වෙනත් එන්නත් ලබාදීමේ ඉලක්ක හා කාර්තුමය සාධනය[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Data Entry:</strong> එන්නත් වර්ගය තෝරා Target සහ Quarters (Q1-Q4) අගයන් දී <em>Update All Graphs</em> ඔබන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <!-- Page 51 -->
+        <h3>🔹 Page 51: School Sanitary Survey (පාසල් සෞඛ්‍යාරක්ෂිත සමීක්ෂණය)</h3>
+        <p><strong>අරමුණ:</strong> පාසල්වල වැසිකිළි, පිරිසිදු ජලය හා අපද්‍රව්‍ය බැහැර කිරීමේ පහසුකම් තත්ත්වය සංසන්දනය[cite: 15].</p>
+        <div class="step-box">
+            <div class="step-title">පියවරෙන් පියවර ක්‍රියාත්මක කිරීම:</div>
+            <ol>
+                <li><strong>Section 1 & 2:</strong> Schools Count, Surveys Completed, Latrines, Safe Water, Garbage අගයන් දී <em>Update All Graphs</em> ඔබන්න[cite: 15].</li>
+            </ol>
+        </div>
+
+        <h2>🖨️ 04. නිවැරදිව Print / Save as PDF කරගන්නා ආකාරය</h2>
+        <ol>
+            <li>ඔනෑම Page එකක ඇති **"Print A4 Page"** හෝ **"Print A4 Full Page"** බොත්තම ක්ලික් කරන්න[cite: 15].</li>
+            <li>Browser එකේ Print Window එක පාදෙන විට <strong>Destination</strong> ලෙස **"Save as PDF"** (හෝ ඔබේ Printer එක) තෝරන්න[cite: 15].</li>
+            <li><strong>Paper Size:</strong> A4 ලෙසත්, **Orientation:** Portrait ලෙසත් තිබේදැයි බලන්න[cite: 15].</li>
+            <li><strong>More Settings / Options:</strong> යටතේ ඇති <strong>"Background Graphics"</strong> කියන option එක ඉදිරියෙන් <strong>✔ (Tick)</strong> එක අනිවාර්යයෙන්ම දමන්න[cite: 15].</li>
+        </ol>
+
+        <div class="developer-box">
+            Designed & Developed By:<br>
+            <strong>Supun C Perera</strong><br>
+            📞 Contact: 0779054319 / 0725280660<br>
+            Public Health Inspector - Poththapitiya <br>
+            Regional Health Training Center - Kadugannawa and <br>
+            Medical Officer of Health Office - Yatinuwara<br>
+        </div>
+    </div>
+
+</body>
+</html>

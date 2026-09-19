@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 39 - Health 795 (Revised)</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Portrait Printable Container --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 12mm 15mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .doc-header {
+            text-align: right;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            text-decoration: underline;
+        }
+
+        .range-bar {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Table Styling matching Official Form Health 795 */
+        .health-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .health-table th, .health-table td {
+            border: 1.5px solid #000;
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        .health-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .text-left { text-align: left !important; }
+        .text-right { text-align: right !important; }
+        .font-bold { font-weight: bold; }
+
+        .annex-footer {
+            text-align: right;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* --- Input Portal Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            max-width: 210mm;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 15px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .form-group input, .form-group select {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 9px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .btn-add { background-color: #0284c7; color: white; }
+        .btn-clear { background-color: #dc2626; color: white; }
+        .btn-print { background-color: #059669; color: white; }
+
+        /* --- Strict Print Rules --- */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .portal-card, h2 { display: none !important; }
+
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                min-height: 297mm !important;
+                padding: 12mm 15mm !important;
+                margin: 0 !important;
+                page-break-inside: avoid;
+            }
+
+            .health-table th, .health-table td {
+                border: 1.5px solid #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Data Portal - Page 39</h2>
+
+    <!-- PRINTABLE A4 PORTRAIT PAGE -->
+    <div class="print-a4-page">
+        <div>
+            <div class="doc-header">Health - 795 (Revised)</div>
+            <div class="doc-title">ADMINISTRATION</div>
+            <div class="range-bar">
+                Range: <span id="displayRange">....................................</span>
+            </div>
+
+            <div style="text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 10px;">POPULATION</div>
+
+            <!-- Health 795 Table Structure -->
+            <table class="health-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 20%;">GN Division & Code No.</th>
+                        <th rowspan="2" style="width: 30%;">Name of Village / Street / Ward / Estate</th>
+                        <th rowspan="2" style="width: 15%;">No. of Dwellings</th>
+                        <th colspan="2" style="width: 35%;">Population</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 17.5%;">Actual</th>
+                        <th style="width: 17.5%;">Estimated</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Dynamic Data Rows will load here -->
+                </tbody>
+                <tfoot>
+                    <tr class="font-bold">
+                        <td colspan="2" class="text-right">TOTAL</td>
+                        <td id="totalDwellings">0</td>
+                        <td id="totalActual">0</td>
+                        <td id="totalEstimated">0</td>
+                    </tr>
+                    <tr class="font-bold">
+                        <td colspan="2" class="text-right">TOTAL ESTATE POPULATION</td>
+                        <td id="totalEstateDwellings">0</td>
+                        <td id="totalEstateActual">0</td>
+                        <td id="totalEstateEstimated">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="annex-footer">Annex - 1</div>
+    </div>
+
+    <!-- DATA INPUT PORTAL -->
+    <div class="portal-card">
+        <h3>1. Range & General Information Setup</h3>
+        <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+                <label>PHI Range Name:</label>
+                <input type="text" id="inputRange" placeholder="e.g. 104 - Poththapitiya Range" oninput="updateRangeHeader()">
+            </div>
+        </div>
+
+        <h3 style="margin-top: 15px;">2. Add Population / Area Data Entry</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>GN Div & Code No.</label>
+                <input type="text" id="gnDiv" placeholder="e.g. 1024 - Poththapitiya">
+            </div>
+            <div class="form-group">
+                <label>Name of Village / Estate</label>
+                <input type="text" id="villageName" placeholder="e.g. Poththapitiya Village">
+            </div>
+            <div class="form-group">
+                <label>Is Estate Area?</label>
+                <select id="isEstate">
+                    <option value="no">No (General Village/Ward)</option>
+                    <option value="yes">Yes (Estate Population)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>No. of Dwellings</label>
+                <input type="number" id="dwellings" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Actual Population</label>
+                <input type="number" id="actualPop" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label>Estimated Population</label>
+                <input type="number" id="estPop" value="0" min="0">
+            </div>
+        </div>
+        
+        <button type="button" class="btn btn-add" onclick="addRowData()">➕ Add Record to Table</button>
+        <button type="button" class="btn btn-clear" onclick="clearTableData()">🗑️ Clear All Table Data</button>
+        <button type="button" class="btn btn-print" onclick="window.print()">🖨️ Print A4 Form (Health 795)</button>
+    </div>
+</div>
+
+<script>
+    let tableData = [
+        { gn: "1024 - Poththapitiya", name: "Poththapitiya North", dwellings: 120, actual: 450, estimated: 460, isEstate: false },
+        { gn: "1024 - Poththapitiya", name: "Poththapitiya South", dwellings: 95, actual: 380, estimated: 390, isEstate: false },
+        { gn: "1025 - Dehiwanga", name: "Dehiwanga Village", dwellings: 140, actual: 520, estimated: 530, isEstate: false },
+        { gn: "1026 - Kadugannawa", name: "Highland Estate", dwellings: 60, actual: 210, estimated: 215, isEstate: true }
+    ];
+
+    function updateRangeHeader() {
+        const val = document.getElementById('inputRange').value;
+        document.getElementById('displayRange').innerText = val || "....................................";
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        let totDwellings = 0, totActual = 0, totEst = 0;
+        let estateDwellings = 0, estateActual = 0, estateEst = 0;
+
+        tableData.forEach((row, index) => {
+            totDwellings += row.dwellings;
+            totActual += row.actual;
+            totEst += row.estimated;
+
+            if (row.isEstate) {
+                estateDwellings += row.dwellings;
+                estateActual += row.actual;
+                estateEst += row.estimated;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.gn}</td>
+                <td class="text-left">${row.name} ${row.isEstate ? '<strong>(Estate)</strong>' : ''}</td>
+                <td>${row.dwellings}</td>
+                <td>${row.actual}</td>
+                <td>${row.estimated}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Update Totals
+        document.getElementById('totalDwellings').innerText = totDwellings;
+        document.getElementById('totalActual').innerText = totActual;
+        document.getElementById('totalEstimated').innerText = totEst;
+
+        document.getElementById('totalEstateDwellings').innerText = estateDwellings;
+        document.getElementById('totalEstateActual').innerText = estateActual;
+        document.getElementById('totalEstateEstimated').innerText = estateEst;
+    }
+
+    function addRowData() {
+        const gn = document.getElementById('gnDiv').value || "-";
+        const name = document.getElementById('villageName').value || "-";
+        const isEstate = document.getElementById('isEstate').value === 'yes';
+        const dwellings = parseInt(document.getElementById('dwellings').value) || 0;
+        const actual = parseInt(document.getElementById('actualPop').value) || 0;
+        const estimated = parseInt(document.getElementById('estPop').value) || 0;
+
+        tableData.push({ gn, name, dwellings, actual, estimated, isEstate });
+        renderTable();
+
+        // Reset Inputs
+        document.getElementById('villageName').value = '';
+        document.getElementById('dwellings').value = '0';
+        document.getElementById('actualPop').value = '0';
+        document.getElementById('estPop').value = '0';
+    }
+
+    function clearTableData() {
+        if (confirm("Are you sure you want to clear all rows?")) {
+            tableData = [];
+            renderTable();
+        }
+    }
+
+    window.onload = function() {
+        document.getElementById('inputRange').value = "Poththapitiya PHI Range";
+        updateRangeHeader();
+        renderTable();
+    };
+</script>
+
+</body>
+</html>

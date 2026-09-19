@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 51 - School Sanitary Survey Dashboard (A4 Portrait)</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Portrait Printable Container (210mm x 297mm) --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            height: 297mm; /* Strict A4 Height */
+            padding: 10mm 12mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .page-main-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 4px;
+        }
+
+        /* --- 50/50 Split for Previous & Current Year Graphs --- */
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: calc(100% - 35px);
+        }
+
+        .chart-card-block {
+            border: 2px solid #000;
+            padding: 6px;
+            background: #fff;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header {
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: #e2e8f0;
+            padding: 3px;
+            border: 1px solid #000;
+            margin-bottom: 6px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Input Portal Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin: 12px 0 6px 0;
+            padding: 4px;
+            background-color: #0284c7;
+            color: white;
+            border-radius: 3px;
+        }
+
+        .input-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 8px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .form-group input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .btn-config { background-color: #6c757d; color: white; }
+        .btn-update { background-color: #28a745; color: white; }
+        .btn-print { background-color: #007bff; color: white; }
+
+        /* Print Settings for Strict A4 Portrait */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body { background: white; padding: 0; margin: 0; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .portal-card, h2 { display: none !important; }
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 10mm 12mm !important;
+                margin: 0 !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Portal - Page 51 (School Sanitary Survey)</h2>
+
+    <!-- PRINTABLE A4 PORTRAIT PAGE -->
+    <div class="print-a4-page">
+        <div class="page-main-title">SCHOOL SANITARY SURVEY (PAGE 51)</div>
+
+        <div class="charts-container">
+            <!-- PREVIOUS YEAR GRAPH -->
+            <div class="chart-card-block">
+                <div class="chart-header" id="headerPrevYear">PREVIOUS YEAR (2024)</div>
+                <div class="canvas-container"><canvas id="chartPrevYear"></canvas></div>
+            </div>
+
+            <!-- CURRENT YEAR GRAPH -->
+            <div class="chart-card-block">
+                <div class="chart-header" id="headerCurrYear">CURRENT YEAR (2025)</div>
+                <div class="canvas-container"><canvas id="chartCurrYear"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 0. YEAR SETUP PORTAL -->
+    <div class="portal-card">
+        <h3>0. Year Setup (Labels)</h3>
+        <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="form-group">
+                <label>Previous Year Label</label>
+                <input type="text" id="inputPrevYear" value="2024">
+            </div>
+            <div class="form-group">
+                <label>Current Year Label</label>
+                <input type="text" id="inputCurrYear" value="2025">
+            </div>
+        </div>
+        <button type="button" class="btn btn-config" style="margin-top: 10px;" onclick="applyYearConfig()">Update Year Labels</button>
+    </div>
+
+    <!-- DATA INPUT PORTAL IN SECTIONS -->
+    <div class="portal-card">
+        <h3>1. School Sanitary Survey Data Entry Portal</h3>
+        <form id="sanitaryForm">
+            
+            <!-- SECTION 1: PREVIOUS YEAR DATA -->
+            <div class="section-title" id="secTitlePrev">PREVIOUS YEAR DATA (2024)</div>
+            <div class="input-box">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label style="color: red;">1. Schools Count (Red):</label>
+                        <input type="number" id="py_schools" value="4" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: black;">2. Surveys Completed (Black):</label>
+                        <input type="number" id="py_surveys" value="4" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #b59b00;">3. Sanitary Latrines (Yellow):</label>
+                        <input type="number" id="py_latrines" value="4" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: blue;">4. Safe Water Supply (Blue):</label>
+                        <input type="number" id="py_water" value="4" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: green;">5. Garbage Disposal (Green):</label>
+                        <input type="number" id="py_garbage" value="2" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: CURRENT YEAR DATA -->
+            <div class="section-title" id="secTitleCurr">CURRENT YEAR DATA (2025)</div>
+            <div class="input-box">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label style="color: red;">1. Schools Count (Red):</label>
+                        <input type="number" id="cy_schools" value="4" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: black;">2. Surveys Completed (Black):</label>
+                        <input type="number" id="cy_surveys" value="4" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #b59b00;">3. Sanitary Latrines (Yellow):</label>
+                        <input type="number" id="cy_latrines" value="4" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: blue;">4. Safe Water Supply (Blue):</label>
+                        <input type="number" id="cy_water" value="4" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: green;">5. Garbage Disposal (Green):</label>
+                        <input type="number" id="cy_garbage" value="1" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-update" onclick="updateAllPage51Graphs()">Update All Graphs</button>
+            <button type="button" class="btn btn-print" onclick="window.print()">Print A4 Page</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let chartPrevYear, chartCurrYear;
+    let prevYearLabel = "2024";
+    let currYearLabel = "2025";
+
+    const xCategories = [
+        ['Schools'], 
+        ['Sanitary', 'surveys', 'completed'], 
+        ['With adequate', 'sanitary', 'latrines'], 
+        ['With safe', 'water supply'], 
+        ['With sanitary', 'disposal of', 'garbage']
+    ];
+
+    const barColors = ['#ef4444', '#000000', '#facc15', '#1d4ed8', '#15803d'];
+
+    function applyYearConfig() {
+        prevYearLabel = document.getElementById('inputPrevYear').value || "2024";
+        currYearLabel = document.getElementById('inputCurrYear').value || "2025";
+
+        document.getElementById('headerPrevYear').innerText = prevYearLabel;
+        document.getElementById('headerCurrYear').innerText = currYearLabel;
+
+        document.getElementById('secTitlePrev').innerText = `PREVIOUS YEAR DATA (${prevYearLabel})`;
+        document.getElementById('secTitleCurr').innerText = `CURRENT YEAR DATA (${currYearLabel})`;
+
+        updateAllPage51Graphs();
+    }
+
+    function createSanitaryChart(canvasId) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: xCategories,
+                datasets: [{
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: barColors,
+                    borderWidth: 1,
+                    borderColor: '#000'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        ticks: { 
+                            font: { size: 9, weight: 'bold' },
+                            color: '#000',
+                            autoSkip: false
+                        },
+                        grid: { display: false }
+                    },
+                    y: { 
+                        title: { display: true, text: 'NUMBER', font: { weight: 'bold', size: 9 } },
+                        beginAtZero: true, 
+                        ticks: { precision: 0, font: { size: 9 } },
+                        grid: { color: '#ccc' }
+                    }
+                }
+            }
+        });
+    }
+
+    function initPage51Charts() {
+        chartPrevYear = createSanitaryChart('chartPrevYear');
+        chartCurrYear = createSanitaryChart('chartCurrYear');
+    }
+
+    function updateAllPage51Graphs() {
+        // --- 1. PREVIOUS YEAR ---
+        const pySchools = parseInt(document.getElementById('py_schools').value) || 0;
+        const pySurveys = parseInt(document.getElementById('py_surveys').value) || 0;
+        const pyLatrines = parseInt(document.getElementById('py_latrines').value) || 0;
+        const pyWater = parseInt(document.getElementById('py_water').value) || 0;
+        const pyGarbage = parseInt(document.getElementById('py_garbage').value) || 0;
+
+        chartPrevYear.data.datasets[0].data = [pySchools, pySurveys, pyLatrines, pyWater, pyGarbage];
+        chartPrevYear.update();
+
+        // --- 2. CURRENT YEAR ---
+        const cySchools = parseInt(document.getElementById('cy_schools').value) || 0;
+        const cySurveys = parseInt(document.getElementById('cy_surveys').value) || 0;
+        const cyLatrines = parseInt(document.getElementById('cy_latrines').value) || 0;
+        const cyWater = parseInt(document.getElementById('cy_water').value) || 0;
+        const cyGarbage = parseInt(document.getElementById('cy_garbage').value) || 0;
+
+        chartCurrYear.data.datasets[0].data = [cySchools, cySurveys, cyLatrines, cyWater, cyGarbage];
+        chartCurrYear.update();
+    }
+
+    window.onload = function() {
+        initPage51Charts();
+        applyYearConfig();
+    };
+</script>
+
+</body>
+</html>

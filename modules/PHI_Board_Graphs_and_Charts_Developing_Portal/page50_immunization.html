@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 50 - Immunization Dashboard (A4 Portrait)</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Portrait Printable Container (210mm x 297mm) --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            height: 297mm; /* Strict A4 Height */
+            padding: 6mm 8mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .page-main-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 2px;
+        }
+
+        /* --- 3 Row Layout Container --- */
+        .vaccine-rows-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: calc(100% - 28px);
+        }
+
+        .vaccine-row-block {
+            border: 2px solid #000;
+            padding: 4px;
+            background: #fff;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vaccine-row-header {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: #e2e8f0;
+            padding: 2px;
+            border: 1px solid #000;
+            margin-bottom: 4px;
+        }
+
+        .twin-charts-wrapper {
+            display: flex;
+            gap: 6px;
+            flex: 1;
+            height: 100%;
+        }
+
+        .left-chart-card {
+            width: 32%;
+            border: 1px solid #000;
+            display: flex;
+            flex-direction: column;
+            padding: 2px;
+        }
+
+        .right-chart-card {
+            width: 68%;
+            border: 1px solid #000;
+            display: flex;
+            flex-direction: column;
+            padding: 2px;
+        }
+
+        .chart-sub-header {
+            text-align: center;
+            font-size: 9px;
+            font-weight: bold;
+            background: #f8fafc;
+            border-bottom: 1px solid #000;
+            padding: 1px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Input Portal Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            margin: 12px 0 6px 0;
+            padding: 4px;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 3px;
+        }
+
+        .defect-input-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 6px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .btn-config { background-color: #6c757d; color: white; }
+        .btn-update { background-color: #28a745; color: white; }
+        .btn-print { background-color: #007bff; color: white; }
+
+        /* Print Settings for Strict A4 Portrait */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body { background: white; padding: 0; margin: 0; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .portal-card, h2 { display: none !important; }
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 6mm 8mm !important;
+                margin: 0 !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Portal - Page 50 (Immunization)</h2>
+
+    <!-- PRINTABLE A4 PORTRAIT PAGE -->
+    <div class="print-a4-page">
+        <div class="page-main-title">IMMUNIZATION PROGRAMME (PAGE 50)</div>
+
+        <div class="vaccine-rows-container">
+            <!-- ROW 1: UPPER (VACCINE 1) -->
+            <div class="vaccine-row-block">
+                <div class="vaccine-row-header" id="headerRow1">VACCINE 1: aTd</div>
+                <div class="twin-charts-wrapper">
+                    <!-- LEFT: PREVIOUS YEAR -->
+                    <div class="left-chart-card">
+                        <div class="chart-sub-header" id="subHeaderR1L">2024</div>
+                        <div class="canvas-container"><canvas id="chartR1Left"></canvas></div>
+                    </div>
+                    <!-- RIGHT: CURRENT YEAR -->
+                    <div class="right-chart-card">
+                        <div class="chart-sub-header" id="subHeaderR1R">2025</div>
+                        <div class="canvas-container"><canvas id="chartR1Right"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 2: MIDDLE (VACCINE 2) -->
+            <div class="vaccine-row-block">
+                <div class="vaccine-row-header" id="headerRow2">VACCINE 2: HPV I</div>
+                <div class="twin-charts-wrapper">
+                    <!-- LEFT: PREVIOUS YEAR -->
+                    <div class="left-chart-card">
+                        <div class="chart-sub-header" id="subHeaderR2L">2024</div>
+                        <div class="canvas-container"><canvas id="chartR2Left"></canvas></div>
+                    </div>
+                    <!-- RIGHT: CURRENT YEAR -->
+                    <div class="right-chart-card">
+                        <div class="chart-sub-header" id="subHeaderR2R">2025</div>
+                        <div class="canvas-container"><canvas id="chartR2Right"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 3: LOWER (VACCINE 3) -->
+            <div class="vaccine-row-block">
+                <div class="vaccine-row-header" id="headerRow3">VACCINE 3: HPV II</div>
+                <div class="twin-charts-wrapper">
+                    <!-- LEFT: PREVIOUS YEAR -->
+                    <div class="left-chart-card">
+                        <div class="chart-sub-header" id="subHeaderR3L">2024</div>
+                        <div class="canvas-container"><canvas id="chartR3Left"></canvas></div>
+                    </div>
+                    <!-- RIGHT: CURRENT YEAR -->
+                    <div class="right-chart-card">
+                        <div class="chart-sub-header" id="subHeaderR3R">2025</div>
+                        <div class="canvas-container"><canvas id="chartR3Right"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 0. YEAR SETUP PORTAL -->
+    <div class="portal-card">
+        <h3>0. Year Setup (Labels)</h3>
+        <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="form-group">
+                <label>Previous Year (eg. 2024)</label>
+                <input type="text" id="inputPrevYear" value="2024">
+            </div>
+            <div class="form-group">
+                <label>Current Year (eg. 2025)</label>
+                <input type="text" id="inputCurrYear" value="2025">
+            </div>
+        </div>
+        <button type="button" class="btn btn-config" style="margin-top: 10px;" onclick="applyYearConfig()">Update Year Labels</button>
+    </div>
+
+    <!-- DATA INPUT PORTAL IN SECTIONS -->
+    <div class="portal-card">
+        <h3>1. Immunization Data Entry Portal (Sections)</h3>
+        <form id="immPortalForm">
+            
+            <!-- SECTION 1: UPPER ROW VACCINE -->
+            <div class="section-title">SECTION 1: UPPER ROW (GRAPH 01 UPPER)</div>
+            <div class="defect-input-box">
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <label>Select Vaccine Type:</label>
+                    <select id="selectVac1" class="vac-select"></select>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group"><label style="color:red;">Prev Year Target:</label><input type="number" id="r1_py_target" value="150"></div>
+                    <div class="form-group"><label style="color:black;">Prev Year Immunized:</label><input type="number" id="r1_py_immunized" value="136"></div>
+                    <div class="form-group"><label>Curr Year Q1:</label><input type="number" id="r1_cy_q1" value="0"></div>
+                    <div class="form-group"><label>Curr Year Q2:</label><input type="number" id="r1_cy_q2" value="30"></div>
+                    <div class="form-group"><label>Curr Year Q3:</label><input type="number" id="r1_cy_q3" value="98"></div>
+                    <div class="form-group"><label>Curr Year Q4:</label><input type="number" id="r1_cy_q4" value="0"></div>
+                    <div class="form-group"><label style="color:red;">Curr Year Target:</label><input type="number" id="r1_cy_target" value="125"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: MIDDLE ROW VACCINE -->
+            <div class="section-title">SECTION 2: MIDDLE ROW (GRAPH 01 MIDDLE)</div>
+            <div class="defect-input-box">
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <label>Select Vaccine Type:</label>
+                    <select id="selectVac2" class="vac-select"></select>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group"><label style="color:red;">Prev Year Target:</label><input type="number" id="r2_py_target" value="70"></div>
+                    <div class="form-group"><label style="color:black;">Prev Year Immunized:</label><input type="number" id="r2_py_immunized" value="68"></div>
+                    <div class="form-group"><label>Curr Year Q1:</label><input type="number" id="r2_cy_q1" value="69"></div>
+                    <div class="form-group"><label>Curr Year Q2:</label><input type="number" id="r2_cy_q2" value="0"></div>
+                    <div class="form-group"><label>Curr Year Q3:</label><input type="number" id="r2_cy_q3" value="1"></div>
+                    <div class="form-group"><label>Curr Year Q4:</label><input type="number" id="r2_cy_q4" value="0"></div>
+                    <div class="form-group"><label style="color:red;">Curr Year Target:</label><input type="number" id="r2_cy_target" value="71"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: LOWER ROW VACCINE -->
+            <div class="section-title">SECTION 3: LOWER ROW (GRAPH 01 LOWER)</div>
+            <div class="defect-input-box">
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <label>Select Vaccine Type:</label>
+                    <select id="selectVac3" class="vac-select"></select>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group"><label style="color:red;">Prev Year Target:</label><input type="number" id="r3_py_target" value="70"></div>
+                    <div class="form-group"><label style="color:black;">Prev Year Immunized:</label><input type="number" id="r3_py_immunized" value="63"></div>
+                    <div class="form-group"><label>Curr Year Q1:</label><input type="number" id="r3_cy_q1" value="0"></div>
+                    <div class="form-group"><label>Curr Year Q2:</label><input type="number" id="r3_cy_q2" value="0"></div>
+                    <div class="form-group"><label>Curr Year Q3:</label><input type="number" id="r3_cy_q3" value="0"></div>
+                    <div class="form-group"><label>Curr Year Q4:</label><input type="number" id="r3_cy_q4" value="0"></div>
+                    <div class="form-group"><label style="color:red;">Curr Year Target:</label><input type="number" id="r3_cy_target" value="70"></div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-update" onclick="updateAllPage50Graphs()">Update All Graphs</button>
+            <button type="button" class="btn btn-print" onclick="window.print()">Print A4 Page</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const vaccineList = [
+        "aTd",
+        "HPV I",
+        "HPV II",
+        "Tetanus Toxoid",
+        "Rubella",
+        "DT / OPV",
+        "Other Vaccine"
+    ];
+
+    let chartR1L, chartR1R, chartR2L, chartR2R, chartR3L, chartR3R;
+    let prevYearVal = "2024";
+    let currYearVal = "2025";
+
+    function populateVaccineDropdowns() {
+        const selects = document.querySelectorAll('.vac-select');
+        selects.forEach((select) => {
+            select.innerHTML = '';
+            vaccineList.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.innerText = v;
+                select.appendChild(opt);
+            });
+        });
+
+        document.getElementById('selectVac1').value = "aTd";
+        document.getElementById('selectVac2').value = "HPV I";
+        document.getElementById('selectVac3').value = "HPV II";
+    }
+
+    function applyYearConfig() {
+        prevYearVal = document.getElementById('inputPrevYear').value || "PREVIOUS YEAR";
+        currYearVal = document.getElementById('inputCurrYear').value || "CURRENT YEAR";
+
+        // Update Sub-headers
+        document.getElementById('subHeaderR1L').innerText = prevYearVal;
+        document.getElementById('subHeaderR1R').innerText = currYearVal;
+        document.getElementById('subHeaderR2L').innerText = prevYearVal;
+        document.getElementById('subHeaderR2R').innerText = currYearVal;
+        document.getElementById('subHeaderR3L').innerText = prevYearVal;
+        document.getElementById('subHeaderR3R').innerText = currYearVal;
+
+        updateAllPage50Graphs();
+    }
+
+    function createLeftPrevChart(canvasId) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Target', 'No. immunized'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['#ef4444', '#000000'],
+                    borderWidth: 1,
+                    borderColor: '#000'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { font: { size: 7, weight: 'bold' } } },
+                    y: { beginAtZero: true, ticks: { precision: 0, font: { size: 7 } } }
+                }
+            }
+        });
+    }
+
+    function createRightCurrChart(canvasId) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter', 'Target'],
+                datasets: [{
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: ['#000000', '#000000', '#000000', '#000000', '#ef4444'],
+                    borderWidth: 1,
+                    borderColor: '#000'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { font: { size: 7, weight: 'bold' } } },
+                    y: { beginAtZero: true, ticks: { precision: 0, font: { size: 7 } } }
+                }
+            }
+        });
+    }
+
+    function initCharts() {
+        chartR1L = createLeftPrevChart('chartR1Left');
+        chartR1R = createRightCurrChart('chartR1Right');
+
+        chartR2L = createLeftPrevChart('chartR2Left');
+        chartR2R = createRightCurrChart('chartR2Right');
+
+        chartR3L = createLeftPrevChart('chartR3Left');
+        chartR3R = createRightCurrChart('chartR3Right');
+    }
+
+    function updateAllPage50Graphs() {
+        // --- ROW 1 (UPPER) ---
+        const v1Name = document.getElementById('selectVac1').value;
+        document.getElementById('headerRow1').innerText = v1Name.toUpperCase();
+        
+        const r1PyTar = parseInt(document.getElementById('r1_py_target').value) || 0;
+        const r1PyImm = parseInt(document.getElementById('r1_py_immunized').value) || 0;
+        chartR1L.data.datasets[0].data = [r1PyTar, r1PyImm];
+        chartR1L.update();
+
+        const r1CyQ1 = parseInt(document.getElementById('r1_cy_q1').value) || 0;
+        const r1CyQ2 = parseInt(document.getElementById('r1_cy_q2').value) || 0;
+        const r1CyQ3 = parseInt(document.getElementById('r1_cy_q3').value) || 0;
+        const r1CyQ4 = parseInt(document.getElementById('r1_cy_q4').value) || 0;
+        const r1CyTar = parseInt(document.getElementById('r1_cy_target').value) || 0;
+        chartR1R.data.datasets[0].data = [r1CyQ1, r1CyQ2, r1CyQ3, r1CyQ4, r1CyTar];
+        chartR1R.update();
+
+        // --- ROW 2 (MIDDLE) ---
+        const v2Name = document.getElementById('selectVac2').value;
+        document.getElementById('headerRow2').innerText = v2Name.toUpperCase();
+
+        const r2PyTar = parseInt(document.getElementById('r2_py_target').value) || 0;
+        const r2PyImm = parseInt(document.getElementById('r2_py_immunized').value) || 0;
+        chartR2L.data.datasets[0].data = [r2PyTar, r2PyImm];
+        chartR2L.update();
+
+        const r2CyQ1 = parseInt(document.getElementById('r2_cy_q1').value) || 0;
+        const r2CyQ2 = parseInt(document.getElementById('r2_cy_q2').value) || 0;
+        const r2CyQ3 = parseInt(document.getElementById('r2_cy_q3').value) || 0;
+        const r2CyQ4 = parseInt(document.getElementById('r2_cy_q4').value) || 0;
+        const r2CyTar = parseInt(document.getElementById('r2_cy_target').value) || 0;
+        chartR2R.data.datasets[0].data = [r2CyQ1, r2CyQ2, r2CyQ3, r2CyQ4, r2CyTar];
+        chartR2R.update();
+
+        // --- ROW 3 (LOWER) ---
+        const v3Name = document.getElementById('selectVac3').value;
+        document.getElementById('headerRow3').innerText = v3Name.toUpperCase();
+
+        const r3PyTar = parseInt(document.getElementById('r3_py_target').value) || 0;
+        const r3PyImm = parseInt(document.getElementById('r3_py_immunized').value) || 0;
+        chartR3L.data.datasets[0].data = [r3PyTar, r3PyImm];
+        chartR3L.update();
+
+        const r3CyQ1 = parseInt(document.getElementById('r3_cy_q1').value) || 0;
+        const r3CyQ2 = parseInt(document.getElementById('r3_cy_q2').value) || 0;
+        const r3CyQ3 = parseInt(document.getElementById('r3_cy_q3').value) || 0;
+        const r3CyQ4 = parseInt(document.getElementById('r3_cy_q4').value) || 0;
+        const r3CyTar = parseInt(document.getElementById('r3_cy_target').value) || 0;
+        chartR3R.data.datasets[0].data = [r3CyQ1, r3CyQ2, r3CyQ3, r3CyQ4, r3CyTar];
+        chartR3R.update();
+    }
+
+    window.onload = function() {
+        populateVaccineDropdowns();
+        initCharts();
+        applyYearConfig();
+    };
+</script>
+
+</body>
+</html>

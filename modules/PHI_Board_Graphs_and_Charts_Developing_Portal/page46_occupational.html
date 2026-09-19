@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 46 - Occupational Health (A4 Portrait)</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* --- Strict A4 Portrait Printable Container --- */
+        .print-a4-page {
+            background: #ffffff;
+            width: 210mm;
+            height: 297mm; /* Exact A4 Height */
+            padding: 12mm 15mm;
+            margin: 0 auto 20px auto;
+            border: 4px double #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .page-main-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            height: 20px;
+        }
+
+        /* Balanced 2-Section Stacked Grid for Page Fill */
+        .charts-container-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Equal Gap Between Graphs */
+            height: calc(100% - 30px);
+        }
+
+        .chart-card {
+            background: #ffffff;
+            border: 2px solid #000;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            flex: 1; /* Equally split height on A4 */
+        }
+
+        .chart-header {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #000;
+            padding: 6px;
+            flex: 1; /* Dynamic stretch */
+            width: 100%;
+        }
+
+        /* --- Portal Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            max-width: 210mm;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 15px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 9px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .btn-update { background-color: #28a745; color: white; }
+        .btn-print { background-color: #007bff; color: white; }
+
+        /* --- Strict Print Rules for A4 Portrait Page Fill --- */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .portal-card, h2 {
+                display: none !important;
+            }
+
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                padding: 10mm 12mm !important;
+                margin: 0 !important;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+
+            .chart-card {
+                border: 2px solid #000 !important;
+            }
+
+            .chart-wrapper {
+                background-color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; font-size: 18px;">PHI Office Data Portal - Page 46</h2>
+
+    <!-- PRINTABLE A4 PORTRAIT PAGE -->
+    <div class="print-a4-page">
+        <div class="page-main-title">OCCUPATIONAL HEALTH</div>
+
+        <div class="charts-container-stack">
+            <!-- 1. TYPES OF FACTORIES GRAPH -->
+            <div class="chart-card">
+                <div class="chart-header">TYPES OF FACTORIES</div>
+                <div class="chart-wrapper">
+                    <canvas id="chartTypesOfFactories"></canvas>
+                </div>
+            </div>
+
+            <!-- 2. FACTORY INSPECTION GRAPH -->
+            <div class="chart-card">
+                <div class="chart-header">FACTORY INSPECTION</div>
+                <div class="chart-wrapper">
+                    <canvas id="chartFactoryInspection"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA INPUT PORTAL -->
+    <div class="portal-card">
+        <h3>1. Types of Factories Data (Categories F1 to F6)</h3>
+        <p style="font-size:11px; color:#555;">Enter the number of factories available under each category.</p>
+        <div class="form-grid">
+            <div class="form-group"><label>F1 Category</label><input type="number" id="f1_val" value="0" min="0"></div>
+            <div class="form-group"><label>F2 Category</label><input type="number" id="f2_val" value="0" min="0"></div>
+            <div class="form-group"><label>F3 Category</label><input type="number" id="f3_val" value="0" min="0"></div>
+            <div class="form-group"><label>F4 Category</label><input type="number" id="f4_val" value="0" min="0"></div>
+            <div class="form-group"><label>F5 Category</label><input type="number" id="f5_val" value="0" min="0"></div>
+            <div class="form-group"><label>F6 Category</label><input type="number" id="f6_val" value="0" min="0"></div>
+        </div>
+        <button type="button" class="btn btn-update" onclick="saveTypesOfFactoriesData()">Update Factory Types Data</button>
+
+        <h3 style="margin-top:20px;">2. Factory Inspection Quarterly Data</h3>
+        <p style="font-size:11px; color:#555;">Select quarter and enter count for Inspected and Unsatisfactory factories.</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Select Quarter</label>
+                <select id="selectQuarter">
+                    <option value="0">1st Quarter</option>
+                    <option value="1">2nd Quarter</option>
+                    <option value="2">3rd Quarter</option>
+                    <option value="3">4th Quarter</option>
+                </select>
+            </div>
+            <div class="form-group"><label style="color:black;">Inspected Factories (Black)</label><input type="number" id="valInspected" value="0" min="0"></div>
+            <div class="form-group"><label style="color:red;">Unsatisfactory Factories (Red)</label><input type="number" id="valUnsatisfactory" value="0" min="0"></div>
+        </div>
+        <button type="button" class="btn btn-update" onclick="saveInspectionData()">Update Inspection Data</button>
+        <button type="button" class="btn btn-print" onclick="window.print()">Print A4 Full Page</button>
+    </div>
+</div>
+
+<script>
+    let chartTypes, chartInspection;
+
+    // Initial Data Structures (Default 0 initialized)
+    let factoryTypesData = [0, 0, 0, 0, 0, 0]; // F1 to F6
+    let inspectionData = {
+        inspected: [0, 0, 0, 0],     // Q1 to Q4
+        unsatisfactory: [0, 0, 0, 0] // Q1 to Q4
+    };
+
+    window.onload = function() {
+        // 1. Chart: Types of Factories (Annex-7)
+        const ctxTypes = document.getElementById('chartTypesOfFactories').getContext('2d');
+        chartTypes = new Chart(ctxTypes, {
+            type: 'bar',
+            data: {
+                labels: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6'],
+                datasets: [{
+                    data: factoryTypesData,
+                    backgroundColor: 'black',
+                    borderColor: '#000',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'CATEGORY', font: { weight: 'bold', size: 10 } },
+                        ticks: { font: { size: 9, weight: 'bold' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'NUMBER', font: { weight: 'bold', size: 10 } },
+                        beginAtZero: true,
+                        ticks: { precision: 0, font: { size: 9 } },
+                        grid: { color: '#ccc' }
+                    }
+                }
+            }
+        });
+
+        // 2. Chart: Factory Inspection (Annex-8)
+        const ctxInspection = document.getElementById('chartFactoryInspection').getContext('2d');
+        chartInspection = new Chart(ctxInspection, {
+            type: 'bar',
+            data: {
+                labels: ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'],
+                datasets: [
+                    {
+                        label: 'INSPECTED',
+                        data: inspectionData.inspected,
+                        backgroundColor: 'black',
+                        borderColor: '#000',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'UNSATISFACTORY',
+                        data: inspectionData.unsatisfactory,
+                        backgroundColor: 'red',
+                        borderColor: '#000',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { boxWidth: 12, font: { size: 9, weight: 'bold' } }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'QUARTER', font: { weight: 'bold', size: 10 } },
+                        ticks: { font: { size: 9, weight: 'bold' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'NUMBER', font: { weight: 'bold', size: 10 } },
+                        beginAtZero: true,
+                        ticks: { precision: 0, font: { size: 9 } },
+                        grid: { color: '#ccc' }
+                    }
+                }
+            }
+        });
+    };
+
+    function saveTypesOfFactoriesData() {
+        const f1 = parseInt(document.getElementById('f1_val').value) || 0;
+        const f2 = parseInt(document.getElementById('f2_val').value) || 0;
+        const f3 = parseInt(document.getElementById('f3_val').value) || 0;
+        const f4 = parseInt(document.getElementById('f4_val').value) || 0;
+        const f5 = parseInt(document.getElementById('f5_val').value) || 0;
+        const f6 = parseInt(document.getElementById('f6_val').value) || 0;
+
+        chartTypes.data.datasets[0].data = [f1, f2, f3, f4, f5, f6];
+        chartTypes.update();
+
+        alert('Types of Factories data updated successfully!');
+    }
+
+    function saveInspectionData() {
+        const qIdx = parseInt(document.getElementById('selectQuarter').value);
+        const inspectedVal = parseInt(document.getElementById('valInspected').value) || 0;
+        const unsatVal = parseInt(document.getElementById('valUnsatisfactory').value) || 0;
+
+        chartInspection.data.datasets[0].data[qIdx] = inspectedVal;
+        chartInspection.data.datasets[1].data[qIdx] = unsatVal;
+
+        chartInspection.update();
+
+        alert(`Factory Inspection data updated for Quarter ${qIdx + 1}!`);
+    }
+</script>
+
+</body>
+</html>

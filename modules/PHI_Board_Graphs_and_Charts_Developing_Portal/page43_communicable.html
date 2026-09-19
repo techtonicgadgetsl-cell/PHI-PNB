@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Manual Page 43 - Specific Communicable Diseases</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        /* --- A4 Printable Box & Decorative Border --- */
+        .print-a4-page {
+            background: #ffffff;
+            border: 4px double #000;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .chart-card {
+            background: #ffffff;
+            border: 2px solid #000;
+            padding: 12px;
+            margin-bottom: 18px;
+        }
+
+        .chart-header {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #000;
+            padding: 8px;
+        }
+
+        /* --- Portal Forms Styling --- */
+        .portal-card {
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .portal-card h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 7px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .btn-config { background-color: #6c757d; color: white; }
+        .btn-update { background-color: #28a745; color: white; }
+        .btn-print { background-color: #007bff; color: white; }
+
+        /* --- Strict A4 Page Print Styling --- */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                margin: 0;
+            }
+
+            .portal-card, .btn-print, .btn-update, .btn-config, h2 {
+                display: none !important;
+            }
+
+            .print-a4-page {
+                border: 4px double #000 !important;
+                box-shadow: none !important;
+                padding: 15px !important;
+                margin: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box;
+                page-break-inside: avoid;
+            }
+
+            .chart-card {
+                border: 2px solid #000 !important;
+                margin-bottom: 15px !important;
+            }
+
+            .chart-wrapper {
+                background-color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>PHI Office Data Portal</h2>
+
+    <div class="print-a4-page">
+        <div class="page-title">SPECIFIC COMMUNICABLE DISEASES</div>
+
+        <div class="chart-card">
+            <div class="chart-header" id="headerCurrentYear">CURRENT YEAR</div>
+            <div class="chart-wrapper">
+                <canvas id="currentYearChart" height="175"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header" id="headerPreviousYear">PREVIOUS YEAR</div>
+            <div class="chart-wrapper">
+                <canvas id="previousYearChart" height="175"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="portal-card">
+        <h3>0. Annual Year Setup (Auto / Manual)</h3>
+        <p style="font-size: 12px; color: #555;">Current Year automatically sets to current system year and Previous Year to (Current - 1). You can also manually override them.</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Current Year Label</label>
+                <input type="text" id="inputCurrentYear">
+            </div>
+            <div class="form-group">
+                <label>Previous Year Label</label>
+                <input type="text" id="inputPreviousYear">
+            </div>
+        </div>
+        <button type="button" class="btn btn-config" onclick="applyYearHeaders()">Update Year Labels</button>
+    </div>
+
+    <div class="portal-card">
+        <h3>1. Annual Disease Configuration (Set 5 Active Diseases)</h3>
+        <p style="font-size: 12px; color: #555;">Choose 5 specific diseases for the year. Line colors & legend labels will be updated automatically across both graphs.</p>
+        <div class="form-grid">
+            <div class="form-group">
+                <label style="color: red;">D1 (Red Line)</label>
+                <select id="configD1"></select>
+            </div>
+            <div class="form-group">
+                <label style="color: blue;">D2 (Blue Line)</label>
+                <select id="configD2"></select>
+            </div>
+            <div class="form-group">
+                <label style="color: #d1b200;">D3 (Yellow Line)</label>
+                <select id="configD3"></select>
+            </div>
+            <div class="form-group">
+                <label style="color: green;">D4 (Green Line)</label>
+                <select id="configD4"></select>
+            </div>
+            <div class="form-group">
+                <label style="color: purple;">D5 (Purple Line)</label>
+                <select id="configD5"></select>
+            </div>
+        </div>
+        <button type="button" class="btn btn-config" onclick="applyDiseaseConfig()">Set Active Diseases</button>
+    </div>
+
+    <div class="portal-card">
+        <h3>2. Monthly Bulk Data Entry Portal</h3>
+        <p style="font-size: 12px; color: #555;">Select year & month, then fill values for all 5 diseases and save all at once.</p>
+        <form id="dataForm">
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                <div class="form-group">
+                    <label>Select Graph Target</label>
+                    <select id="targetYear">
+                        <option value="current" id="optCurrentYear">Current Year</option>
+                        <option value="previous" id="optPreviousYear">Previous Year</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Month</label>
+                    <select id="selectMonth">
+                        <option value="0">January (J)</option>
+                        <option value="1">February (F)</option>
+                        <option value="2">March (M)</option>
+                        <option value="3">April (A)</option>
+                        <option value="4">May (M)</option>
+                        <option value="5">June (J)</option>
+                        <option value="6">July (J)</option>
+                        <option value="7">August (A)</option>
+                        <option value="8">September (S)</option>
+                        <option value="9">October (O)</option>
+                        <option value="10">November (N)</option>
+                        <option value="11">December (D)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label id="lblD1" style="color: red;">D1: Cases</label>
+                    <input type="number" id="valD1" min="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label id="lblD2" style="color: blue;">D2: Cases</label>
+                    <input type="number" id="valD2" min="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label id="lblD3" style="color: #d1b200;">D3: Cases</label>
+                    <input type="number" id="valD3" min="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label id="lblD4" style="color: green;">D4: Cases</label>
+                    <input type="number" id="valD4" min="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label id="lblD5" style="color: purple;">D5: Cases</label>
+                    <input type="number" id="valD5" min="0" placeholder="0">
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-update" onclick="saveAllMonthlyData()">Save All 5 Diseases Data</button>
+            <button type="button" class="btn btn-print" onclick="window.print()">Print / Download A4 Page</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let currentChart, previousChart;
+
+    const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+
+    const diseaseList = [
+        "Cholera", "Plague", "Yellow Fever",
+        "Acute Poliomyelitis / AFP", "Chicken pox", "Chikungunya", "Dengue Fever / DHF",
+        "Diphtheria", "Dysentery", "Encephalitis", "Enteric Fever",
+        "Food poisoning", "Human Rabies", "Leptospirosis", "Malaria",
+        "Measles", "Meningitis", "Mumps", "Rubella / Congenital Rubella",
+        "Simple Continued Fever", "Tetanus", "Neonatal Tetanus",
+        "Typhus Fever", "Viral Hepatitis", "Whooping Cough",
+        "Tuberculosis", "Leishmaniasis", "Leprosy"
+    ];
+
+    let activeDiseases = [
+        "Dengue Fever / DHF",
+        "Chicken pox",
+        "Chikungunya",
+        "Leptospirosis",
+        "Typhus Fever"
+    ];
+
+    // මෙහි 0 වෙනුවට null අගයන් ලබා දී ඇත. එවිට data enter නොකළ මාස graph එකේ අඳින්නේ නැත.
+    const initialData = {
+        current: [
+            [null, null, null, null, null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null, null, null, null, null]
+        ],
+        previous: [
+            [null, null, null, null, null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null, null, null, null, null]
+        ]
+    };
+
+    function initAutoYears() {
+        const nowYear = new Date().getFullYear();
+        const prevYear = nowYear - 1;
+
+        document.getElementById('inputCurrentYear').value = `CURRENT YEAR - ${nowYear}`;
+        document.getElementById('inputPreviousYear').value = `PREVIOUS YEAR - ${prevYear}`;
+        applyYearHeaders();
+    }
+
+    function applyYearHeaders() {
+        const curTxt = document.getElementById('inputCurrentYear').value;
+        const prevTxt = document.getElementById('inputPreviousYear').value;
+
+        document.getElementById('headerCurrentYear').innerText = curTxt;
+        document.getElementById('headerPreviousYear').innerText = prevTxt;
+
+        document.getElementById('optCurrentYear').innerText = curTxt;
+        document.getElementById('optPreviousYear').innerText = prevTxt;
+    }
+
+    function populateDiseaseDropdowns() {
+        const configSelects = ['configD1', 'configD2', 'configD3', 'configD4', 'configD5'];
+        
+        configSelects.forEach((selectId, idx) => {
+            const selectEl = document.getElementById(selectId);
+            selectEl.innerHTML = '';
+            diseaseList.forEach(disease => {
+                const opt = document.createElement('option');
+                opt.value = disease;
+                opt.textContent = disease;
+                if (disease === activeDiseases[idx]) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        });
+
+        updateBulkInputLabels();
+    }
+
+    function updateBulkInputLabels() {
+        for (let i = 0; i < 5; i++) {
+            document.getElementById(`lblD${i+1}`).innerText = `D${i+1} (${activeDiseases[i]}):`;
+        }
+    }
+
+    function createChartConfig(dataArray) {
+        return {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [
+                    { label: activeDiseases[0], borderColor: 'red', backgroundColor: 'red', pointStyle: 'rectRot', pointRadius: 5, fill: false, data: [...dataArray[0]] },
+                    { label: activeDiseases[1], borderColor: 'blue', backgroundColor: 'blue', pointStyle: 'rectRot', pointRadius: 5, fill: false, data: [...dataArray[1]] },
+                    { label: activeDiseases[2], borderColor: '#d1b200', backgroundColor: '#d1b200', pointStyle: 'rectRot', pointRadius: 5, fill: false, data: [...dataArray[2]] },
+                    { label: activeDiseases[3], borderColor: 'green', backgroundColor: 'green', pointStyle: 'rectRot', pointRadius: 5, fill: false, data: [...dataArray[3]] },
+                    { label: activeDiseases[4], borderColor: 'purple', backgroundColor: 'purple', pointStyle: 'rectRot', pointRadius: 5, fill: false, data: [...dataArray[4]] }
+                ]
+            },
+            options: {
+                responsive: true,
+                spanGaps: false, // This ensures empty data points don't connect
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 12,
+                            usePointStyle: true,
+                            font: { weight: 'bold', size: 11 }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'MONTH', font: { weight: 'bold', size: 11 } },
+                        grid: { color: '#ccc' }
+                    },
+                    y: {
+                        title: { display: true, text: 'NO. OF CASES', font: { weight: 'bold', size: 11 } },
+                        beginAtZero: true,
+                        ticks: { precision: 0 },
+                        grid: { color: '#ccc' }
+                    }
+                }
+            }
+        };
+    }
+
+    window.onload = function() {
+        initAutoYears();
+        populateDiseaseDropdowns();
+
+        const ctxCurrent = document.getElementById('currentYearChart').getContext('2d');
+        currentChart = new Chart(ctxCurrent, createChartConfig(initialData.current));
+
+        const ctxPrevious = document.getElementById('previousYearChart').getContext('2d');
+        previousChart = new Chart(ctxPrevious, createChartConfig(initialData.previous));
+    };
+
+    function applyDiseaseConfig() {
+        activeDiseases[0] = document.getElementById('configD1').value;
+        activeDiseases[1] = document.getElementById('configD2').value;
+        activeDiseases[2] = document.getElementById('configD3').value;
+        activeDiseases[3] = document.getElementById('configD4').value;
+        activeDiseases[4] = document.getElementById('configD5').value;
+
+        [currentChart, previousChart].forEach(chart => {
+            chart.data.datasets.forEach((dataset, idx) => {
+                dataset.label = activeDiseases[idx];
+            });
+            chart.update();
+        });
+
+        updateBulkInputLabels();
+        alert('Active Diseases Updated Successfully!');
+    }
+
+    function saveAllMonthlyData() {
+        const targetYear = document.getElementById('targetYear').value;
+        const monthIndex = parseInt(document.getElementById('selectMonth').value);
+
+        let chartToUpdate = (targetYear === 'current') ? currentChart : previousChart;
+
+        for (let i = 0; i < 5; i++) {
+            let inputVal = document.getElementById(`valD${i+1}`).value;
+            
+            // Input එක හිස් නම් null විදිහට තියාගන්නවා (එවිට graph එක 0 ට යන්නේ නැත). 
+            // අගයක් තිබේ නම් එය Number එකක් කරගන්නවා.
+            let val = (inputVal === "") ? null : parseInt(inputVal);
+            
+            if (val !== null && (isNaN(val) || val < 0)) {
+                val = 0;
+            }
+
+            chartToUpdate.data.datasets[i].data[monthIndex] = val;
+        }
+
+        chartToUpdate.update();
+        alert(`Successfully saved data for all 5 diseases for Month: ${months[monthIndex]} in ${targetYear === 'current' ? document.getElementById('inputCurrentYear').value : document.getElementById('inputPreviousYear').value}!`);
+    }
+</script>
+
+</body>
+</html>
