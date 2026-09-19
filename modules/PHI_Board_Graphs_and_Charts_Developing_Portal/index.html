@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHI Office Management & Print Portal</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #eef2f5; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+
+        /* Header Layout */
+        .header { 
+            background: #1a365d; 
+            color: white; 
+            padding: 25px 20px; 
+            border-radius: 8px; 
+            text-align: center; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { margin: 5px 0 15px 0; color: #cbd5e1; font-weight: 500; font-size: 14px; }
+
+        /* Instruction Links Bar */
+        .instruction-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .btn-instruction {
+            background-color: #0284c7;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .btn-instruction:hover {
+            background-color: #0369a1;
+        }
+        .btn-manual {
+            background-color: #059669;
+        }
+        .btn-manual:hover {
+            background-color: #047857;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e293b;
+            margin: 25px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Grid Cards Layout */
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px;
+        }
+        .card { 
+            background: white; 
+            border-radius: 8px; 
+            padding: 20px; 
+            border-left: 5px solid #0284c7; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+        }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .page-badge { background: #0284c7; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .card h3 { margin: 0; font-size: 16px; color: #0f172a; }
+        .card p { font-size: 12px; color: #64748b; margin: 8px 0 15px 0; }
+
+        .btn-group { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 10px; text-align: center; text-decoration: none; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-open { background-color: #0f172a; color: white; }
+        .btn-open:hover { background-color: #1e293b; }
+
+        /* Footer / Developer Credits */
+        .footer {
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 20px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 11px;
+            color: #475569;
+            margin-top: auto;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.02);
+            line-height: 1.5;
+        }
+        .footer strong { color: #0f172a; }
+
+        @media print {
+            body { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-content">
+        <!-- Main Header -->
+        <div class="header">
+            <h1>Public Health Inspector (PHI) Office Portal</h1>
+            <p>Annual Display Board Graph Generator & Printable Reports Dashboard</p>
+
+            <!-- Instruction Links -->
+            <div class="instruction-links">
+                <a href="Recording 2026-07-22 062622.mp4" class="btn-instruction" target="_blank">
+                    🎬 Watch Instruction Video
+                </a>
+                <a href="instruction_manual.html" class="btn-instruction btn-manual" target="_blank">
+                    📄 Read Instruction Manual
+                </a>
+            </div>
+        </div>
+
+        <!-- SECTION 0: MONTHLY ADVANCE PROGRAMME -->
+        <div class="section-title">
+            📅 Monthly Advance Programme
+        </div>
+        <div class="dashboard-grid">
+
+            <!-- Health 510 Advance Programme Card -->
+            <div class="card" style="border-left-color: #059669;">
+                <div>
+                    <div class="card-header">
+                        <h3>H 510 Monthly Advance Programme Portal</h3>
+                        <span class="page-badge" style="background:#059669;">FORM H 510</span>
+                    </div>
+                    <p>Monthly Advance Duty Schedule with Direct Fill or AI Translation Assistant (Sinhala/Singlish to Natural English), Voice typing, and A4 Official Print Layout.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="h510_advance_programme.html" class="btn btn-open" target="_blank" style="background-color: #059669;">
+                        Open H 510 Advance Programme Portal
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION 1: ADMINISTRATIVE FORMS & REGISTERS -->
+        <div class="section-title">
+            📋 Administrative Forms & Statistical Registers
+        </div>
+        <div class="dashboard-grid">
+
+            <!-- Health 795 - Page 39 -->
+            <div class="card" style="border-left-color: #2563eb;">
+                <div>
+                    <div class="card-header">
+                        <h3>Health 795 - Administration</h3>
+                        <span class="page-badge" style="background:#2563eb;">PAGE 39</span>
+                    </div>
+                    <p>Administrative basic information, GN Division dwellings, actual & estimated population register.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page39_health795.html" class="btn btn-open" target="_blank">Open Form Portal</a>
+                </div>
+            </div>
+
+            <!-- Health 796 - Pages 40-42 -->
+            <div class="card" style="border-left-color: #7c3aed;">
+                <div>
+                    <div class="card-header">
+                        <h3>Health 796 - Public Health Statistics</h3>
+                        <span class="page-badge" style="background:#7c3aed;">PAGES 40-42</span>
+                    </div>
+                    <p>5-Year Public Health Statistics Form (Population, Vital Stats, Diseases, Sanitation, Food & School Health).</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page40_42_health796.html" class="btn btn-open" target="_blank">Open Form Portal</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION 2: ANNUAL DISPLAY BOARD GRAPH PORTALS -->
+        <div class="section-title">
+            📊 Annual Display Board Graph Portals
+        </div>
+        <div class="dashboard-grid">
+
+            <!-- Page 43 -->
+            <div class="card" style="border-left-color: #ef4444;">
+                <div>
+                    <div class="card-header">
+                        <h3>Communicable Diseases</h3>
+                        <span class="page-badge" style="background:#ef4444;">PAGE 43</span>
+                    </div>
+                    <p>Specific communicable diseases graphs for Current Year & Previous Year.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page43_communicable.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+            <!-- Page 44 -->
+            <div class="card" style="border-left-color: #f59e0b;">
+                <div>
+                    <div class="card-header">
+                        <h3>Non Communicable Diseases</h3>
+                        <span class="page-badge" style="background:#f59e0b;">PAGE 44</span>
+                    </div>
+                    <p>4-Year NCD cases comparison (MI, Cancer, Diabetes, Stroke, Hypertension).</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page44_ncd.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+            <!-- Page 45 -->
+            <div class="card" style="border-left-color: #10b981;">
+                <div>
+                    <div class="card-header">
+                        <h3>Food Safety & Sampling</h3>
+                        <span class="page-badge" style="background:#10b981;">PAGE 45</span>
+                    </div>
+                    <p>Assessment of food handling establishments (A, B, C, D) & Food sampling charts.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page45_food_safety.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+            <!-- Page 46 -->
+            <div class="card" style="border-left-color: #6366f1;">
+                <div>
+                    <div class="card-header">
+                        <h3>Occupational Health</h3>
+                        <span class="page-badge" style="background:#6366f1;">PAGE 46</span>
+                    </div>
+                    <p>Types of factories (F1-F6) & Factory quarterly inspection reports.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page46_occupational.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+            <!-- Page 47 -->
+            <div class="card" style="border-left-color: #8b5cf6;">
+                <div>
+                    <div class="card-header">
+                        <h3>Solid Waste Management</h3>
+                        <span class="page-badge" style="background:#8b5cf6;">PAGE 47</span>
+                    </div>
+                    <p>Solid waste disposal methods comparison (M1-M5) for Previous 2 Years.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page47_solid_waste.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+            <!-- Page 48 -->
+            <div class="card" style="border-left-color: #06b6d4;">
+                <div>
+                    <div class="card-header">
+                        <h3>School Health Programme</h3>
+                        <span class="page-badge" style="background:#06b6d4;">PAGE 48</span>
+                    </div>
+                    <p>Linked 4-graph master dashboard (Examined vs Defective vs Corrected).</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page48_school_health.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+            <!-- Page 49 -->
+            <div class="card" style="border-left-color: #ec4899;">
+                <div>
+                    <div class="card-header">
+                        <h3>Specific Defects</h3>
+                        <span class="page-badge" style="background:#ec4899;">PAGE 49</span>
+                    </div>
+                    <p>Specific diseases/defects detected & defects corrected analysis.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page49_specific_defects.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+            <!-- Page 50 -->
+            <div class="card" style="border-left-color: #14b8a6;">
+                <div>
+                    <div class="card-header">
+                        <h3>Immunization Programme</h3>
+                        <span class="page-badge" style="background:#14b8a6;">PAGE 50</span>
+                    </div>
+                    <p>Target vs Immunized graphs for aTd, HPV I, HPV II and other vaccines.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page50_immunization.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+            <!-- Page 51 -->
+            <div class="card" style="border-left-color: #64748b;">
+                <div>
+                    <div class="card-header">
+                        <h3>School Sanitary Survey</h3>
+                        <span class="page-badge" style="background:#64748b;">PAGE 51</span>
+                    </div>
+                    <p>Sanitary survey status, latrines, safe water supply, & garbage disposal.</p>
+                </div>
+                <div class="btn-group">
+                    <a href="page51_school_sanitary.html" class="btn btn-open" target="_blank">Open Graph Portal</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer Developer Credits -->
+    <div class="footer">
+        Designed & Developed By:<br>
+        <strong>Supun C Perera</strong><br>
+        📞 Contact: 0779054319 / 0725280660<br>
+        Public Health Inspector - Poththapitiya <br>
+        Regional Health Training Center - Kadugannawa and <br>
+        Medical Officer of Health Office - Yatinuwara<br>
+    </div>
+
+</body>
+</html>
