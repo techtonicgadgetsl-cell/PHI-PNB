@@ -70,7 +70,7 @@
                     </div>
                 </div>
 
-                <!-- Command Center Modules (modules/ folder) -->
+                <!-- Command Center Modules -->
                 <div>
                     <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 px-3 mb-2">Command Modules (00-10)</p>
                     <div class="space-y-1">
@@ -155,7 +155,7 @@
     <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-950 relative">
         
         <!-- TOP APP BAR -->
-        <header class="h-16 border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md px-6 flex justify-between items-center flex-shrink-0 z-20">
+        <header class="h-14 border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md px-6 flex justify-between items-center flex-shrink-0 z-20">
             <div class="w-96 relative">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 text-xs">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -286,7 +286,7 @@
                 </div>
             </div>
 
-            <!-- ONE-CLICK MASTER LAUNCHPAD (PORTFOLIO STYLE CARDS) -->
+            <!-- ONE-CLICK MASTER LAUNCHPAD -->
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">ප්‍රධාන ක්ෂේත්‍ර මෙවලම් (Field Utilities)</h3>
@@ -294,7 +294,6 @@
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- TOOL CARD 1: WHO CALCULATOR -->
                     <div onclick="loadLocalModule('modules/SMI_BMI/index.html', 'SMI Pro - WHO Growth & Z-Score Calculator')" class="p-4 rounded-2xl glass-card hover:border-cyan-500/60 transition cursor-pointer group hover:bg-slate-900/80 space-y-3">
                         <div class="flex justify-between items-center">
                             <div class="w-10 h-10 rounded-xl bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-lg group-hover:scale-105 transition">
@@ -308,7 +307,6 @@
                         </div>
                     </div>
 
-                    <!-- TOOL CARD 2: ADVANCE PROGRAMME -->
                     <div onclick="loadLocalModule('h510_advance_programme.html', 'Advance Programme Planner Portal')" class="p-4 rounded-2xl glass-card hover:border-amber-500/50 transition cursor-pointer group hover:bg-slate-900/80 space-y-3">
                         <div class="flex justify-between items-center">
                             <div class="w-10 h-10 rounded-xl bg-amber-600/20 border border-amber-500/30 text-amber-400 flex items-center justify-center text-lg group-hover:scale-105 transition">
@@ -322,7 +320,6 @@
                         </div>
                     </div>
 
-                    <!-- TOOL CARD 3: H411 PORTAL -->
                     <div onclick="loadLocalModule('modules/411/index.html', 'H411 Return Documentation System')" class="p-4 rounded-2xl glass-card hover:border-emerald-500/50 transition cursor-pointer group hover:bg-slate-900/80 space-y-3">
                         <div class="flex justify-between items-center">
                             <div class="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-lg group-hover:scale-105 transition">
@@ -336,7 +333,6 @@
                         </div>
                     </div>
 
-                    <!-- TOOL CARD 4: SPECIAL DIARY -->
                     <div onclick="loadLocalModule('modules/special.html', '10. Special Operations & Photo Evidence')" class="p-4 rounded-2xl glass-card hover:border-pink-500/50 transition cursor-pointer group hover:bg-slate-900/80 space-y-3">
                         <div class="flex justify-between items-center">
                             <div class="w-10 h-10 rounded-xl bg-pink-600/20 border border-pink-500/30 text-pink-400 flex items-center justify-center text-lg group-hover:scale-105 transition">
@@ -354,23 +350,25 @@
 
         </div>
 
-        <!-- VIEW CONTAINER B: IN-APP EMBEDDED EXTENSION VIEWER (SEAMLESS SINGLE PAGE) -->
-        <div id="container-app-viewer" class="flex-1 flex-col h-full hidden">
+        <!-- VIEW CONTAINER B: FULL SCREEN FIXED IFRAME CONTAINER -->
+        <div id="container-app-viewer" class="hidden absolute inset-0 z-30 bg-slate-950 flex flex-col w-full h-full">
             <!-- App Bar Controls -->
-            <div class="h-10 bg-slate-900 border-b border-slate-800 px-4 flex justify-between items-center flex-shrink-0">
-                <div class="flex items-center space-x-2">
-                    <button onclick="navigateSuite('hub')" class="text-slate-400 hover:text-white text-xs font-bold flex items-center gap-1.5 transition">
+            <div class="h-12 bg-slate-900 border-b border-slate-800 px-4 flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <button onclick="navigateSuite('hub')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-purple-900/50 text-slate-300 hover:text-white text-xs font-bold flex items-center gap-2 transition border border-slate-700">
                         <i class="fa-solid fa-arrow-left"></i> <span>Back to Main Hub</span>
                     </button>
                     <span class="text-slate-700">|</span>
-                    <span id="active-app-title" class="text-xs font-bold text-purple-400 font-mono">Module</span>
+                    <span id="active-app-title" class="text-xs font-bold text-purple-400 font-mono tracking-wide">MODULE</span>
                 </div>
-                <button onclick="reloadActiveFrame()" title="Reload Frame" class="text-slate-400 hover:text-white text-xs transition">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button onclick="reloadActiveFrame()" title="Reload Frame" class="p-1.5 text-slate-400 hover:text-white rounded-lg transition">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
             </div>
-            <!-- Dynamic Embedded Target Frame -->
-            <iframe id="app-viewport-frame" src="" class="w-full flex-1 border-0 bg-slate-950"></iframe>
+            <!-- Dynamic Embedded Full-Height Frame -->
+            <iframe id="app-viewport-frame" src="" class="w-full flex-1 border-0 bg-slate-950" style="height: calc(100% - 48px);"></iframe>
         </div>
 
     </main>
@@ -389,7 +387,7 @@
             }
         }
 
-        // Direct local relative path loader (No network lag)
+        // Direct local relative path loader (Full viewport display)
         function loadLocalModule(relativePath, moduleTitle) {
             const hubContainer = document.getElementById('container-hub');
             const viewerContainer = document.getElementById('container-app-viewer');
