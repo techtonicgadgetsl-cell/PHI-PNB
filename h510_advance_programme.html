@@ -3,18 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Health 510 - Monthly Advance Programme</title>
+<title>Health 510 - Advance & Actual Work Programme</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   body { background-color: #f1f5f9; color: #0f172a; padding: 10px; }
   
+  /* Top Navigation Tabs */
+  .mode-tabs { max-width: 900px; margin: 0 auto 12px auto; display: flex; gap: 6px; background: #e2e8f0; padding: 5px; border-radius: 10px; }
+  .mode-tab { flex: 1; padding: 10px 8px; border: none; border-radius: 7px; font-size: 12.5px; font-weight: 700; cursor: pointer; color: #475569; background: transparent; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .mode-tab.active-adv { background: #2563eb; color: #ffffff; box-shadow: 0 2px 4px rgba(37,99,235,0.25); }
+  .mode-tab.active-act { background: #059669; color: #ffffff; box-shadow: 0 2px 4px rgba(5,150,105,0.25); }
+  .mode-tab.active-dev { background: #7c3aed; color: #ffffff; box-shadow: 0 2px 4px rgba(124,58,237,0.25); }
+
   .portal-card { max-width: 900px; margin: 0 auto 16px auto; background: #ffffff; border-radius: 12px; border: 1px solid #cbd5e1; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
   .portal-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px; }
   .portal-title { font-size: 15px; font-weight: 700; color: #0f172a; }
   
-  .btn-header-group { display: flex; gap: 6px; }
+  .btn-header-group { display: flex; gap: 6px; flex-wrap: wrap; }
   .btn-save-cloud { background: #2563eb; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; }
   .btn-save-cloud:hover { background: #1d4ed8; }
+  .btn-sync-act { background: #0d9488; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; }
+  .btn-sync-act:hover { background: #0f766e; }
   .btn-print { background: #059669; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; }
   .btn-print:hover { background: #047857; }
   .btn-reset { background: #e2e8f0; color: #475569; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
@@ -53,6 +62,7 @@
   .mic-btn { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; width: 30px; height: 30px; border-radius: 50%; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   .mic-btn.recording { background: #ef4444; color: #fff; border-color: #ef4444; }
 
+  /* Sheet Styles */
   .sheet-wrapper { width: 100%; overflow-x: auto; margin-bottom: 20px; }
   .sheet { min-width: 650px; max-width: 900px; margin: 0 auto; background: #ffffff; padding: 20px; border: 1px solid #cbd5e1; border-radius: 10px; }
   .sheet-header { border-bottom: 1px solid #000; padding-bottom: 6px; font-family: serif; }
@@ -68,14 +78,22 @@
   .area-bar { display: flex; justify-content: space-between; font-size: 10.5px; font-family: sans-serif; border-top: 1px dotted #64748b; margin-top: 6px; padding-top: 4px; flex-wrap: wrap; }
   
   table.prog-table { width: 100%; border-collapse: collapse; border: 1px solid #000; font-size: 10.5px; margin-top: 8px; }
-  table.prog-table th, table.prog-table td { border: 1px solid #000; padding: 3px 4px; }
+  table.prog-table th, table.prog-table td { border: 1px solid #000; padding: 3px 4px; vertical-align: top; }
   table.prog-table th { background: #f1f5f9; text-align: center; }
   .table-input { width: 100%; border: none; outline: none; background: transparent; font-size: 10.5px; }
+  .table-textarea { width: 100%; border: none; outline: none; background: transparent; font-size: 10px; resize: none; font-family: inherit; line-height: 1.25; overflow: hidden; }
   
   .sheet-footer { border-top: 1px solid #000; margin-top: 10px; padding-top: 6px; font-size: 10.5px; font-family: serif; }
   .exact-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; }
   .footer-sign-box { text-align: center; }
   .footer-sign-line { width: 160px; border-bottom: 1px solid #000; margin-bottom: 4px; }
+
+  .hidden { display: none !important; }
+  .badge-dev { display: inline-block; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-weight: 700; }
+  .badge-match { background: #dcfce7; color: #166534; }
+  .badge-diff { background: #fef3c7; color: #92400e; }
+
+  .info-banner { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 
   @media print {
     body { background: #fff !important; padding: 0 !important; }
@@ -89,7 +107,7 @@
 <!-- Firebase SDK Module -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDwTY7RAoU2upO97fx2wI_4Et-Rttsl5U8",
@@ -103,7 +121,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Save full monthly schedule to Firestore
+  // 1. Save Advance Programme to Firestore
   window.saveToFirestore = async function() {
     const monthVal = document.getElementById('progMonth').value;
     const status = document.getElementById('feedStatus');
@@ -125,7 +143,7 @@
       };
     }
 
-    status.innerText = "Saving programme to Cloud Firebase...";
+    status.innerText = "Saving Advance Programme to Cloud...";
 
     try {
       await setDoc(doc(db, "phi_advance_schedules", monthVal), {
@@ -136,9 +154,10 @@
         approvalNote: document.getElementById('lblApprovalNote').innerText,
         days: daysData,
         updatedAt: serverTimestamp()
-      });
+      }, { merge: true });
 
       status.innerText = `✓ Successfully saved ${monthVal} Advance Programme to Cloud!`;
+      window.buildDeviationTable();
       setTimeout(() => status.innerText = '', 4000);
     } catch (err) {
       console.error(err);
@@ -146,7 +165,7 @@
     }
   };
 
-  // Auto load from Firestore if exists
+  // 2. Load Advance Programme from Firestore
   window.loadFromFirestore = async function(monthVal) {
     if (!monthVal) return;
     const status = document.getElementById('feedStatus');
@@ -158,6 +177,7 @@
         if (data.phiArea) document.getElementById('phiArea').value = data.phiArea;
         if (data.mohArea) document.getElementById('mohArea').value = data.mohArea;
         if (data.approvalNote) document.getElementById('lblApprovalNote').innerText = data.approvalNote;
+        window.syncMetaLabels();
 
         if (data.days) {
           Object.keys(data.days).forEach(day => {
@@ -167,28 +187,131 @@
             if (anEl) anEl.value = data.days[day].an || "";
           });
         }
-        status.innerText = `Loaded saved schedule for ${monthVal}`;
+        status.innerText = `Loaded saved Advance Programme for ${monthVal}`;
         setTimeout(() => status.innerText = '', 2500);
       }
+      // Also load Actual Logs automatically for the same month
+      await window.loadActualLogsFromPocketBook(monthVal);
     } catch (e) {
       console.warn("Could not auto-load from Firestore:", e);
+    }
+  };
+
+  // 3. Auto-Sync Actual Work Logs from PHI Pocket Log (phi_pocket_logs)
+  window.loadActualLogsFromPocketBook = async function(monthVal) {
+    if (!monthVal) monthVal = document.getElementById('progMonth').value;
+    if (!monthVal) return;
+
+    const actStatus = document.getElementById('actualSyncStatus');
+    if (actStatus) actStatus.innerText = "⏳ Syncing daily duties from Pocket Log...";
+
+    const [year, month] = monthVal.split('-').map(Number);
+    const totalDays = new Date(year, month, 0).getDate();
+    const startDate = `${monthVal}-01`;
+    const endDate = `${monthVal}-${String(totalDays).padStart(2, '0')}`;
+
+    try {
+      const q = query(
+        collection(db, "phi_pocket_logs"),
+        where("dutyDate", ">=", startDate),
+        where("dutyDate", "<=", endDate)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const actualMap = {}; // { dayNumber: { fn: [], an: [] } }
+
+      querySnapshot.forEach((docSnap) => {
+        const log = docSnap.data();
+        if (!log.dutyDate) return;
+        const dayNum = parseInt(log.dutyDate.split('-')[2], 10);
+        if (!actualMap[dayNum]) actualMap[dayNum] = { fn: [], an: [] };
+
+        // Clean bullet points into compact lines for H 510 table
+        const cleanText = (log.formatted || log.raw || "")
+          .split('\n')
+          .map(line => line.replace(/^[•\-*]\s*/, '').trim())
+          .filter(Boolean)
+          .join('; ');
+
+        if (!cleanText) return;
+
+        if (log.session === "FN") {
+          actualMap[dayNum].fn.push(cleanText);
+        } else if (log.session === "AN") {
+          actualMap[dayNum].an.push(cleanText);
+        } else if (log.session === "FULL") {
+          actualMap[dayNum].fn.push(cleanText);
+          actualMap[dayNum].an.push(cleanText);
+        }
+      });
+
+      // Populate Actual Work Table
+      for (let day = 1; day <= totalDays; day++) {
+        const dateObj = new Date(year, month - 1, day);
+        const isSunday = dateObj.getDay() === 0;
+        const isSaturday = dateObj.getDay() === 6;
+
+        const actFnEl = document.getElementById(`act_fn_${day}`);
+        const actAnEl = document.getElementById(`act_an_${day}`);
+
+        const dayEntries = actualMap[day];
+        if (actFnEl) {
+          if (dayEntries && dayEntries.fn.length > 0) {
+            actFnEl.value = dayEntries.fn.join(' / ');
+          } else {
+            actFnEl.value = isSunday ? 'Sunday Holiday' : '';
+          }
+          window.autoResizeTextarea(actFnEl);
+        }
+
+        if (actAnEl) {
+          if (dayEntries && dayEntries.an.length > 0) {
+            actAnEl.value = dayEntries.an.join(' / ');
+          } else {
+            actAnEl.value = isSunday ? 'Sunday Holiday' : (isSaturday ? 'Off (Duty till 1.00 PM)' : '');
+          }
+          window.autoResizeTextarea(actAnEl);
+        }
+      }
+
+      if (actStatus) {
+        actStatus.innerText = `✓ Synced ${querySnapshot.size} Pocket Log entries for ${monthVal}!`;
+      }
+      window.buildDeviationTable();
+    } catch (err) {
+      console.error("Error loading Pocket Logs:", err);
+      if (actStatus) actStatus.innerText = "Error syncing Pocket Logs: " + err.message;
     }
   };
 </script>
 </head>
 <body>
 
-<!-- DATA PORTAL -->
+<!-- TOP VIEW SWITCHER (NO PRINT) -->
+<div class="mode-tabs no-print">
+  <button id="tabBtnAdv" class="mode-tab active-adv" onclick="switchMode('adv')">
+    📅 1. Advance Programme (Planned)
+  </button>
+  <button id="tabBtnAct" class="mode-tab" onclick="switchMode('act')">
+    ✅ 2. Actual Work Log (Auto-Filled)
+  </button>
+  <button id="tabBtnDev" class="mode-tab" onclick="switchMode('dev')">
+    ⚖️ 3. Side-by-Side Deviation
+  </button>
+</div>
+
+<!-- SHARED PORTAL HEADER & CONTROLS (NO PRINT) -->
 <div class="portal-card no-print">
   <div class="portal-header">
     <div>
-      <div class="portal-title">H 510 Monthly Advance Programme</div>
-      <div style="font-size: 11px; color: #64748b;">Direct Fill or AI Assistant</div>
+      <div class="portal-title" id="portalMainTitle">H 510 Monthly Advance Programme</div>
+      <div style="font-size: 11px; color: #64748b;" id="portalSubTitle">Direct Fill or AI Assistant</div>
     </div>
     <div class="btn-header-group">
-      <button onclick="saveToFirestore()" class="btn-save-cloud">☁️ Save Cloud</button>
-      <button onclick="window.print()" class="btn-print">🖨️ Print A4</button>
-      <button onclick="clearAllData()" class="btn-reset">Reset</button>
+      <button id="btnCloudSave" onclick="saveToFirestore()" class="btn-save-cloud">☁️ Save Advance</button>
+      <button id="btnRefreshActual" onclick="loadActualLogsFromPocketBook()" class="btn-sync-act hidden">🔄 Sync Pocket Logs</button>
+      <button onclick="window.print()" class="btn-print">🖨️ Print Active Sheet (A4)</button>
+      <button id="btnResetAdv" onclick="clearAllData()" class="btn-reset">Reset</button>
     </div>
   </div>
 
@@ -211,80 +334,91 @@
     </div>
   </div>
 
-  <div class="api-key-box">
-    <span style="font-size: 10.5px; font-weight: 700; color: #64748b;">GEMINI API:</span>
-    <input type="password" id="geminiKey" placeholder="Paste Gemini API Key..." style="flex: 1; min-width: 120px; font-size: 11px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
-    <button onclick="saveApiKey()" style="background: #0f172a; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Save</button>
-    <span id="keyStatus" style="font-size: 10.5px; color: #059669; font-weight: bold;"></span>
-    <div style="display: flex; align-items: center; gap: 4px; margin-left: auto;">
-      <span style="font-size: 10.5px; font-weight: 700; color: #64748b;">🎤 LANG:</span>
-      <select id="voiceLang" class="voice-lang-select" style="font-size: 11px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px;">
-        <option value="si-LK">සිංහල</option>
-        <option value="en-US">English</option>
-      </select>
+  <!-- ADVANCE PROGRAMME EDITOR CONTROLS (Visible only in Advance Tab) -->
+  <div id="advanceEditorControls">
+    <div class="api-key-box">
+      <span style="font-size: 10.5px; font-weight: 700; color: #64748b;">GEMINI API:</span>
+      <input type="password" id="geminiKey" placeholder="Paste Gemini API Key..." style="flex: 1; min-width: 120px; font-size: 11px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px;">
+      <button onclick="saveApiKey()" style="background: #0f172a; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Save</button>
+      <span id="keyStatus" style="font-size: 10.5px; color: #059669; font-weight: bold;"></span>
+      <div style="display: flex; align-items: center; gap: 4px; margin-left: auto;">
+        <span style="font-size: 10.5px; font-weight: 700; color: #64748b;">🎤 LANG:</span>
+        <select id="voiceLang" class="voice-lang-select" style="font-size: 11px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px;">
+          <option value="si-LK">සිංහල</option>
+          <option value="en-US">English</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <label style="font-size: 10.5px; font-weight: 700; color: #475569; text-transform: uppercase;">Approval Note</label>
+        <button onclick="resetApprovalNote()" style="background: transparent; color: #64748b; border: none; font-size: 10.5px; cursor: pointer; text-decoration: underline;">Restore Default</button>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <input type="text" id="customNoteInput" class="input-control" placeholder="Submit to MOH through SPHI...">
+        <button onclick="updateApprovalNote()" style="background: #0f172a; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap;">Update</button>
+      </div>
+    </div>
+
+    <div class="feed-box">
+      <div class="feed-header-row">
+        <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+          <label style="font-size: 11.5px; font-weight: bold;">Day:</label>
+          <button onclick="changeDay(-1)" class="nav-btn" title="Previous Day">◀</button>
+          <input type="number" id="feedDate" min="1" max="31" oninput="updateSelectedDayBadge()" class="input-control" style="width: 50px; text-align: center; font-weight: bold; font-size: 13px; padding: 4px;">
+          <button onclick="changeDay(1)" class="nav-btn" title="Next Day">▶</button>
+
+          <div id="dayBadgeContainer" class="day-badge">
+            <span id="dayDot" class="dot-indicator dot-none"></span>
+            <span id="lblDayName" style="letter-spacing: 0.5px;">-- MONDAY</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 4px;">
+          <button onclick="setPoyaTag()" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer;">🌕 Poya</button>
+          <button onclick="setPublicHoliday()" style="background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer;">🏛️ Holiday</button>
+        </div>
+      </div>
+
+      <div class="dual-grid">
+        <div class="session-card">
+          <div class="session-title fn-title">
+            <span>Forenoon (8.00 AM - 12.00 PM)</span>
+            <button type="button" id="micBtn_fnRaw" class="mic-btn" title="Voice type" onclick="toggleVoiceInput('fnRaw','micBtn_fnRaw')">🎤</button>
+          </div>
+          <textarea id="fnRaw" class="textarea-control" placeholder="උදේ රාජකාරිය..."></textarea>
+        </div>
+        <div class="session-card">
+          <div class="session-title an-title">
+            <span>Afternoon (1.00 PM - 4.00 PM)</span>
+            <button type="button" id="micBtn_anRaw" class="mic-btn" title="Voice type" onclick="toggleVoiceInput('anRaw','micBtn_anRaw')">🎤</button>
+          </div>
+          <textarea id="anRaw" class="textarea-control" placeholder="හවස රාජකාරිය..."></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+        <span id="feedStatus" class="status-text"></span>
+        <div class="btn-action-group">
+          <button onclick="directFillTable()" class="btn-direct">Direct Fill (No AI)</button>
+          <button onclick="processBothSessionsFeed()" class="btn-ai">AI Translate &amp; Fill</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-      <label style="font-size: 10.5px; font-weight: 700; color: #475569; text-transform: uppercase;">Approval Note</label>
-      <button onclick="resetApprovalNote()" style="background: transparent; color: #64748b; border: none; font-size: 10.5px; cursor: pointer; text-decoration: underline;">Restore Default</button>
-    </div>
-    <div style="display: flex; gap: 6px;">
-      <input type="text" id="customNoteInput" class="input-control" placeholder="Submit to MOH through SPHI...">
-      <button onclick="updateApprovalNote()" style="background: #0f172a; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap;">Update</button>
-    </div>
-  </div>
-
-  <div class="feed-box">
-    <div class="feed-header-row">
-      <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
-        <label style="font-size: 11.5px; font-weight: bold;">Day:</label>
-        <button onclick="changeDay(-1)" class="nav-btn" title="Previous Day">◀</button>
-        <input type="number" id="feedDate" min="1" max="31" oninput="updateSelectedDayBadge()" class="input-control" style="width: 50px; text-align: center; font-weight: bold; font-size: 13px; padding: 4px;">
-        <button onclick="changeDay(1)" class="nav-btn" title="Next Day">▶</button>
-
-        <div id="dayBadgeContainer" class="day-badge">
-          <span id="dayDot" class="dot-indicator dot-none"></span>
-          <span id="lblDayName" style="letter-spacing: 0.5px;">-- MONDAY</span>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 4px;">
-        <button onclick="setPoyaTag()" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer;">🌕 Poya</button>
-        <button onclick="setPublicHoliday()" style="background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer;">🏛️ Holiday</button>
-      </div>
-    </div>
-
-    <div class="dual-grid">
-      <div class="session-card">
-        <div class="session-title fn-title">
-          <span>Forenoon (8.00 AM - 12.00 PM)</span>
-          <button type="button" id="micBtn_fnRaw" class="mic-btn" title="Voice type" onclick="toggleVoiceInput('fnRaw','micBtn_fnRaw')">🎤</button>
-        </div>
-        <textarea id="fnRaw" class="textarea-control" placeholder="උදේ රාජකාරිය..."></textarea>
-      </div>
-      <div class="session-card">
-        <div class="session-title an-title">
-          <span>Afternoon (1.00 PM - 4.00 PM)</span>
-          <button type="button" id="micBtn_anRaw" class="mic-btn" title="Voice type" onclick="toggleVoiceInput('anRaw','micBtn_anRaw')">🎤</button>
-        </div>
-        <textarea id="anRaw" class="textarea-control" placeholder="හවස රාජකාරිය..."></textarea>
-      </div>
-    </div>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
-      <span id="feedStatus" class="status-text"></span>
-      <div class="btn-action-group">
-        <button onclick="directFillTable()" class="btn-direct">Direct Fill (No AI)</button>
-        <button onclick="processBothSessionsFeed()" class="btn-ai">AI Translate &amp; Fill</button>
-      </div>
-    </div>
+  <!-- ACTUAL WORK INFO BANNER (Visible in Actual & Deviation Tabs) -->
+  <div id="actualInfoBanner" class="info-banner hidden">
+    <span id="actualSyncStatus">✓ Auto-synced from PHI Pocket Log Portal (Health 253). You can directly edit any cell below before printing.</span>
+    <button onclick="loadActualLogsFromPocketBook()" style="background: #059669; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer;">↻ Refresh Now</button>
   </div>
 </div>
 
-<!-- SCROLLABLE PRINTABLE FORM (H 510) -->
-<div class="sheet-wrapper">
+<!-- ===================================================================== -->
+<!-- SHEET 1: ADVANCE PROGRAMME (H 510 - UNCHANGED ORIGINAL STRUCTURE)     -->
+<!-- ===================================================================== -->
+<div id="sheetContainerAdv" class="sheet-wrapper">
   <div class="sheet">
     <div class="sheet-header">
       <div class="top-meta">
@@ -366,11 +500,194 @@
   </div>
 </div>
 
+<!-- ===================================================================== -->
+<!-- SHEET 2: ACTUAL WORK PROGRAMME (SAME H 510 FORMAT - AUTO-FILLED)       -->
+<!-- ===================================================================== -->
+<div id="sheetContainerAct" class="sheet-wrapper hidden">
+  <div class="sheet">
+    <div class="sheet-header">
+      <div class="top-meta">
+        <span>H 510 (ACTUAL WORK)</span>
+        <span style="font-weight: normal; font-size: 9.5px;">Health 510(F2 S. &amp; T.) - Completed Duties</span>
+      </div>
+
+      <div class="main-heading-row">
+        <div class="main-title-box">
+          <div class="main-title-sin">සිදුකළ කාර්යයන් වාර්තාව (Actual Programme)</div>
+          <div class="main-title-tam">நிறைவேற்றப்பட்ட காரியக்கிரமப்படலம்</div>
+        </div>
+        
+        <div class="month-box-right">
+          <div style="text-align: right; line-height: 1.1;">
+            <div>මාසය</div>
+            <div style="font-size: 9.5px;">மாதம்</div>
+          </div>
+          <span style="font-size: 18px;">}</span>
+          <span id="lblMonthAct" style="font-weight: bold; border-bottom: 1px solid #000; min-width: 100px; text-align: center; font-family: sans-serif;">August 2026</span>
+        </div>
+      </div>
+
+      <div class="service-hours">
+        <div style="display: flex; align-items: center;">
+          <div><span>සේවා කාලය</span><br><span>வேலை நேரம்</span></div>
+          <span style="font-size: 18px; margin: 0 4px;">}</span>
+        </div>
+        <div style="border-right: 1px solid #000; padding-right: 4px;">
+          <div>පෙ.ව. 8.00 - දවල් 12.00 ට &nbsp;|&nbsp; මු. ப. 8.00 - மத்தியானம் 12.00</div>
+          <div>ප.ව. 1.00 - ප.ව. 4.00 දක්වා &nbsp;|&nbsp; பி. ப. 1.00 - பி. ப. 4.00 வரை</div>
+        </div>
+        <div style="padding-left: 4px;">
+          <div>සෙනසුරාදා පෙ.ව. 8.00 - ප.ව. 1.00 ට</div>
+          <div>சனிக்கிழமை மு.ப. 8.00 - பி.ப. 1.00</div>
+        </div>
+      </div>
+
+      <div class="area-bar">
+        <div><strong>MOH:</strong> <span id="lblMohAreaAct">Mahara</span></div>
+        <div><strong>PHI Range:</strong> <span id="lblPhiAreaAct">Kadawatha (03)</span></div>
+        <div><strong>Officer:</strong> <span id="lblOfficerNameAct">A.B. Perera</span></div>
+      </div>
+    </div>
+
+    <table class="prog-table">
+      <thead>
+        <tr>
+          <th style="width: 32px;">දිනය<br><span style="font-size: 8.5px; font-weight: normal;">Date</span></th>
+          <th style="width: 40px;">දවස<br><span style="font-size: 8.5px; font-weight: normal;">Day</span></th>
+          <th style="width: 45%; text-align: left; padding-left: 4px;">පෙරවරු සිදුකළ රාජකාරි (8.00 AM - 12.00 PM)</th>
+          <th style="width: 45%; text-align: left; padding-left: 4px;">පස්වරු සිදුකළ රාජකාරි (1.00 PM - 4.00 PM)</th>
+        </tr>
+      </thead>
+      <tbody id="actualProgrammeBody"></tbody>
+    </table>
+
+    <div class="sheet-footer">
+      <div style="display: flex; justify-content: space-between; font-weight: bold; font-family: sans-serif; font-size: 9.5px;">
+        <span>Auto-Generated from Pocket Note Book (Health 253)</span>
+        <span>H 510 (Actual)</span>
+      </div>
+      
+      <div style="font-style: italic; font-family: sans-serif; font-size: 9.5px; margin: 4px 0 8px 0;">
+        Certified that the above duties were actually performed during the month as recorded in Health 253.
+      </div>
+
+      <div class="exact-footer-row">
+        <div style="font-family: serif; font-size: 10px;">
+          <span>දිනය / Date: ........................</span>
+        </div>
+
+        <div class="footer-sign-box">
+          <div class="footer-sign-line"></div>
+          <div style="font-size: 10px; font-family: serif;">අත්සන / கையொப்பம் / Signature</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- SHEET 3: SIDE-BY-SIDE DEVIATION COMPARISON SHEET                      -->
+<!-- ===================================================================== -->
+<div id="sheetContainerDev" class="sheet-wrapper hidden">
+  <div class="sheet">
+    <div class="sheet-header">
+      <div class="top-meta">
+        <span>H 510 DEVIATION STATEMENT</span>
+        <span style="font-weight: normal; font-size: 9.5px;">Advance Programme vs Actual Duty Comparison</span>
+      </div>
+
+      <div class="main-heading-row">
+        <div class="main-title-box">
+          <div class="main-title-sin">කාලසටහන් වෙනස්වීම් සටහන (Deviation Statement)</div>
+          <div class="main-title-tam">திட்டமிடப்பட்ட மற்றும் நிறைவேற்றப்பட்ட கடமைகளின் ஒப்பீடு</div>
+        </div>
+        
+        <div class="month-box-right">
+          <div style="text-align: right; line-height: 1.1;">
+            <div>මාසය</div>
+            <div style="font-size: 9.5px;">மாதம்</div>
+          </div>
+          <span style="font-size: 18px;">}</span>
+          <span id="lblMonthDev" style="font-weight: bold; border-bottom: 1px solid #000; min-width: 100px; text-align: center; font-family: sans-serif;">August 2026</span>
+        </div>
+      </div>
+
+      <div class="area-bar">
+        <div><strong>MOH:</strong> <span id="lblMohAreaDev">Mahara</span></div>
+        <div><strong>PHI Range:</strong> <span id="lblPhiAreaDev">Kadawatha (03)</span></div>
+        <div><strong>Officer:</strong> <span id="lblOfficerNameDev">A.B. Perera</span></div>
+      </div>
+    </div>
+
+    <table class="prog-table">
+      <thead>
+        <tr>
+          <th style="width: 30px;">Date</th>
+          <th style="width: 34px;">Day</th>
+          <th style="width: 28%; text-align: left;">Advance Programme (Planned)</th>
+          <th style="width: 32%; text-align: left;">Actual Work Done (Health 253)</th>
+          <th style="width: 28%; text-align: left;">Deviation / Reason</th>
+        </tr>
+      </thead>
+      <tbody id="deviationBody"></tbody>
+    </table>
+
+    <div class="sheet-footer">
+      <div class="exact-footer-row">
+        <div style="font-family: serif; font-size: 10px;">
+          <span>දිනය / Date: ........................</span>
+        </div>
+        <div class="footer-sign-box">
+          <div class="footer-sign-line"></div>
+          <div style="font-size: 10px; font-family: serif;">අත්සන / Signature of PHI</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   const DEFAULT_APPROVAL_NOTE = "Submit to MOH through SPHI, Forwarded to your approval please. This program can be changed in special activities.";
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const daysOfWeekShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   let geminiApiKey = sessionStorage.getItem("phi_h510_key") || "";
+  let currentMode = "adv";
+
+  /* ===================== MODE SWITCHING ===================== */
+  function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById('tabBtnAdv').className = 'mode-tab' + (mode === 'adv' ? ' active-adv' : '');
+    document.getElementById('tabBtnAct').className = 'mode-tab' + (mode === 'act' ? ' active-act' : '');
+    document.getElementById('tabBtnDev').className = 'mode-tab' + (mode === 'dev' ? ' active-dev' : '');
+
+    document.getElementById('sheetContainerAdv').classList.toggle('hidden', mode !== 'adv');
+    document.getElementById('sheetContainerAct').classList.toggle('hidden', mode !== 'act');
+    document.getElementById('sheetContainerDev').classList.toggle('hidden', mode !== 'dev');
+
+    document.getElementById('advanceEditorControls').classList.toggle('hidden', mode !== 'adv');
+    document.getElementById('actualInfoBanner').classList.toggle('hidden', mode === 'adv');
+    document.getElementById('btnCloudSave').classList.toggle('hidden', mode !== 'adv');
+    document.getElementById('btnResetAdv').classList.toggle('hidden', mode !== 'adv');
+    document.getElementById('btnRefreshActual').classList.toggle('hidden', mode === 'adv');
+
+    if (mode === 'adv') {
+      document.getElementById('portalMainTitle').innerText = "H 510 Monthly Advance Programme";
+      document.getElementById('portalSubTitle').innerText = "Planned Monthly Schedule (Direct Fill or AI Assistant)";
+    } else if (mode === 'act') {
+      document.getElementById('portalMainTitle').innerText = "H 510 Actual Work Programme";
+      document.getElementById('portalSubTitle').innerText = "Auto-filled from your daily Pocket Log entries";
+    } else {
+      document.getElementById('portalMainTitle').innerText = "H 510 Deviation Comparison Sheet";
+      document.getElementById('portalSubTitle').innerText = "Compare Advance Schedule vs Actual Duties side-by-side";
+      buildDeviationTable();
+    }
+  }
+
+  function autoResizeTextarea(el) {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = (el.scrollHeight) + 'px';
+  }
 
   /* ===================== VOICE TYPING ===================== */
   const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -426,10 +743,7 @@
       }
     };
 
-    recognition.onerror = (event) => {
-      console.error("Voice input error:", event.error);
-    };
-
+    recognition.onerror = (event) => console.error("Voice input error:", event.error);
     recognition.onend = () => {
       btn.classList.remove('recording');
       activeRecognition = null;
@@ -528,6 +842,22 @@
     }
   }
 
+  function syncMetaLabels() {
+    const moh = document.getElementById('mohArea').value || '...................';
+    const phi = document.getElementById('phiArea').value || '...................';
+    const name = document.getElementById('phiName').value || 'PHI Officer';
+
+    ['lblMohArea', 'lblMohAreaAct', 'lblMohAreaDev'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerText = moh;
+    });
+    ['lblPhiArea', 'lblPhiAreaAct', 'lblPhiAreaDev'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerText = phi;
+    });
+    ['lblOfficerName', 'lblOfficerNameAct', 'lblOfficerNameDev'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerText = name;
+    });
+  }
+
   function renderCalendar() {
     const monthVal = document.getElementById('progMonth').value;
     if (!monthVal) return;
@@ -536,13 +866,16 @@
     const totalDays = new Date(year, month, 0).getDate();
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    document.getElementById('lblMonth').innerText = `${monthNames[month - 1]} ${year}`;
-    document.getElementById('lblMohArea').innerText = document.getElementById('mohArea').value || '...................';
-    document.getElementById('lblPhiArea').innerText = document.getElementById('phiArea').value || '...................';
-    document.getElementById('lblOfficerName').innerText = document.getElementById('phiName').value || 'PHI Officer';
+    const monthTitle = `${monthNames[month - 1]} ${year}`;
+    document.getElementById('lblMonth').innerText = monthTitle;
+    document.getElementById('lblMonthAct').innerText = monthTitle;
+    document.getElementById('lblMonthDev').innerText = monthTitle;
+    syncMetaLabels();
 
-    const tbody = document.getElementById('programmeBody');
-    tbody.innerHTML = '';
+    const tbodyAdv = document.getElementById('programmeBody');
+    const tbodyAct = document.getElementById('actualProgrammeBody');
+    tbodyAdv.innerHTML = '';
+    tbodyAct.innerHTML = '';
 
     for (let day = 1; day <= totalDays; day++) {
       const dateObj = new Date(year, month - 1, day);
@@ -550,16 +883,81 @@
       const isSunday = dateObj.getDay() === 0;
       const isSaturday = dateObj.getDay() === 6;
 
+      // 1. Advance Programme Row
+      const trAdv = document.createElement('tr');
+      if (isSunday) trAdv.style.backgroundColor = "#f8fafc";
+      trAdv.innerHTML = `
+        <td style="text-align: center; font-weight: bold;">${day}</td>
+        <td style="text-align: center; font-size: 9.5px;">${dayName}</td>
+        <td><input type="text" id="fn_${day}" value="${isSunday ? 'Sunday Holiday' : ''}" class="table-input" placeholder="..."></td>
+        <td><input type="text" id="an_${day}" value="${isSunday ? 'Sunday Holiday' : (isSaturday ? 'Off (Duty till 1.00 PM)' : '')}" class="table-input" placeholder="..."></td>
+      `;
+      tbodyAdv.appendChild(trAdv);
+
+      // 2. Actual Work Row (Matching exact H 510 layout)
+      const trAct = document.createElement('tr');
+      if (isSunday) trAct.style.backgroundColor = "#f8fafc";
+      trAct.innerHTML = `
+        <td style="text-align: center; font-weight: bold;">${day}</td>
+        <td style="text-align: center; font-size: 9.5px;">${dayName}</td>
+        <td><textarea rows="1" id="act_fn_${day}" oninput="autoResizeTextarea(this)" class="table-textarea" placeholder="...">${isSunday ? 'Sunday Holiday' : ''}</textarea></td>
+        <td><textarea rows="1" id="act_an_${day}" oninput="autoResizeTextarea(this)" class="table-textarea" placeholder="...">${isSunday ? 'Sunday Holiday' : (isSaturday ? 'Off (Duty till 1.00 PM)' : '')}</textarea></td>
+      `;
+      tbodyAct.appendChild(trAct);
+    }
+    buildDeviationTable();
+  }
+
+  /* ===================== BUILD SIDE-BY-SIDE DEVIATION TABLE ===================== */
+  function buildDeviationTable() {
+    const monthVal = document.getElementById('progMonth').value;
+    if (!monthVal) return;
+
+    const [year, month] = monthVal.split('-').map(Number);
+    const totalDays = new Date(year, month, 0).getDate();
+    const tbodyDev = document.getElementById('deviationBody');
+    if (!tbodyDev) return;
+
+    tbodyDev.innerHTML = '';
+
+    for (let day = 1; day <= totalDays; day++) {
+      const dateObj = new Date(year, month - 1, day);
+      const dayName = daysOfWeekShort[dateObj.getDay()];
+      const isSunday = dateObj.getDay() === 0;
+
+      const advFn = (document.getElementById(`fn_${day}`)?.value || '').trim();
+      const advAn = (document.getElementById(`an_${day}`)?.value || '').trim();
+      const actFn = (document.getElementById(`act_fn_${day}`)?.value || '').trim();
+      const actAn = (document.getElementById(`act_an_${day}`)?.value || '').trim();
+
+      const advSummary = `FN: ${advFn || '-'}\nAN: ${advAn || '-'}`;
+      const actSummary = `FN: ${actFn || '-'}\nAN: ${actAn || '-'}`;
+
+      // Simple check if actual differs significantly from advance
+      const hasActualData = (actFn && actFn !== 'Sunday Holiday') || (actAn && actAn !== 'Sunday Holiday' && !actAn.startsWith('Off'));
+      const isSame = advFn.toLowerCase() === actFn.toLowerCase() && advAn.toLowerCase() === actAn.toLowerCase();
+
+      let badgeHtml = '';
+      if (!isSunday && hasActualData) {
+        badgeHtml = isSame
+          ? `<span class="badge-dev badge-match">✓ As Planned</span>`
+          : `<span class="badge-dev badge-diff">⚠ Changed</span>`;
+      }
+
       const tr = document.createElement('tr');
       if (isSunday) tr.style.backgroundColor = "#f8fafc";
 
       tr.innerHTML = `
         <td style="text-align: center; font-weight: bold;">${day}</td>
         <td style="text-align: center; font-size: 9.5px;">${dayName}</td>
-        <td><input type="text" id="fn_${day}" value="${isSunday ? 'Sunday Holiday' : ''}" class="table-input" placeholder="..."></td>
-        <td><input type="text" id="an_${day}" value="${isSunday ? 'Sunday Holiday' : (isSaturday ? 'Off (Duty till 1.00 PM)' : '')}" class="table-input" placeholder="..."></td>
+        <td style="white-space: pre-line; font-size: 9.5px; color: #334155;">${advSummary}</td>
+        <td style="white-space: pre-line; font-size: 9.5px; color: #0f172a; font-weight: 500;">${actSummary}</td>
+        <td>
+          ${badgeHtml}
+          <textarea rows="1" oninput="autoResizeTextarea(this)" class="table-textarea" style="margin-top: 2px;" placeholder="${isSunday ? '' : 'Reason if deviated...'}"></textarea>
+        </td>
       `;
-      tbody.appendChild(tr);
+      tbodyDev.appendChild(tr);
     }
   }
 
@@ -611,12 +1009,6 @@
     if (!text || !text.trim()) return "";
     const prompt = `You are a translation assistant for a Sri Lankan Public Health Inspector (PHI).
 Translate the following Sinhala or Singlish duty note into a SHORT, SIMPLE, NATURAL ENGLISH duty phrase suitable for an official monthly programme.
-Examples:
-- "කඩවත කඩ චෙක් කළා" -> "Inspect food shops in Kadawatha"
-- "ඩෙංගු සර්වේ" -> "Dengue source reduction survey (DCA)"
-- "MOH මීටින්" -> "Attend monthly conference at MOH office"
-- "ක්ලිනික් සහභාගී වීම" -> "Assist at health clinic"
-- "පාසල් වෛද්‍ය පරීක්ෂණ" -> "School Medical Inspection (SMI)"
 Max 4 to 8 simple words. Output ONLY the plain English translation without quotes.
 Input: "${text}"`;
 
@@ -677,9 +1069,9 @@ Input: "${text}"`;
     }
   }
 
-  document.getElementById('mohArea').addEventListener('input', (e) => document.getElementById('lblMohArea').innerText = e.target.value || '............');
-  document.getElementById('phiArea').addEventListener('input', (e) => document.getElementById('lblPhiArea').innerText = e.target.value || '............');
-  document.getElementById('phiName').addEventListener('input', (e) => document.getElementById('lblOfficerName').innerText = e.target.value || 'PHI Officer');
+  document.getElementById('mohArea').addEventListener('input', syncMetaLabels);
+  document.getElementById('phiArea').addEventListener('input', syncMetaLabels);
+  document.getElementById('phiName').addEventListener('input', syncMetaLabels);
 </script>
 
 </body>
